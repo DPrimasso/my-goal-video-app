@@ -2,13 +2,37 @@ import React, {useState} from 'react';
 
 const VideoForm: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
-  const [videoPath, setVideoPath] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
-  const handleGenerate = () => {
-    console.log('Player Name:', playerName);
-    console.log('Video Path:', videoPath);
-    console.log('Video File:', videoFile);
+  const handleGenerate = async () => {
+    if (!videoFile) {
+      alert('Seleziona un file MP4');
+      return;
+    }
+    setLoading(true);
+    setGeneratedUrl(null);
+    const data = new FormData();
+    data.append('playerName', playerName);
+    data.append('clip', videoFile);
+
+    try {
+      const res = await fetch('/api/render', {
+        method: 'POST',
+        body: data,
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setGeneratedUrl(json.video);
+      } else {
+        alert(json.error || 'Errore nella generazione');
+      }
+    } catch (err) {
+      alert('Errore nella richiesta');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,16 +49,6 @@ const VideoForm: React.FC = () => {
       </div>
       <div>
         <label>
-          Percorso MP4:
-          <input
-            type="text"
-            value={videoPath}
-            onChange={(e) => setVideoPath(e.target.value)}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
           Upload MP4:
           <input
             type="file"
@@ -43,7 +57,14 @@ const VideoForm: React.FC = () => {
           />
         </label>
       </div>
-      <button onClick={handleGenerate}>Genera Video</button>
+      <button onClick={handleGenerate} disabled={loading}>
+        {loading ? 'Generazione in corso...' : 'Genera Video'}
+      </button>
+      {generatedUrl && (
+        <div>
+          Video generato: <a href={generatedUrl}>{generatedUrl}</a>
+        </div>
+      )}
     </div>
   );
 };
