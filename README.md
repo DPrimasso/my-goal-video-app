@@ -44,3 +44,43 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Installazione del progetto
+
+1. Installare le dipendenze:
+   ```bash
+   npm install
+   ```
+2. Copiare la clip MP4 da usare nel video nella cartella `public/clips`.
+   Ad esempio `public/clips/mio_goal.mp4`.
+
+## Preview con Remotion
+
+Per avviare l'anteprima del video:
+
+```bash
+npx remotion preview src/remotion/index.tsx
+```
+
+## Generazione del video
+
+È possibile generare il video in due modi.
+
+### Via CLI
+
+```bash
+npx remotion render src/remotion/index.tsx GoalComp out/video.mp4 --props='{"playerName":"Mario Rossi","goalClip":"public/clips/mio_goal.mp4"}'
+```
+
+### Tramite form
+
+1. Avviare il server backend:
+   ```bash
+   node server/index.js
+   ```
+2. In un altro terminale avviare l'app React:
+   ```bash
+   npm start
+   ```
+3. Aprire `http://localhost:3000`, compilare il form e caricare la clip MP4.
+   Il video verrà salvato nella cartella `videos`.
