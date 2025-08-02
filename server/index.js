@@ -7,13 +7,9 @@ require('ts-node/register');
 const players = require('./players');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
-const GOAL_CLIP = path.join(
-  __dirname,
-  '..',
-  'public',
-  'clips',
-  'goal.mp4'
-);
+// Use a path relative to the public folder so Remotion can resolve it
+// via staticFile(). The actual file lives in public/clips/goal.mp4.
+const GOAL_CLIP = 'clips/goal.mp4';
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }

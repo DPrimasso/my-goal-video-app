@@ -6,14 +6,19 @@ export interface Player {
 
 export const players: Player[] = [
   {
-    id: 'messi',
-    name: 'Lionel Messi',
-    image: '/logo192.png',
+    id: 'davide_fava',
+    name: 'Davide Fava',
+    image: 'players/davide_fava.png',
   },
   {
-    id: 'ronaldo',
-    name: 'Cristiano Ronaldo',
-    image: '/logo512.png',
+    id: 'lorenzo_campagnari',
+    name: 'Lorenzo Campagnari',
+    image: 'players/lorenzo_campagnari.png',
+  },
+  {
+    id: 'davide_scalmana',
+    name: 'Davide Scalmana',
+    image: 'players/davide_scalmana.png',
   },
 ];
 
