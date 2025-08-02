@@ -112,8 +112,8 @@ app.post('/api/render-formation', async (req, res) => {
       throw new Error('Composition FormationComp not found');
     }
     const outPath = path.join(
-      VIDEOS_DIR,
-      `${Date.now()}-formation.mp4`
+        VIDEOS_DIR,
+        `${Date.now()}-formation.mp4`
     );
     await renderMedia({
       composition: comp,
@@ -123,7 +123,7 @@ app.post('/api/render-formation', async (req, res) => {
       inputProps,
     });
     const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
-      outPath
+        outPath
     )}`;
     res.json({video: videoUrl});
   } catch (err) {

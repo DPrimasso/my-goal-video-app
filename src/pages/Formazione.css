@@ -10,7 +10,6 @@
   width: 100%;
   max-width: 600px;
   height: 800px;
-  background-image: url('/field.svg');
   background-size: cover;
   background-position: center;
 }

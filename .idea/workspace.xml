@@ -5,8 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a223d149-70c9-4c9d-8312-d7e966dd2e60" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/public/logo_casalpoglio.ai" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/field.svg" beforeDir="false" afterPath="$PROJECT_DIR$/public/field.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/manifest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/Formazione.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/Formazione.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/Formazione.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/remotion/FormationVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/FormationVideo.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/FormationVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/MyGoalVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,13 +65,14 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public" />
       <recent name="$PROJECT_DIR$/public/players" />
       <recent name="$PROJECT_DIR$/public/clips" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/server" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.start:server">
+  <component name="RunManager" selected="npm.start">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -104,8 +115,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.start:server" />
         <item itemvalue="npm.start" />
+        <item itemvalue="npm.start:server" />
         <item itemvalue="npm.test" />
         <item itemvalue="npm.build" />
       </list>

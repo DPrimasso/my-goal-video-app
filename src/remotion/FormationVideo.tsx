@@ -7,7 +7,7 @@ export interface FormationPlayer {
   image: string;
 }
 
-export interface FormationVideoProps {
+export interface FormationVideoProps extends Record<string, unknown> {
   goalkeeper: FormationPlayer;
   defenders: FormationPlayer[];
   midfielders: FormationPlayer[];
@@ -15,11 +15,11 @@ export interface FormationVideoProps {
 }
 
 export const FormationVideo: React.FC<FormationVideoProps> = ({
-  goalkeeper,
-  defenders,
-  midfielders,
-  forwards,
-}) => {
+                                                                goalkeeper,
+                                                                defenders,
+                                                                midfielders,
+                                                                forwards,
+                                                              }) => {
   const {fps} = useVideoConfig();
   const slot = fps; // 1 second per item
   const groups = [
@@ -34,28 +34,28 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   groups.forEach(({title, players}) => {
     sequences.push(
-      <Sequence from={current} durationInFrames={slot} key={`title-${current}`}>
-        <AbsoluteFill className="group-title">{title}</AbsoluteFill>
-      </Sequence>
+        <Sequence from={current} durationInFrames={slot} key={`title-${current}`}>
+          <AbsoluteFill className="group-title">{title}</AbsoluteFill>
+        </Sequence>
     );
     current += slot;
     players.forEach((p, i) => {
       sequences.push(
-        <Sequence from={current} durationInFrames={slot} key={`player-${current}`}> 
-          <AbsoluteFill className="player-container">
-            <Img src={staticFile(p.image)} className="player-image" />
-            <div>{p.name}</div>
-          </AbsoluteFill>
-        </Sequence>
+          <Sequence from={current} durationInFrames={slot} key={`player-${current}`}>
+            <AbsoluteFill className="player-container">
+              <Img src={staticFile(p.image)} className="player-image" />
+              <div>{p.name}</div>
+            </AbsoluteFill>
+          </Sequence>
       );
       current += slot;
     });
   });
 
   return (
-    <AbsoluteFill>
-      <Img src={staticFile('field.svg')} className="field-image" />
-      {sequences}
-    </AbsoluteFill>
+      <AbsoluteFill>
+        <Img src={staticFile('field.svg')} className="field-image" />
+        {sequences}
+      </AbsoluteFill>
   );
 };

@@ -11,33 +11,33 @@ const RemotionRoot: React.FC = () => {
     overlayImage: 'logo192.png',
   };
 
-  const formationDefaults: FormationVideoProps = {
-    goalkeeper: { name: 'Portiere', image: 'players/davide_fava.png' },
-    defenders: [],
-    midfielders: [],
-    forwards: [],
-  };
+    const formationDefaults: FormationVideoProps = {
+        goalkeeper: { name: 'Portiere', image: 'players/davide_fava.png' },
+        defenders: [],
+        midfielders: [],
+        forwards: [],
+    };
 
   return (
     <>
-      <Composition
-        id="GoalComp"
-        component={MyGoalVideo}
-        durationInFrames={150}
-        fps={30}
-        width={1080}
-        height={1920}
-        defaultProps={defaultProps}
-      />
-      <Composition
-        id="FormationComp"
-        component={FormationVideo}
-        durationInFrames={450}
-        fps={30}
-        width={1080}
-        height={1920}
-        defaultProps={formationDefaults}
-      />
+        <Composition<any, MyGoalVideoProps>
+            id="GoalComp"
+            component={MyGoalVideo}
+            durationInFrames={150}
+            fps={30}
+            width={1080}
+            height={1920}
+            defaultProps={defaultProps}
+        />
+        <Composition<any, FormationVideoProps>
+            id="FormationComp"
+            component={FormationVideo}
+            durationInFrames={450}
+            fps={30}
+            width={1080}
+            height={1920}
+            defaultProps={formationDefaults}
+        />
     </>
   );
 };
