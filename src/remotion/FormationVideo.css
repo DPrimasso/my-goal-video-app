@@ -4,29 +4,19 @@
   height: 100%;
   object-fit: cover;
 }
-
-.group-title {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 80px;
-  color: white;
-  text-shadow: 0 0 10px black;
-}
-
 .player-container {
+  position: absolute;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   color: white;
   text-shadow: 0 0 10px black;
-  font-size: 60px;
+  font-size: 40px;
 }
 
 .player-image {
-  width: 40%;
-  height: auto;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Img, Sequence, staticFile, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Img, Sequence, staticFile, useCurrentFrame, useVideoConfig, spring, interpolate} from 'remotion';
 import './FormationVideo.css';
 
 export interface FormationPlayer {
@@ -14,48 +14,111 @@ export interface FormationVideoProps extends Record<string, unknown> {
   forwards: FormationPlayer[];
 }
 
-export const FormationVideo: React.FC<FormationVideoProps> = ({
-                                                                goalkeeper,
-                                                                defenders,
-                                                                midfielders,
-                                                                forwards,
-                                                              }) => {
-  const {fps} = useVideoConfig();
-  const slot = fps; // 1 second per item
-  const groups = [
-    {title: 'Portiere', players: [goalkeeper]},
-    {title: 'Difensori', players: defenders},
-    {title: 'Centrocampisti', players: midfielders},
-    {title: 'Attaccanti', players: forwards},
-  ];
+interface PlayerPosition {
+  x: number;
+  y: number;
+}
 
-  let current = 0;
-  const sequences: React.ReactNode[] = [];
+const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; scale: number}> = ({player, x, y, scale}) => {
+  return (
+    <div
+      className="player-container"
+      style={{
+        left: x,
+        top: y,
+        transform: `translate(-50%, -50%) scale(${scale})`,
+      }}
+    >
+      <Img src={staticFile(player.image)} className="player-image" />
+      <div>{player.name}</div>
+    </div>
+  );
+};
 
-  groups.forEach(({title, players}) => {
-    sequences.push(
-        <Sequence from={current} durationInFrames={slot} key={`title-${current}`}>
-          <AbsoluteFill className="group-title">{title}</AbsoluteFill>
-        </Sequence>
-    );
-    current += slot;
-    players.forEach((p, i) => {
-      sequences.push(
-          <Sequence from={current} durationInFrames={slot} key={`player-${current}`}>
-            <AbsoluteFill className="player-container">
-              <Img src={staticFile(p.image)} className="player-image" />
-              <div>{p.name}</div>
-            </AbsoluteFill>
-          </Sequence>
-      );
-      current += slot;
-    });
-  });
+const GroupIntro: React.FC<{
+  players: FormationPlayer[];
+  finalPositions: PlayerPosition[];
+  start: number;
+}> = ({players, finalPositions, start}) => {
+  const frame = useCurrentFrame() - start;
+  const {fps, width, height} = useVideoConfig();
+  const progress = spring({frame, fps, config: {damping: 200}});
+
+  const lineY = height - 200;
 
   return (
-      <AbsoluteFill>
-        <Img src={staticFile('field.svg')} className="field-image" />
-        {sequences}
-      </AbsoluteFill>
+    <>
+      {players.map((p, i) => {
+        const startX = width / 2 + (i - (players.length - 1) / 2) * 180;
+        const startY = lineY;
+        const end = finalPositions[i];
+        const x = interpolate(progress, [0, 1], [startX, end.x]);
+        const y = interpolate(progress, [0, 1], [startY, end.y]);
+        const scale = interpolate(progress, [0, 1], [2, 1]);
+        return <PlayerVisual key={i} player={p} x={x} y={y} scale={scale} />;
+      })}
+    </>
+  );
+};
+
+export const FormationVideo: React.FC<FormationVideoProps> = ({
+  goalkeeper,
+  defenders,
+  midfielders,
+  forwards,
+}) => {
+  const {fps, width, height} = useVideoConfig();
+  const intro = fps; // initial empty field
+  const groupDuration = fps * 3; // 3 seconds per group
+
+  const positions = {
+    goalkeeper: [{x: width / 2, y: height - 300}],
+    defenders: defenders.map((_, i) => ({x: ((i + 1) * width) / (defenders.length + 1), y: height - 600})),
+    midfielders: midfielders.map((_, i) => ({x: ((i + 1) * width) / (midfielders.length + 1), y: height - 1000})),
+    forwards: forwards.map((_, i) => ({x: ((i + 1) * width) / (forwards.length + 1), y: height - 1400})),
+  };
+
+  let current = intro;
+  const sequences: React.ReactNode[] = [];
+
+  sequences.push(
+    <Sequence from={current} durationInFrames={groupDuration} key="goalkeeper">
+      <GroupIntro players={[goalkeeper]} finalPositions={positions.goalkeeper} start={current} />
+    </Sequence>
+  );
+  current += groupDuration;
+
+  if (defenders.length) {
+    sequences.push(
+      <Sequence from={current} durationInFrames={groupDuration} key="defenders">
+        <GroupIntro players={defenders} finalPositions={positions.defenders} start={current} />
+      </Sequence>
+    );
+    current += groupDuration;
+  }
+
+  if (midfielders.length) {
+    sequences.push(
+      <Sequence from={current} durationInFrames={groupDuration} key="midfielders">
+        <GroupIntro players={midfielders} finalPositions={positions.midfielders} start={current} />
+      </Sequence>
+    );
+    current += groupDuration;
+  }
+
+  if (forwards.length) {
+    sequences.push(
+      <Sequence from={current} durationInFrames={groupDuration} key="forwards">
+        <GroupIntro players={forwards} finalPositions={positions.forwards} start={current} />
+      </Sequence>
+    );
+    current += groupDuration;
+  }
+
+  return (
+    <AbsoluteFill>
+      <Img src={staticFile('field.svg')} className="field-image" />
+      {sequences}
+    </AbsoluteFill>
   );
 };
