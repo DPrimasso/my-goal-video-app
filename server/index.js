@@ -71,7 +71,10 @@ app.post('/api/render', async (req, res) => {
       inputProps,
     });
 
-    res.json({video: `/videos/${path.basename(outPath)}`});
+    const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
+        outPath
+    )}`;
+    res.json({video: videoUrl});
   } catch (err) {
     console.error(err);
     res.status(500).json({error: 'Failed to render video'});
