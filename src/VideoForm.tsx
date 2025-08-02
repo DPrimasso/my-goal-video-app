@@ -75,8 +75,11 @@ const VideoForm: React.FC = () => {
         {loading ? 'Generazione in corso...' : 'Genera Video'}
       </button>
       {generatedUrl && (
-        <div>
-          Video generato: <a href={generatedUrl}>{generatedUrl}</a>
+        <div className="preview-container">
+          <video className="video-preview" src={generatedUrl} controls />
+          <a className="download-link" href={generatedUrl} download>
+            Scarica video
+          </a>
         </div>
       )}
     </div>
