@@ -38,9 +38,8 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; sca
 const GroupIntro: React.FC<{
   players: FormationPlayer[];
   finalPositions: PlayerPosition[];
-  start: number;
-}> = ({players, finalPositions, start}) => {
-  const frame = useCurrentFrame() - start;
+}> = ({players, finalPositions}) => {
+  const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
   const progress = spring({frame, fps, config: {damping: 200}});
 
@@ -83,7 +82,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   sequences.push(
     <Sequence from={current} durationInFrames={groupDuration} key="goalkeeper">
-      <GroupIntro players={[goalkeeper]} finalPositions={positions.goalkeeper} start={current} />
+      <GroupIntro players={[goalkeeper]} finalPositions={positions.goalkeeper} />
     </Sequence>
   );
   current += groupDuration;
@@ -91,7 +90,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   if (defenders.length) {
     sequences.push(
       <Sequence from={current} durationInFrames={groupDuration} key="defenders">
-        <GroupIntro players={defenders} finalPositions={positions.defenders} start={current} />
+        <GroupIntro players={defenders} finalPositions={positions.defenders} />
       </Sequence>
     );
     current += groupDuration;
@@ -100,7 +99,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   if (midfielders.length) {
     sequences.push(
       <Sequence from={current} durationInFrames={groupDuration} key="midfielders">
-        <GroupIntro players={midfielders} finalPositions={positions.midfielders} start={current} />
+        <GroupIntro players={midfielders} finalPositions={positions.midfielders} />
       </Sequence>
     );
     current += groupDuration;
@@ -109,7 +108,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   if (forwards.length) {
     sequences.push(
       <Sequence from={current} durationInFrames={groupDuration} key="forwards">
-        <GroupIntro players={forwards} finalPositions={positions.forwards} start={current} />
+        <GroupIntro players={forwards} finalPositions={positions.forwards} />
       </Sequence>
     );
     current += groupDuration;
