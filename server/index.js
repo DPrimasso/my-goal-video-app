@@ -81,6 +81,57 @@ app.post('/api/render', async (req, res) => {
   }
 });
 
+app.post('/api/render-formation', async (req, res) => {
+  const {goalkeeper, defenders = [], midfielders = [], forwards = []} = req.body || {};
+  if (!goalkeeper) {
+    return res.status(400).json({error: 'Missing goalkeeper'});
+  }
+
+  const mapPlayer = (id) => players[id];
+  const gk = mapPlayer(goalkeeper);
+  if (!gk) {
+    return res.status(404).json({error: 'Player not found'});
+  }
+
+  const toInput = (p) => ({name: p.name, image: p.overlayImagePath});
+  const inputProps = {
+    goalkeeper: toInput(gk),
+    defenders: defenders.map(mapPlayer).filter(Boolean).map(toInput),
+    midfielders: midfielders.map(mapPlayer).filter(Boolean).map(toInput),
+    forwards: forwards.map(mapPlayer).filter(Boolean).map(toInput),
+  };
+
+  try {
+    const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
+    const bundled = await bundle(entry);
+    const comps = await getCompositions(bundled, {
+      inputProps,
+    });
+    const comp = comps.find((c) => c.id === 'FormationComp');
+    if (!comp) {
+      throw new Error('Composition FormationComp not found');
+    }
+    const outPath = path.join(
+      VIDEOS_DIR,
+      `${Date.now()}-formation.mp4`
+    );
+    await renderMedia({
+      composition: comp,
+      serveUrl: bundled,
+      codec: 'h264',
+      outputLocation: outPath,
+      inputProps,
+    });
+    const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
+      outPath
+    )}`;
+    res.json({video: videoUrl});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({error: 'Failed to render formation'});
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
