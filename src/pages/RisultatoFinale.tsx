@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import '../VideoForm.css';
 import {players} from '../players';
 import {teams} from '../teams';
@@ -30,10 +30,27 @@ const RisultatoFinale: React.FC = () => {
     }
   };
 
-  const toggleScorer = (id: string) => {
-    setScorers((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+  const getSurname = (name: string) => name.split(' ').slice(-1)[0];
+
+  const casalpoglioGoals =
+    teamA === CASALPOGLIO_ID ? Number(scoreA) : Number(scoreB);
+
+  useEffect(() => {
+    setScorers((prev) => {
+      const goals = isNaN(casalpoglioGoals) ? 0 : casalpoglioGoals;
+      if (goals > prev.length) {
+        return [...prev, ...Array(goals - prev.length).fill('')];
+      }
+      return prev.slice(0, goals);
+    });
+  }, [casalpoglioGoals]);
+
+  const handleScorerChange = (index: number, value: string) => {
+    setScorers((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
   };
 
   const generate = async () => {
@@ -52,7 +69,7 @@ const RisultatoFinale: React.FC = () => {
       teamB,
       scoreA: Number(scoreA),
       scoreB: Number(scoreB),
-      scorers,
+      scorers: scorers.filter(Boolean),
     };
     try {
       const res = await fetch('/api/render-result', {
@@ -120,19 +137,31 @@ const RisultatoFinale: React.FC = () => {
             />
           </div>
         </label>
-        <div className="form-label">
-          Marcatori Casalpoglio:
-          {players.map((p) => (
-            <label key={p.id} style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              <input
-                type="checkbox"
-                checked={scorers.includes(p.id)}
-                onChange={() => toggleScorer(p.id)}
-              />
-              {p.name}
-            </label>
-          ))}
-        </div>
+        {(teamA === CASALPOGLIO_ID || teamB === CASALPOGLIO_ID) && (
+          <div className="form-label">
+            Marcatori Casalpoglio:
+            {scorers.map((scorer, i) => (
+              <label
+                key={i}
+                style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}
+              >
+                {`Gol ${i + 1}:`}
+                <select
+                  className="form-input"
+                  value={scorer}
+                  onChange={(e) => handleScorerChange(i, e.target.value)}
+                >
+                  <option value="">Seleziona...</option>
+                  {players.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {getSurname(p.name)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+        )}
         <button className="form-button" onClick={generate} disabled={loading}>
           {loading ? 'Generazione...' : 'Genera Video'}
         </button>

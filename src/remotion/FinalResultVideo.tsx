@@ -33,13 +33,21 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
+  const delay = fps; // 1 second delay
+  const springOpts = {fps, durationInFrames: fps * 2};
 
-  const logoSpring = spring({frame, fps});
+  const logoSpring = spring({
+    ...springOpts,
+    frame: Math.max(0, frame - delay),
+  });
   const translateA = interpolate(logoSpring, [0, 1], [-600, 0]);
   const translateB = interpolate(logoSpring, [0, 1], [600, 0]);
 
-  // Appear scores quickly after logos
-  const scoreSpring = spring({frame: frame - 15, fps});
+  // Appear scores after logos
+  const scoreSpring = spring({
+    ...springOpts,
+    frame: Math.max(0, frame - delay - 15),
+  });
   const currentA = Math.round(
     interpolate(scoreSpring, [0, 1], [0, scoreA])
   );
@@ -91,8 +99,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
               <div className="scorers-list scorers-list-position-1">
                 {scorers.map((s, i) => {
                   const sSpring = spring({
-                    frame: frame - 30 - i * 15,
-                    fps,
+                    ...springOpts,
+                    frame: Math.max(0, frame - delay - 30 - i * 15),
                   });
                   const sTrans = interpolate(sSpring, [0, 1], [20, 0]);
                   return (
@@ -120,8 +128,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
               <div className="scorers-list scorers-list-position-2">
                 {scorers.map((s, i) => {
                   const sSpring = spring({
-                    frame: frame - 30 - i * 15,
-                    fps,
+                    ...springOpts,
+                    frame: Math.max(0, frame - delay - 30 - i * 15),
                   });
                   const sTrans = interpolate(sSpring, [0, 1], [20, 0]);
                   return (
