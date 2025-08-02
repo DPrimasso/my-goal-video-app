@@ -5,6 +5,13 @@ const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
+const GOAL_CLIP = path.join(
+  __dirname,
+  '..',
+  'public',
+  'clips',
+  'goal.mp4'
+);
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
@@ -19,7 +26,6 @@ app.use('/videos', express.static(VIDEOS_DIR));
 app.post('/api/render', async (req, res) => {
   const {
     playerName,
-    goalClip,
     overlayImage,
     minuteGoal,
   } = req.body || {};
@@ -35,10 +41,7 @@ app.post('/api/render', async (req, res) => {
     const bundled = await bundle(entry);
 
     // Select composition
-    const inputProps = {playerName, minuteGoal};
-    if (goalClip) {
-      inputProps.goalClip = goalClip;
-    }
+    const inputProps = {playerName, minuteGoal, goalClip: GOAL_CLIP};
     if (overlayImage) {
       inputProps.overlayImage = overlayImage;
     }
