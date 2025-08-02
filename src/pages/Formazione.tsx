@@ -64,7 +64,7 @@ const Formazione: React.FC = () => {
         <h2>Formazione iniziale</h2>
         <div
             className="field"
-            style={{backgroundImage: `url(${process.env.PUBLIC_URL}/field.svg)`}}
+            style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.jpg)`}}
         >
           <div className="position" style={{top: '80%', left: '50%'}}>
             {renderSelect(goalkeeper, (e: any) => setGoalkeeper(e.target.value))}

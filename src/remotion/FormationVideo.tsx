@@ -116,7 +116,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   return (
     <AbsoluteFill>
-      <Img src={staticFile('field.svg')} className="field-image" />
+      <Img src={staticFile('campo_da_calcio.jpg')} className="field-image" />
       {sequences}
     </AbsoluteFill>
   );
