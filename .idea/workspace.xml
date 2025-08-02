@@ -8,6 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/remotion/MyGoalVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/MyGoalVideo.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/MyGoalVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,7 +127,7 @@
       <option name="presentableId" value="Default" />
       <updated>1754051706658</updated>
       <workItem from="1754051707815" duration="5819000" />
-      <workItem from="1754142723736" duration="3018000" />
+      <workItem from="1754142723736" duration="4533000" />
     </task>
     <servers />
   </component>

@@ -1,17 +1,3 @@
-.goal-overlay {
-  position: absolute;     /* occupo tutto il video */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;             /* sopra il video */
-  pointer-events: none;   /* passa eventuali click al video sottostante */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 .goal-text {
   color: var(--text-color, white);
   text-shadow: var(--text-shadow, 0 0 10px black);
@@ -27,30 +13,28 @@
 }
 
 .player-name {
-  font-size: var(--player-size, 60px);
-  /* ad esempio: margin-top: 20px; */
+  font-size: var(--player-size, 110px);
+}
+
+.goal-minute {
+  font-size: var(--minute-size, 80px);
+  margin-top: 10px;
 }
 
 .goal-container {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 65%;
+  left: 7%;
   width: 100%;
-  height: 100%;
   z-index: 1;
   pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;  /* centra verticalmente */
-  align-items: center;      /* centra orizzontalmente */
-  text-align: center;
 }
 
 .overlay-image {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 200px;
+  top: 15%;
+  left: 50%;
+  width: 50%;
   z-index: 1;
   pointer-events: none;
 }

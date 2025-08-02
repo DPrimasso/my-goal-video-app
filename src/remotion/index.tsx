@@ -5,6 +5,7 @@ import {MyGoalVideo, MyGoalVideoProps} from './MyGoalVideo';
 const RemotionRoot: React.FC = () => {
   const defaultProps: MyGoalVideoProps = {
     playerName: 'Player Name',
+    minuteGoal: '90+2',
     goalClip: '/clips/sample.mp4',
     overlayImage: '/logo192.png',
   };
