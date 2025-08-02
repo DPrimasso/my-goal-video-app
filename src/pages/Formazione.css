@@ -1,3 +1,4 @@
+/* Layout for the formation builder page */
 .formation-page {
   display: flex;
   gap: 2rem;
@@ -16,9 +17,10 @@
   position: relative;
   width: 100%;
   max-width: 600px;
-  height: 800px;
   background-size: cover;
   background-position: center;
+  /* Maintain aspect ratio so the field scales on small screens */
+  aspect-ratio: 3 / 4;
 }
 
 .position {
@@ -29,4 +31,17 @@
 .player-select {
   padding: 0.25rem;
   font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .formation-page {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .field {
+    max-width: 100%;
+  }
 }
