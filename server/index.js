@@ -4,7 +4,7 @@ const fs = require('fs');
 const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
 require('ts-node/register');
-const {players} = require('../src/players');
+const players = require('./players');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const GOAL_CLIP = path.join(
@@ -33,10 +33,13 @@ app.post('/api/render', async (req, res) => {
       .json({error: 'Missing playerId or minuteGoal'});
   }
 
-  const player = players.find(p => p.id === playerId);
+  const player = players[playerId];
   if (!player) {
     return res.status(404).json({error: 'Player not found'});
   }
+
+  const playerName = player.name;
+  const overlayImage = player.overlayImagePath;
 
   try {
     // Bundle the Remotion project
@@ -45,13 +48,12 @@ app.post('/api/render', async (req, res) => {
 
     // Select composition
     const inputProps = {
-      playerName: player.name,
+      playerName,
       minuteGoal,
       goalClip: GOAL_CLIP,
+      overlayImage,
     };
-    if (player.image) {
-      inputProps.overlayImage = player.image;
-    }
+
     const comps = await getCompositions(bundled, {
       inputProps,
     });
@@ -62,7 +64,7 @@ app.post('/api/render', async (req, res) => {
 
     const outPath = path.join(
       VIDEOS_DIR,
-      `${Date.now()}-${player.name.replace(/\s+/g, '_')}.mp4`
+      `${Date.now()}-${playerName.replace(/\s+/g, '_')}.mp4`
     );
 
     await renderMedia({
