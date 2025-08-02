@@ -20,3 +20,8 @@
   border-radius: 50%;
   margin-bottom: 10px;
 }
+
+.player-name {
+  text-align: center;
+  white-space: pre-line;
+}
