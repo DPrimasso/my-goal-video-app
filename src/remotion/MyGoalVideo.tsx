@@ -21,7 +21,15 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
 }) => {
   return (
     <AbsoluteFill>
-      <Video src={goalClip} />
+      <Video
+        src={goalClip}
+        style={{
+          objectFit: 'cover',
+          zIndex: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      />
       <AbsoluteFill
         className="goal-container"
         style={{

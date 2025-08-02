@@ -1,10 +1,15 @@
-.goal-container {
+.goal-overlay {
+  position: absolute;     /* occupo tutto il video */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;             /* sopra il video */
+  pointer-events: none;   /* passa eventuali click al video sottostante */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  text-align: center;
-  font-family: sans-serif;
 }
 
 .goal-text {
@@ -12,11 +17,31 @@
   text-shadow: var(--text-shadow, 0 0 10px black);
 }
 
+/* Se vuoi spostare diversamente i due testi,
+   puoi aggiungere posizioni assolute o margini differenti: */
+
 .goal-title {
   font-size: var(--title-size, 80px);
   font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .player-name {
   font-size: var(--player-size, 60px);
+  /* ad esempio: margin-top: 20px; */
+}
+
+.goal-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* centra verticalmente */
+  align-items: center;      /* centra orizzontalmente */
+  text-align: center;
 }
