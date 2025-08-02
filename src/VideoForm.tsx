@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import './VideoForm.css';
 
 const VideoForm: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
@@ -36,28 +37,26 @@ const VideoForm: React.FC = () => {
   };
 
   return (
-    <div>
-      <div>
-        <label>
-          Nome Giocatore:
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-          />
-        </label>
-      </div>
-      <div>
-        <label>
-          Upload MP4:
-          <input
-            type="file"
-            accept="video/mp4"
-            onChange={(e) => setVideoFile(e.target.files ? e.target.files[0] : null)}
-          />
-        </label>
-      </div>
-      <button onClick={handleGenerate} disabled={loading}>
+    <div className="video-form">
+      <label className="form-label">
+        Nome Giocatore:
+        <input
+          className="form-input"
+          type="text"
+          value={playerName}
+          onChange={(e) => setPlayerName(e.target.value)}
+        />
+      </label>
+      <label className="form-label">
+        Upload MP4:
+        <input
+          className="form-input"
+          type="file"
+          accept="video/mp4"
+          onChange={(e) => setVideoFile(e.target.files ? e.target.files[0] : null)}
+        />
+      </label>
+      <button className="form-button" onClick={handleGenerate} disabled={loading}>
         {loading ? 'Generazione in corso...' : 'Genera Video'}
       </button>
       {generatedUrl && (
