@@ -6,6 +6,7 @@ const RemotionRoot: React.FC = () => {
   const defaultProps: MyGoalVideoProps = {
     playerName: 'Player Name',
     goalClip: '/clips/sample.mp4',
+    overlayImage: '/logo192.png',
   };
 
   return (
