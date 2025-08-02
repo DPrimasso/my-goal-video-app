@@ -1,5 +1,5 @@
+
 .result-root {
-  background-color: black;
   color: white;
   justify-content: center;
   align-items: center;
@@ -8,10 +8,17 @@
   font-family: sans-serif;
 }
 
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .teams-row {
   display: flex;
   gap: 4rem;
   align-items: center;
+  margin-bottom: 2rem;
 }
 
 .team-block {
@@ -32,9 +39,25 @@
   text-align: center;
 }
 
-.score-text {
-  margin-top: 2rem;
+.score-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4rem;
+}
+
+.score-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-number {
   font-size: 120px;
+}
+
+.score-separator {
+  font-size: 120px;
+  line-height: 1;
 }
 
 .scorers-list {
