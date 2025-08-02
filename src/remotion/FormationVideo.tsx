@@ -99,9 +99,11 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
       {x: width * 0.7, y: height - 1200},
     ],
     forwards: [
-      {x: width * 0.2, y: height - 1400},
-      {x: width * 0.5, y: height - 1500},
-      {x: width * 0.8, y: height - 1400},
+      {x: width * 0.1, y: height - 1400}, // Esterno sx
+      {x: width * 0.3, y: height - 1500}, // Attaccante sx
+      {x: width * 0.5, y: height - 1600}, // Attaccante cr
+      {x: width * 0.7, y: height - 1500}, // Attaccante dx
+      {x: width * 0.9, y: height - 1400}, // Esterno dx
     ],
   };
 

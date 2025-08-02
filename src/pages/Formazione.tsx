@@ -25,9 +25,11 @@ const Formazione: React.FC = () => {
     '',
   ]);
   const [forwards, setForwards] = useState<string[]>([
-    players[0]?.id || '',
-    '',
-    players[2]?.id || '',
+    players[0]?.id || '', // Esterno sx
+    '', // Attaccante sx
+    players[2]?.id || '', // Attaccante cr
+    '', // Attaccante dx
+    players[1]?.id || '', // Esterno dx
   ]);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -132,7 +134,7 @@ const Formazione: React.FC = () => {
               <div
                   key={`fwd-${i}`}
                   className="position"
-                  style={{top: '20%', left: ['30%','50%','70%'][i]}}
+                  style={{top: '20%', left: ['10%','30%','50%','70%','90%'][i]}}
               >
                 {renderSelect(f, handleArrayChange(setForwards, forwards, i))}
               </div>
