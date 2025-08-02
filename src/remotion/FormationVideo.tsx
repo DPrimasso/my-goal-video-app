@@ -43,7 +43,7 @@ const GroupIntro: React.FC<{
 }> = ({players, finalPositions, duration}) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
-  const progress = spring({frame, fps, durationInFrames: duration, config: {damping: 200}});
+  const progress = spring({frame, fps, durationInFrames: duration, config: {damping: 400}});
 
   const lineY = height - 200;
 
@@ -80,30 +80,30 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   const positions = {
     goalkeeper: [{x: width / 2, y: height - 300}],
     defenders: [
-      {x: width * 0.1, y: height - 800},
-      {x: width * 0.35, y: height - 700},
-      {x: width * 0.5, y: height - 800},
-      {x: width * 0.65, y: height - 700},
-      {x: width * 0.9, y: height - 800},
+      {x: width * 0.1, y: height - 700},
+      {x: width * 0.35, y: height - 600},
+      {x: width * 0.5, y: height - 700},
+      {x: width * 0.65, y: height - 600},
+      {x: width * 0.9, y: height - 700},
     ],
     midfielders: [
       {x: width * 0.1, y: height - 1000},
-      {x: width * 0.35, y: height - 1000},
-      {x: width * 0.5, y: height - 900},
-      {x: width * 0.65, y: height - 1000},
-      {x: width * 0.9, y: height - 1000},
+      {x: width * 0.35, y: height - 900},
+      {x: width * 0.5, y: height - 800},
+      {x: width * 0.65, y: height - 900},
+      {x: width * 0.9, y: height - 900},
     ],
     attackingMidfielders: [
-      {x: width * 0.3, y: height - 1200},
-      {x: width * 0.5, y: height - 1200},
-      {x: width * 0.7, y: height - 1200},
+      {x: width * 0.3, y: height - 1100},
+      {x: width * 0.5, y: height - 1100},
+      {x: width * 0.7, y: height - 1100},
     ],
     forwards: [
-      {x: width * 0.1, y: height - 1400}, // Esterno sx
-      {x: width * 0.3, y: height - 1500}, // Attaccante sx
-      {x: width * 0.5, y: height - 1600}, // Attaccante cr
-      {x: width * 0.7, y: height - 1500}, // Attaccante dx
-      {x: width * 0.9, y: height - 1400}, // Esterno dx
+      {x: width * 0.1, y: height - 1300}, // Esterno sx
+      {x: width * 0.3, y: height - 1400}, // Attaccante sx
+      {x: width * 0.5, y: height - 1400}, // Attaccante cr
+      {x: width * 0.7, y: height - 1400}, // Attaccante dx
+      {x: width * 0.9, y: height - 1300}, // Esterno dx
     ],
   };
 
@@ -159,7 +159,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   return (
     <AbsoluteFill>
-      <Img src={staticFile('campo_da_calcio.jpg')} className="field-image" />
+      <Img src={staticFile('campo_da_calcio.png')} className="field-image" />
       {sequences}
     </AbsoluteFill>
   );

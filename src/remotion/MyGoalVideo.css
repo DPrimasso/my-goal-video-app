@@ -12,7 +12,7 @@
   margin-bottom: 10px;
 }
 
-.player-name {
+.player-name-goal {
   font-size: var(--player-size, 110px);
 }
 

@@ -71,7 +71,7 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                         '--text-shadow': textShadow,
                     } as React.CSSProperties}
                 >
-                    <div className="goal-text player-name">{playerName}</div>
+                    <div className="goal-text player-name-goal">{playerName}</div>
                     <div className="goal-text goal-minute">{minuteGoal}°</div>
                 </AbsoluteFill>
             </div>

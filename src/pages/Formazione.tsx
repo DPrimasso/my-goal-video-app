@@ -25,11 +25,11 @@ const Formazione: React.FC = () => {
     '',
   ]);
   const [forwards, setForwards] = useState<string[]>([
-    players[0]?.id || '', // Esterno sx
-    '', // Attaccante sx
-    players[2]?.id || '', // Attaccante cr
-    '', // Attaccante dx
-    players[1]?.id || '', // Esterno dx
+    '', // Esterno sx
+    players[0]?.id || '', // Attaccante sx
+    '', // Attaccante cr
+    players[1]?.id || '', // Attaccante dx
+    '', // Esterno dx
   ]);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -99,7 +99,7 @@ const Formazione: React.FC = () => {
           <h2>Formazione iniziale</h2>
           <div
               className="field"
-              style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.jpg)`}}
+              style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.png)`}}
           >
             <div className="position" style={{top: '80%', left: '50%'}}>
               {renderSelect(goalkeeper, (e: any) => setGoalkeeper(e.target.value))}
