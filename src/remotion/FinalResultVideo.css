@@ -19,6 +19,13 @@
   gap: 4rem;
   align-items: center;
   margin-bottom: 2rem;
+  position: absolute;
+  top: 45%;
+  left: 17%;
+  color: white;
+  width: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .team-block {
@@ -42,17 +49,35 @@
 .score-row {
   display: flex;
   align-items: flex-start;
-  gap: 4rem;
+  gap: 5rem;
+  position: absolute;
+  top: 70%;
+  left: 0;
+  color: white;
+  width: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .score-block {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 50%;
 }
 
 .score-number {
   font-size: 120px;
+}
+
+.score-number-1 {
+  position: absolute;
+    left: 30%;
+}
+
+.score-number-2 {
+  position: absolute;
+  right: 30%;
 }
 
 .score-separator {
@@ -61,10 +86,22 @@
 }
 
 .scorers-list {
-  margin-top: 1rem;
+  margin-top: 12rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.scorers-list-position-1 {
+    position: absolute;
+    top: 80%;
+    left: 20%;
+}
+
+.scorers-list-position-2 {
+    position: absolute;
+    top: 85%;
+    left: 60%;
 }
 
 .scorer {

@@ -5,8 +5,8 @@ export interface Team {
 }
 
 export const teams: Team[] = [
-  { id: 'casalpoglio', name: 'Casalpoglio', logo: 'logo192.png' },
-  { id: 'team1', name: 'Team 1', logo: 'logo192.png' },
+  { id: 'casalpoglio', name: 'Casalpoglio', logo: 'logo_casalpoglio.png' },
+  { id: 'amatori_club', name: 'Amatori Club', logo: 'logo_amatori_club.png' },
   { id: 'team2', name: 'Team 2', logo: 'logo192.png' },
 ];
 

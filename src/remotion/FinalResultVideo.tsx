@@ -35,8 +35,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
   const {fps} = useVideoConfig();
 
   const logoSpring = spring({frame, fps});
-  const translateA = interpolate(logoSpring, [0, 1], [-400, 0]);
-  const translateB = interpolate(logoSpring, [0, 1], [400, 0]);
+  const translateA = interpolate(logoSpring, [0, 1], [-600, 0]);
+  const translateB = interpolate(logoSpring, [0, 1], [600, 0]);
 
   // Appear scores quickly after logos
   const scoreSpring = spring({frame: frame - 15, fps});
@@ -84,11 +84,11 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
         </div>
         <div className="score-row">
           <div className="score-block">
-            <div className="score-number" style={{opacity: scoreSpring}}>
+            <div className="score-number score-number-1" style={{opacity: scoreSpring}}>
               {currentA}
             </div>
             {teamA.name === 'Casalpoglio' && (
-              <div className="scorers-list">
+              <div className="scorers-list scorers-list-position-1">
                 {scorers.map((s, i) => {
                   const sSpring = spring({
                     frame: frame - 30 - i * 15,
@@ -111,13 +111,13 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
               </div>
             )}
           </div>
-          <div className="score-separator">-</div>
+          {/*<div className="score-separator">-</div>*/}
           <div className="score-block">
-            <div className="score-number" style={{opacity: scoreSpring}}>
+            <div className="score-number score-number-2" style={{opacity: scoreSpring}}>
               {currentB}
             </div>
             {teamB.name === 'Casalpoglio' && (
-              <div className="scorers-list">
+              <div className="scorers-list scorers-list-position-2">
                 {scorers.map((s, i) => {
                   const sSpring = spring({
                     frame: frame - 30 - i * 15,

@@ -32,7 +32,7 @@ const RemotionRoot: React.FC = () => {
   };
 
   const resultDefaults: FinalResultVideoProps = {
-    teamA: {name: 'Casalpoglio', logo: 'logo192.png'},
+    teamA: {name: 'Casalpoglio', logo: 'logo_casalpoglio.png'},
     teamB: {name: 'Avversari', logo: 'logo192.png'},
     scoreA: 0,
     scoreB: 0,

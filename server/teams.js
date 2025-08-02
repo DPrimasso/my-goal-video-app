@@ -1,11 +1,11 @@
 module.exports = {
   casalpoglio: {
     name: 'Casalpoglio',
-    logo: 'logo192.png',
+    logo: 'logo_casalpoglio.png',
   },
-  team1: {
-    name: 'Team 1',
-    logo: 'logo192.png',
+  amatori_club: {
+    name: 'Amatori Club',
+    logo: 'logo_amatori_club.png',
   },
   team2: {
     name: 'Team 2',
