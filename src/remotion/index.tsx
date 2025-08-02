@@ -13,7 +13,7 @@ const RemotionRoot: React.FC = () => {
   };
 
   const mapFormationPlayer = (p: {name: string; image: string}) => ({
-    name: p.name,
+    name: p.name.split(" ")[1], // Use only the last name
     image: p.image,
   });
 

@@ -4,7 +4,7 @@ import '../VideoForm.css';
 import {players} from '../players';
 
 const Formazione: React.FC = () => {
-  const [goalkeeper, setGoalkeeper] = useState(players[0]?.id || '');
+  const [goalkeeper, setGoalkeeper] = useState(players[1]?.id || '');
   const [defenders, setDefenders] = useState([
     players[1]?.id || '',
     players[2]?.id || '',
@@ -66,7 +66,7 @@ const Formazione: React.FC = () => {
         <option value="">--</option>
         {players.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name}
+              {p.name.split(" ")[1]}
             </option>
         ))}
       </select>
