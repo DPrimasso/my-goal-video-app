@@ -95,62 +95,68 @@ const Formazione: React.FC = () => {
 
   return (
       <div className="formation-page">
-        <h2>Formazione iniziale</h2>
-        <div
-            className="field"
-            style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.jpg)`}}
-        >
-          <div className="position" style={{top: '80%', left: '50%'}}>
-            {renderSelect(goalkeeper, (e: any) => setGoalkeeper(e.target.value))}
-          </div>
-          {defenders.map((d, i) => (
-              <div
-                  key={`def-${i}`}
-                  className="position"
-                  style={{top: '65%', left: ['10%','30%','50%','70%','90%'][i]}}
-              >
-                {renderSelect(d, handleArrayChange(setDefenders, defenders, i))}
-              </div>
-          ))}
-          {midfielders.map((m, i) => (
-              <div
-                  key={`mid-${i}`}
-                  className="position"
-                  style={{top: '50%', left: ['10%','30%','50%','70%','90%'][i]}}
-              >
-                {renderSelect(m, handleArrayChange(setMidfielders, midfielders, i))}
-              </div>
-          ))}
-          {attackingMidfielders.map((t, i) => (
-              <div
-                  key={`treq-${i}`}
-                  className="position"
-                  style={{top: '35%', left: ['30%','50%','70%'][i]}}
-              >
-                {renderSelect(t, handleArrayChange(setAttackingMidfielders, attackingMidfielders, i))}
-              </div>
-          ))}
-          {forwards.map((f, i) => (
-              <div
-                  key={`fwd-${i}`}
-                  className="position"
-                  style={{top: '20%', left: ['10%','30%','50%','70%','90%'][i]}}
-              >
-                {renderSelect(f, handleArrayChange(setForwards, forwards, i))}
-              </div>
-          ))}
-        </div>
-        <button className="form-button" onClick={generate} disabled={loading}>
-          {loading ? 'Generazione...' : 'Genera Video'}
-        </button>
-        {generatedUrl && (
-            <div className="preview-container">
-              <video className="video-preview" src={generatedUrl} controls />
-              <a className="download-link" href={generatedUrl} download>
-                Scarica video
-              </a>
+        <div className="formation-container">
+          <h2>Formazione iniziale</h2>
+          <div
+              className="field"
+              style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.jpg)`}}
+          >
+            <div className="position" style={{top: '80%', left: '50%'}}>
+              {renderSelect(goalkeeper, (e: any) => setGoalkeeper(e.target.value))}
             </div>
-        )}
+            {defenders.map((d, i) => (
+                <div
+                    key={`def-${i}`}
+                    className="position"
+                    style={{top: '65%', left: ['10%','30%','50%','70%','90%'][i]}}
+                >
+                  {renderSelect(d, handleArrayChange(setDefenders, defenders, i))}
+                </div>
+            ))}
+            {midfielders.map((m, i) => (
+                <div
+                    key={`mid-${i}`}
+                    className="position"
+                    style={{top: '50%', left: ['10%','30%','50%','70%','90%'][i]}}
+                >
+                  {renderSelect(m, handleArrayChange(setMidfielders, midfielders, i))}
+                </div>
+            ))}
+            {attackingMidfielders.map((t, i) => (
+                <div
+                    key={`treq-${i}`}
+                    className="position"
+                    style={{top: '35%', left: ['30%','50%','70%'][i]}}
+                >
+                  {renderSelect(t, handleArrayChange(setAttackingMidfielders, attackingMidfielders, i))}
+                </div>
+            ))}
+            {forwards.map((f, i) => (
+                <div
+                    key={`fwd-${i}`}
+                    className="position"
+                    style={{top: '20%', left: ['10%','30%','50%','70%','90%'][i]}}
+                >
+                  {renderSelect(f, handleArrayChange(setForwards, forwards, i))}
+                </div>
+            ))}
+          </div>
+          <button className="form-button" onClick={generate} disabled={loading}>
+            {loading ? 'Generazione...' : 'Genera Video'}
+          </button>
+        </div>
+        <div className="preview-container">
+          {generatedUrl ? (
+              <>
+                <video className="video-preview" src={generatedUrl} controls />
+                <a className="download-link" href={generatedUrl} download>
+                  Scarica video
+                </a>
+              </>
+          ) : (
+              <div className="preview-placeholder">Anteprima video</div>
+          )}
+        </div>
       </div>
   );
 };
