@@ -9,9 +9,10 @@ export interface FormationPlayer {
 
 export interface FormationVideoProps extends Record<string, unknown> {
   goalkeeper: FormationPlayer;
-  defenders: FormationPlayer[];
-  midfielders: FormationPlayer[];
-  forwards: FormationPlayer[];
+  defenders: (FormationPlayer | null)[];
+  midfielders: (FormationPlayer | null)[];
+  attackingMidfielders: (FormationPlayer | null)[];
+  forwards: (FormationPlayer | null)[];
 }
 
 interface PlayerPosition {
@@ -36,7 +37,7 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; sca
 };
 
 const GroupIntro: React.FC<{
-  players: FormationPlayer[];
+  players: (FormationPlayer | null)[];
   finalPositions: PlayerPosition[];
   duration: number;
 }> = ({players, finalPositions, duration}) => {
@@ -46,16 +47,20 @@ const GroupIntro: React.FC<{
 
   const lineY = height - 200;
 
+  const withPositions = players
+    .map((p, idx) => ({player: p, idx}))
+    .filter((p): p is {player: FormationPlayer; idx: number} => Boolean(p.player));
+
   return (
     <>
-      {players.map((p, i) => {
-        const startX = width / 2 + (i - (players.length - 1) / 2) * 180;
+      {withPositions.map(({player, idx}, i) => {
+        const startX = width / 2 + (i - (withPositions.length - 1) / 2) * 180;
         const startY = lineY;
-        const end = finalPositions[i];
+        const end = finalPositions[idx];
         const x = interpolate(progress, [0, 1], [startX, end.x], {extrapolateRight: 'clamp'});
         const y = interpolate(progress, [0, 1], [startY, end.y], {extrapolateRight: 'clamp'});
         const scale = interpolate(progress, [0, 1], [2, 1], {extrapolateRight: 'clamp'});
-        return <PlayerVisual key={i} player={p} x={x} y={y} scale={scale} />;
+        return <PlayerVisual key={idx} player={player} x={x} y={y} scale={scale} />;
       })}
     </>
   );
@@ -65,6 +70,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   goalkeeper,
   defenders,
   midfielders,
+  attackingMidfielders,
   forwards,
 }) => {
   const {fps, width, height} = useVideoConfig();
@@ -73,9 +79,30 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   const positions = {
     goalkeeper: [{x: width / 2, y: height - 300}],
-    defenders: defenders.map((_, i) => ({x: ((i + 1) * width) / (defenders.length + 1), y: height - 600})),
-    midfielders: midfielders.map((_, i) => ({x: ((i + 1) * width) / (midfielders.length + 1), y: height - 1000})),
-    forwards: forwards.map((_, i) => ({x: ((i + 1) * width) / (forwards.length + 1), y: height - 1400})),
+    defenders: [
+      {x: width * 0.1, y: height - 600},
+      {x: width * 0.3, y: height - 600},
+      {x: width * 0.5, y: height - 600},
+      {x: width * 0.7, y: height - 600},
+      {x: width * 0.9, y: height - 600},
+    ],
+    midfielders: [
+      {x: width * 0.1, y: height - 1000},
+      {x: width * 0.3, y: height - 1000},
+      {x: width * 0.5, y: height - 1000},
+      {x: width * 0.7, y: height - 1000},
+      {x: width * 0.9, y: height - 1000},
+    ],
+    attackingMidfielders: [
+      {x: width * 0.3, y: height - 1200},
+      {x: width * 0.5, y: height - 1200},
+      {x: width * 0.7, y: height - 1200},
+    ],
+    forwards: [
+      {x: width * 0.3, y: height - 1400},
+      {x: width * 0.5, y: height - 1400},
+      {x: width * 0.7, y: height - 1400},
+    ],
   };
 
   let current = intro;
@@ -88,7 +115,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   );
   current += groupDuration;
 
-  if (defenders.length) {
+  if (defenders.some(Boolean)) {
     sequences.push(
       <Sequence from={current} key="defenders">
         <GroupIntro players={defenders} finalPositions={positions.defenders} duration={groupDuration} />
@@ -97,7 +124,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
     current += groupDuration;
   }
 
-  if (midfielders.length) {
+  if (midfielders.some(Boolean)) {
     sequences.push(
       <Sequence from={current} key="midfielders">
         <GroupIntro players={midfielders} finalPositions={positions.midfielders} duration={groupDuration} />
@@ -106,7 +133,20 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
     current += groupDuration;
   }
 
-  if (forwards.length) {
+  if (attackingMidfielders.some(Boolean)) {
+    sequences.push(
+      <Sequence from={current} key="attackingMidfielders">
+        <GroupIntro
+          players={attackingMidfielders}
+          finalPositions={positions.attackingMidfielders}
+          duration={groupDuration}
+        />
+      </Sequence>
+    );
+    current += groupDuration;
+  }
+
+  if (forwards.some(Boolean)) {
     sequences.push(
       <Sequence from={current} key="forwards">
         <GroupIntro players={forwards} finalPositions={positions.forwards} duration={groupDuration} />

@@ -19,13 +19,15 @@ const RemotionRoot: React.FC = () => {
 
   const formationDefaults: FormationVideoProps = {
     goalkeeper: mapFormationPlayer(players[0] || {name: '', image: ''}),
-    defenders: [players[1], players[2], players[0], players[1]]
-      .filter(Boolean)
-      .map(mapFormationPlayer),
-    midfielders: [players[2], players[0], players[1], players[2]]
-      .filter(Boolean)
-      .map(mapFormationPlayer),
-    forwards: [players[0], players[1]].filter(Boolean).map(mapFormationPlayer),
+    defenders: [players[1], players[2], players[0], players[1], null]
+      .map((p) => (p ? mapFormationPlayer(p) : null)),
+    midfielders: [null, players[2], players[0], players[1], null]
+      .map((p) => (p ? mapFormationPlayer(p) : null)),
+    attackingMidfielders: [null, players[1], null].map((p) =>
+      p ? mapFormationPlayer(p) : null
+    ),
+    forwards: [players[0], null, players[2]]
+      .map((p) => (p ? mapFormationPlayer(p) : null)),
   };
 
   return (
