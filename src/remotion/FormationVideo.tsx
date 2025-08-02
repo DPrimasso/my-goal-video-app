@@ -80,17 +80,17 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   const positions = {
     goalkeeper: [{x: width / 2, y: height - 300}],
     defenders: [
-      {x: width * 0.1, y: height - 600},
-      {x: width * 0.3, y: height - 600},
-      {x: width * 0.5, y: height - 600},
-      {x: width * 0.7, y: height - 600},
-      {x: width * 0.9, y: height - 600},
+      {x: width * 0.1, y: height - 800},
+      {x: width * 0.35, y: height - 700},
+      {x: width * 0.5, y: height - 800},
+      {x: width * 0.65, y: height - 700},
+      {x: width * 0.9, y: height - 800},
     ],
     midfielders: [
       {x: width * 0.1, y: height - 1000},
-      {x: width * 0.3, y: height - 1000},
-      {x: width * 0.5, y: height - 1000},
-      {x: width * 0.7, y: height - 1000},
+      {x: width * 0.35, y: height - 1000},
+      {x: width * 0.5, y: height - 900},
+      {x: width * 0.65, y: height - 1000},
       {x: width * 0.9, y: height - 1000},
     ],
     attackingMidfielders: [
@@ -99,9 +99,9 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
       {x: width * 0.7, y: height - 1200},
     ],
     forwards: [
-      {x: width * 0.3, y: height - 1400},
-      {x: width * 0.5, y: height - 1400},
-      {x: width * 0.7, y: height - 1400},
+      {x: width * 0.2, y: height - 1400},
+      {x: width * 0.5, y: height - 1500},
+      {x: width * 0.8, y: height - 1400},
     ],
   };
 

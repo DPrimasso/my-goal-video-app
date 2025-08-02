@@ -8,9 +8,9 @@ const Formazione: React.FC = () => {
   const [defenders, setDefenders] = useState<string[]>([
     players[1]?.id || '',
     players[2]?.id || '',
+    '',
     players[0]?.id || '',
     players[1]?.id || '',
-    '',
   ]);
   const [midfielders, setMidfielders] = useState<string[]>([
     '',
