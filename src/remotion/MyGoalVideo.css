@@ -1,0 +1,22 @@
+.goal-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+.goal-text {
+  color: var(--text-color, white);
+  text-shadow: var(--text-shadow, 0 0 10px black);
+}
+
+.goal-title {
+  font-size: var(--title-size, 80px);
+  font-weight: bold;
+}
+
+.player-name {
+  font-size: var(--player-size, 60px);
+}

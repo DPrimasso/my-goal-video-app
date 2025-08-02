@@ -1,28 +1,38 @@
 import React from 'react';
 import {AbsoluteFill, Video} from 'remotion';
+import './MyGoalVideo.css';
 
 export type MyGoalVideoProps = {
   playerName: string;
   goalClip: string;
+  textColor?: string;
+  titleSize?: number;
+  playerSize?: number;
+  textShadow?: string;
 };
 
-export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({playerName, goalClip}) => {
+export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
+  playerName,
+  goalClip,
+  textColor = 'white',
+  titleSize = 80,
+  playerSize = 60,
+  textShadow = '0 0 10px black',
+}) => {
   return (
     <AbsoluteFill>
       <Video src={goalClip} />
       <AbsoluteFill
+        className="goal-container"
         style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: 80,
-          fontWeight: 'bold',
-          textShadow: '0 0 10px black',
-          textAlign: 'center',
-        }}
+          '--text-color': textColor,
+          '--title-size': `${titleSize}px`,
+          '--player-size': `${playerSize}px`,
+          '--text-shadow': textShadow,
+        } as React.CSSProperties}
       >
-        <div>GOOOOAL!</div>
-        <div style={{fontSize: 60}}>{playerName}</div>
+        <div className="goal-text goal-title">GOOOOAL!</div>
+        <div className="goal-text player-name">{playerName}</div>
       </AbsoluteFill>
     </AbsoluteFill>
   );
