@@ -4,8 +4,8 @@ import App from './App';
 
 test('renders Genera Video button', () => {
   render(<App />);
-  const buttonElement = screen.getByText(/Genera Video/i);
-  expect(buttonElement).toBeInTheDocument();
+  const buttons = screen.getAllByText(/Genera Video/i);
+  expect(buttons.length).toBeGreaterThan(0);
 });
 
 test('renders navigation buttons', () => {

@@ -2,16 +2,16 @@ import React from 'react';
 import {AbsoluteFill, Video, spring, useCurrentFrame, useVideoConfig, interpolate, staticFile} from 'remotion';
 import './MyGoalVideo.css';
 
-export type MyGoalVideoProps = {
-    playerName: string;
-    minuteGoal: string;
-    goalClip: string;
-    overlayImage?: string;
-    textColor?: string;
-    titleSize?: number;
-    playerSize?: number;
-    textShadow?: string;
-};
+export interface MyGoalVideoProps extends Record<string, unknown> {
+  playerName: string;
+  minuteGoal: string;
+  goalClip: string;
+  overlayImage?: string;
+  textColor?: string;
+  titleSize?: number;
+  playerSize?: number;
+  textShadow?: string;
+}
 
 export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                                                             playerName,
