@@ -26,7 +26,7 @@ const RemotionRoot: React.FC = () => {
     attackingMidfielders: [null, players[1], null].map((p) =>
       p ? mapFormationPlayer(p) : null
     ),
-    forwards: [players[0], null, players[2]]
+    forwards: [players[0], null, players[1], null, players[2]]
       .map((p) => (p ? mapFormationPlayer(p) : null)),
   };
 
