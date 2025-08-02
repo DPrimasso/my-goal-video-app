@@ -5,21 +5,29 @@ import {players} from '../players';
 
 const Formazione: React.FC = () => {
   const [goalkeeper, setGoalkeeper] = useState(players[1]?.id || '');
-  const [defenders, setDefenders] = useState([
+  const [defenders, setDefenders] = useState<string[]>([
     players[1]?.id || '',
     players[2]?.id || '',
     players[0]?.id || '',
     players[1]?.id || '',
+    '',
   ]);
-  const [midfielders, setMidfielders] = useState([
+  const [midfielders, setMidfielders] = useState<string[]>([
+    '',
     players[2]?.id || '',
     players[0]?.id || '',
     players[1]?.id || '',
-    players[2]?.id || '',
+    '',
   ]);
-  const [forwards, setForwards] = useState([
-    players[0]?.id || '',
+  const [attackingMidfielders, setAttackingMidfielders] = useState<string[]>([
+    '',
     players[1]?.id || '',
+    '',
+  ]);
+  const [forwards, setForwards] = useState<string[]>([
+    players[0]?.id || '',
+    '',
+    players[2]?.id || '',
   ]);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -39,9 +47,20 @@ const Formazione: React.FC = () => {
       alert('Seleziona il portiere');
       return;
     }
+    const totalPlayers = [
+      goalkeeper,
+      ...defenders,
+      ...midfielders,
+      ...attackingMidfielders,
+      ...forwards,
+    ].filter(Boolean).length;
+    if (totalPlayers !== 11) {
+      alert('Seleziona 11 giocatori');
+      return;
+    }
     setLoading(true);
     setGeneratedUrl(null);
-    const payload = {goalkeeper, defenders, midfielders, forwards};
+    const payload = {goalkeeper, defenders, midfielders, attackingMidfielders, forwards};
     try {
       const res = await fetch('/api/render-formation', {
         method: 'POST',
@@ -86,7 +105,7 @@ const Formazione: React.FC = () => {
               <div
                   key={`def-${i}`}
                   className="position"
-                  style={{top: '65%', left: `${20 + i * 20}%`}}
+                  style={{top: '65%', left: ['10%','30%','50%','70%','90%'][i]}}
               >
                 {renderSelect(d, handleArrayChange(setDefenders, defenders, i))}
               </div>
@@ -95,16 +114,25 @@ const Formazione: React.FC = () => {
               <div
                   key={`mid-${i}`}
                   className="position"
-                  style={{top: '45%', left: `${20 + i * 20}%`}}
+                  style={{top: '50%', left: ['10%','30%','50%','70%','90%'][i]}}
               >
                 {renderSelect(m, handleArrayChange(setMidfielders, midfielders, i))}
+              </div>
+          ))}
+          {attackingMidfielders.map((t, i) => (
+              <div
+                  key={`treq-${i}`}
+                  className="position"
+                  style={{top: '35%', left: ['30%','50%','70%'][i]}}
+              >
+                {renderSelect(t, handleArrayChange(setAttackingMidfielders, attackingMidfielders, i))}
               </div>
           ))}
           {forwards.map((f, i) => (
               <div
                   key={`fwd-${i}`}
                   className="position"
-                  style={{top: '25%', left: `${35 + i * 30}%`}}
+                  style={{top: '20%', left: ['30%','50%','70%'][i]}}
               >
                 {renderSelect(f, handleArrayChange(setForwards, forwards, i))}
               </div>

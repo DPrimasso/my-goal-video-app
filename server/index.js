@@ -82,9 +82,26 @@ app.post('/api/render', async (req, res) => {
 });
 
 app.post('/api/render-formation', async (req, res) => {
-  const {goalkeeper, defenders = [], midfielders = [], forwards = []} = req.body || {};
+  const {
+    goalkeeper,
+    defenders = [],
+    midfielders = [],
+    attackingMidfielders = [],
+    forwards = [],
+  } = req.body || {};
   if (!goalkeeper) {
     return res.status(400).json({error: 'Missing goalkeeper'});
+  }
+
+  const totalSelected = [
+    goalkeeper,
+    ...defenders,
+    ...midfielders,
+    ...attackingMidfielders,
+    ...forwards,
+  ].filter(Boolean).length;
+  if (totalSelected !== 11) {
+    return res.status(400).json({error: 'Exactly 11 players required'});
   }
 
   const mapPlayer = (id) => players[id];
@@ -94,11 +111,16 @@ app.post('/api/render-formation', async (req, res) => {
   }
 
   const toInput = (p) => ({name: p.name, image: p.overlayImagePath});
+  const toOptionalInput = (id) => {
+    const p = mapPlayer(id);
+    return p ? toInput(p) : null;
+  };
   const inputProps = {
     goalkeeper: toInput(gk),
-    defenders: defenders.map(mapPlayer).filter(Boolean).map(toInput),
-    midfielders: midfielders.map(mapPlayer).filter(Boolean).map(toInput),
-    forwards: forwards.map(mapPlayer).filter(Boolean).map(toInput),
+    defenders: defenders.map(toOptionalInput),
+    midfielders: midfielders.map(toOptionalInput),
+    attackingMidfielders: attackingMidfielders.map(toOptionalInput),
+    forwards: forwards.map(toOptionalInput),
   };
 
   try {
