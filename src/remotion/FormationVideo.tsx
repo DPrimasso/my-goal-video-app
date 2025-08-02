@@ -30,7 +30,7 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; sca
       }}
     >
       <Img src={staticFile(player.image)} className="player-image" />
-      <div>{player.name}</div>
+      <div className="player-name">{player.name.replace(/\s+/g, '\n')}</div>
     </div>
   );
 };
