@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import './VideoForm.css';
+import {players} from './players';
 
 const VideoForm: React.FC = () => {
   const [playerId, setPlayerId] = useState('');
@@ -47,13 +48,19 @@ const VideoForm: React.FC = () => {
   return (
     <div className="video-form">
       <label className="form-label">
-        Nome Giocatore:
-        <input
+        Giocatore:
+        <select
           className="form-input"
-          type="text"
           value={playerId}
           onChange={(e) => setPlayerId(e.target.value)}
-        />
+        >
+          <option value="">Seleziona...</option>
+          {players.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
       </label>
       <label className="form-label">
         Minuto del Gol:
