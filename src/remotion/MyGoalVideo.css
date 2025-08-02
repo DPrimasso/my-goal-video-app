@@ -45,3 +45,12 @@
   align-items: center;      /* centra orizzontalmente */
   text-align: center;
 }
+
+.overlay-image {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 200px;
+  z-index: 1;
+  pointer-events: none;
+}

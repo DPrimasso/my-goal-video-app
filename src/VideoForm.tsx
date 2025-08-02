@@ -4,6 +4,7 @@ import './VideoForm.css';
 const VideoForm: React.FC = () => {
   const [playerName, setPlayerName] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [overlayImage, setOverlayImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
@@ -12,11 +13,16 @@ const VideoForm: React.FC = () => {
       alert('Seleziona un file MP4');
       return;
     }
+    if (!overlayImage) {
+      alert('Seleziona un\'immagine da sovrapporre');
+      return;
+    }
     setLoading(true);
     setGeneratedUrl(null);
     const data = new FormData();
     data.append('playerName', playerName);
     data.append('clip', videoFile);
+    data.append('overlay', overlayImage);
 
     try {
       const res = await fetch('/api/render', {
@@ -53,7 +59,20 @@ const VideoForm: React.FC = () => {
           className="form-input"
           type="file"
           accept="video/mp4"
-          onChange={(e) => setVideoFile(e.target.files ? e.target.files[0] : null)}
+          onChange={(e) =>
+            setVideoFile(e.target.files ? e.target.files[0] : null)
+          }
+        />
+      </label>
+      <label className="form-label">
+        Immagine Overlay:
+        <input
+          className="form-input"
+          type="file"
+          accept="image/*"
+          onChange={(e) =>
+            setOverlayImage(e.target.files ? e.target.files[0] : null)
+          }
         />
       </label>
       <button className="form-button" onClick={handleGenerate} disabled={loading}>

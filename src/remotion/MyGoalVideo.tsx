@@ -5,6 +5,7 @@ import './MyGoalVideo.css';
 export type MyGoalVideoProps = {
   playerName: string;
   goalClip: string;
+  overlayImage?: string;
   textColor?: string;
   titleSize?: number;
   playerSize?: number;
@@ -14,6 +15,7 @@ export type MyGoalVideoProps = {
 export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
   playerName,
   goalClip,
+  overlayImage,
   textColor = 'white',
   titleSize = 80,
   playerSize = 60,
@@ -30,6 +32,9 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
           height: '100%',
         }}
       />
+      {overlayImage && (
+        <img src={overlayImage} className="overlay-image" />
+      )}
       <AbsoluteFill
         className="goal-container"
         style={{
