@@ -7,3 +7,12 @@ test('renders Genera Video button', () => {
   const buttonElement = screen.getByText(/Genera Video/i);
   expect(buttonElement).toBeInTheDocument();
 });
+
+test('renders navigation buttons', () => {
+  render(<App />);
+  expect(screen.getByRole('button', { name: /Goal/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Formazione/i })).toBeInTheDocument();
+  expect(
+    screen.getByRole('button', { name: /Risultato Finale/i })
+  ).toBeInTheDocument();
+});

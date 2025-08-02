@@ -3,11 +3,38 @@
   font-family: var(--font-base);
 }
 
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
 .pages-container {
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   height: 100vh;
+  scroll-behavior: smooth;
+  padding-top: 3.5rem;
 }
 
 .page {
