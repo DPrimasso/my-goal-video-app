@@ -25,3 +25,5 @@ videos/*
 !videos/.gitkeep
 uploads/*
 !uploads/.gitkeep
+
+.env
