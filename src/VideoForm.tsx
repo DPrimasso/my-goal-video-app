@@ -2,32 +2,34 @@ import React, {useState} from 'react';
 import './VideoForm.css';
 
 const VideoForm: React.FC = () => {
-  const [playerName, setPlayerName] = useState('');
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [overlayImage, setOverlayImage] = useState<File | null>(null);
+  const [playerId, setPlayerId] = useState('');
+  const [minuteGoal, setMinuteGoal] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!videoFile) {
-      alert('Seleziona un file MP4');
+    if (!playerId) {
+      alert('Seleziona un giocatore');
       return;
     }
-    if (!overlayImage) {
-      alert('Seleziona un\'immagine da sovrapporre');
+    if (!minuteGoal) {
+      alert('Inserisci il minuto del gol');
       return;
     }
     setLoading(true);
     setGeneratedUrl(null);
-    const data = new FormData();
-    data.append('playerName', playerName);
-    data.append('clip', videoFile);
-    data.append('overlay', overlayImage);
+    const payload = {
+      playerId,
+      minuteGoal,
+    };
 
     try {
       const res = await fetch('/api/render', {
         method: 'POST',
-        body: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (res.ok) {
@@ -49,30 +51,17 @@ const VideoForm: React.FC = () => {
         <input
           className="form-input"
           type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
+          value={playerId}
+          onChange={(e) => setPlayerId(e.target.value)}
         />
       </label>
       <label className="form-label">
-        Upload MP4:
+        Minuto del Gol:
         <input
           className="form-input"
-          type="file"
-          accept="video/mp4"
-          onChange={(e) =>
-            setVideoFile(e.target.files ? e.target.files[0] : null)
-          }
-        />
-      </label>
-      <label className="form-label">
-        Immagine Overlay:
-        <input
-          className="form-input"
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setOverlayImage(e.target.files ? e.target.files[0] : null)
-          }
+          type="text"
+          value={minuteGoal}
+          onChange={(e) => setMinuteGoal(e.target.value)}
         />
       </label>
       <button className="form-button" onClick={handleGenerate} disabled={loading}>
