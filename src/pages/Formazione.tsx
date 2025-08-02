@@ -4,10 +4,23 @@ import '../VideoForm.css';
 import {players} from '../players';
 
 const Formazione: React.FC = () => {
-  const [goalkeeper, setGoalkeeper] = useState('');
-  const [defenders, setDefenders] = useState(['', '', '', '']);
-  const [midfielders, setMidfielders] = useState(['', '', '', '']);
-  const [forwards, setForwards] = useState(['', '']);
+  const [goalkeeper, setGoalkeeper] = useState(players[0]?.id || '');
+  const [defenders, setDefenders] = useState([
+    players[1]?.id || '',
+    players[2]?.id || '',
+    players[0]?.id || '',
+    players[1]?.id || '',
+  ]);
+  const [midfielders, setMidfielders] = useState([
+    players[2]?.id || '',
+    players[0]?.id || '',
+    players[1]?.id || '',
+    players[2]?.id || '',
+  ]);
+  const [forwards, setForwards] = useState([
+    players[0]?.id || '',
+    players[1]?.id || '',
+  ]);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
