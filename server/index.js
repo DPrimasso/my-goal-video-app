@@ -13,12 +13,17 @@ const app = express();
 const upload = multer({dest: 'uploads/'});
 const PORT = 4000;
 
+// Serve generated videos and uploaded clips so that Remotion can
+// access them through an HTTP URL during the rendering phase.
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 app.use('/videos', express.static(VIDEOS_DIR));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 app.post('/api/render', upload.single('clip'), async (req, res) => {
   const playerName = req.body.playerName;
   const clipPath = req.file ? req.file.path : null;
-  if (!playerName || !clipPath) {
+  const clipUrl = clipPath ? `http://localhost:${PORT}/${clipPath}` : null;
+  if (!playerName || !clipUrl) {
     return res.status(400).json({error: 'Missing playerName or clip file'});
   }
 
@@ -29,7 +34,7 @@ app.post('/api/render', upload.single('clip'), async (req, res) => {
 
     // Select composition
     const comps = await getCompositions(bundled, {
-      inputProps: {playerName, goalClip: clipPath},
+      inputProps: {playerName, goalClip: clipUrl},
     });
     const comp = comps.find(c => c.id === 'GoalComp');
     if (!comp) {
