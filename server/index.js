@@ -5,6 +5,7 @@ const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
 require('ts-node/register');
 const players = require('./players');
+const teams = require('./teams');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 // Use a path relative to the public folder so Remotion can resolve it
@@ -151,6 +152,56 @@ app.post('/api/render-formation', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({error: 'Failed to render formation'});
+  }
+});
+
+app.post('/api/render-result', async (req, res) => {
+  const {teamA, teamB, scoreA, scoreB, scorers = []} = req.body || {};
+  if (!teamA || !teamB) {
+    return res.status(400).json({error: 'Missing teamA or teamB'});
+  }
+
+  const tA = teams[teamA];
+  const tB = teams[teamB];
+  if (!tA || !tB) {
+    return res.status(404).json({error: 'Team not found'});
+  }
+
+  const scorerNames = scorers
+    .map((id) => players[id] && players[id].name)
+    .filter(Boolean);
+
+  const inputProps = {
+    teamA: {name: tA.name, logo: tA.logo},
+    teamB: {name: tB.name, logo: tB.logo},
+    scoreA,
+    scoreB,
+    scorers: scorerNames,
+  };
+
+  try {
+    const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
+    const bundled = await bundle(entry);
+    const comps = await getCompositions(bundled, {inputProps});
+    const comp = comps.find((c) => c.id === 'FinalResultComp');
+    if (!comp) {
+      throw new Error('Composition FinalResultComp not found');
+    }
+    const outPath = path.join(VIDEOS_DIR, `${Date.now()}-result.mp4`);
+    await renderMedia({
+      composition: comp,
+      serveUrl: bundled,
+      codec: 'h264',
+      outputLocation: outPath,
+      inputProps,
+    });
+    const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
+      outPath
+    )}`;
+    res.json({video: videoUrl});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({error: 'Failed to render result'});
   }
 });
 

@@ -2,6 +2,7 @@ import React from 'react';
 import {Composition, registerRoot} from 'remotion';
 import {MyGoalVideo, MyGoalVideoProps} from './MyGoalVideo';
 import {FormationVideo, FormationVideoProps} from './FormationVideo';
+import {FinalResultVideo, FinalResultVideoProps} from './FinalResultVideo';
 import {players} from '../players';
 
 const RemotionRoot: React.FC = () => {
@@ -30,6 +31,14 @@ const RemotionRoot: React.FC = () => {
       .map((p) => (p ? mapFormationPlayer(p) : null)),
   };
 
+  const resultDefaults: FinalResultVideoProps = {
+    teamA: {name: 'Casalpoglio', logo: 'logo192.png'},
+    teamB: {name: 'Avversari', logo: 'logo192.png'},
+    scoreA: 0,
+    scoreB: 0,
+    scorers: ['Giocatore 1', 'Giocatore 2'],
+  };
+
   return (
     <>
         <Composition<any, MyGoalVideoProps>
@@ -49,6 +58,15 @@ const RemotionRoot: React.FC = () => {
             width={1080}
             height={1920}
             defaultProps={formationDefaults}
+        />
+        <Composition<any, FinalResultVideoProps>
+            id="FinalResultComp"
+            component={FinalResultVideo}
+            durationInFrames={300}
+            fps={30}
+            width={1080}
+            height={1920}
+            defaultProps={resultDefaults}
         />
     </>
   );
