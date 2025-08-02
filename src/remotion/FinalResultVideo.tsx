@@ -15,7 +15,7 @@ export interface TeamInfo {
   logo: string;
 }
 
-export interface FinalResultVideoProps {
+export interface FinalResultVideoProps extends Record<string, unknown> {
   teamA: TeamInfo;
   teamB: TeamInfo;
   scoreA: number;

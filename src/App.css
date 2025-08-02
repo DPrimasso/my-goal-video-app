@@ -56,12 +56,12 @@
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
-    scroll-snap-type: y mandatory;
   }
 
   .page {
     flex: 0 0 auto;
     min-height: calc(100vh - 3.5rem);
+    padding-top: 7em;
   }
 }
 

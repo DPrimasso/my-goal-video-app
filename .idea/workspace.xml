@@ -5,15 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a223d149-70c9-4c9d-8312-d7e966dd2e60" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/public/campo_da_calcio.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/campo_da_calcio.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/VideoForm.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/VideoForm.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/Formazione.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/remotion/FormationVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/FormationVideo.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/FormationVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/remotion/MyGoalVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/MyGoalVideo.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/MyGoalVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/remotion/FinalResultVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/remotion/FinalResultVideo.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +63,7 @@
       <recent name="$PROJECT_DIR$/server" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.start:server">
+  <component name="RunManager" selected="npm.start">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -112,8 +106,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.start:server" />
         <item itemvalue="npm.start" />
+        <item itemvalue="npm.start:server" />
         <item itemvalue="npm.test" />
         <item itemvalue="npm.build" />
       </list>
