@@ -168,7 +168,10 @@ app.post('/api/render-result', async (req, res) => {
   }
 
   const scorerNames = scorers
-    .map((id) => players[id] && players[id].name)
+    .map((id) => {
+      const p = players[id];
+      return p ? p.name.split(' ').slice(-1)[0] : null;
+    })
     .filter(Boolean);
 
   const inputProps = {
