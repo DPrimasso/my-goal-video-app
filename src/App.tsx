@@ -1,13 +1,17 @@
 import React from 'react';
 import './App.css';
-import VideoForm from './VideoForm';
+import { pages } from './pages';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <VideoForm />
-      </header>
+      <div className="pages-container">
+        {pages.map((Page, index) => (
+          <section key={index} className="page">
+            <Page />
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
