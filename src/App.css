@@ -9,6 +9,7 @@
   left: 0;
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.7);
@@ -47,4 +48,25 @@
   font-size: calc(10px + 2vmin);
   color: #ffffff;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pages-container {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+  }
+
+  .page {
+    flex: 0 0 auto;
+    min-height: calc(100vh - 3.5rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-link {
+    font-size: 0.875rem;
+  }
 }
