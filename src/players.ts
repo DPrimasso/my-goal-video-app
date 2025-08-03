@@ -4,21 +4,24 @@ export interface Player {
   image: string;
 }
 
+const assetBase = process.env.REACT_APP_ASSET_BASE || '';
+const asset = (p: string) => (assetBase ? `${assetBase}/${p}` : p);
+
 export const players: Player[] = [
   {
     id: 'davide_fava',
     name: 'Davide Fava',
-    image: 'players/davide_fava.png',
+    image: asset('players/davide_fava.png'),
   },
   {
     id: 'lorenzo_campagnari',
     name: 'Lorenzo Campagnari',
-    image: 'players/lorenzo_campagnari.png',
+    image: asset('players/lorenzo_campagnari.png'),
   },
   {
     id: 'davide_scalmana',
     name: 'Davide Scalmana',
-    image: 'players/davide_scalmana.png',
+    image: asset('players/davide_scalmana.png'),
   },
 ];
 
