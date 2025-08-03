@@ -28,15 +28,24 @@ export const fetchGoalClip = async (
 ): Promise<string> => {
   const {clipPath = '', startTime, endTime} = options;
 
-  if (/^https?:/.test(clipPath)) {
-    return clipPath;
-  }
-
   if (clipPath.startsWith('s3://')) {
     const [, bucket, ...keyParts] = clipPath.split('/');
     const key = keyParts.join('/');
     const command = new GetObjectCommand({Bucket: bucket, Key: key});
     return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+  }
+
+  if (/^https?:/.test(clipPath)) {
+    try {
+      const {hostname, pathname} = new URL(clipPath);
+      if (/\.s3\./.test(hostname)) {
+        const bucket = hostname.split('.')[0];
+        const key = pathname.replace(/^\//, '');
+        const command = new GetObjectCommand({Bucket: bucket, Key: key});
+        return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+      }
+    } catch {}
+    return clipPath;
   }
 
   const baseDir = path.join(process.cwd(), 'public', 'clips');
