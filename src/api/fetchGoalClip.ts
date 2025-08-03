@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
-import {S3Client, GetObjectCommand} from '@aws-sdk/client-s3';
+import {GetObjectCommand} from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
+import {s3Client} from './awsClient';
 
 export type FetchGoalClipOptions = {
   /** Percorso del file fornito dall'utente */
@@ -31,9 +32,8 @@ export const fetchGoalClip = async (
   if (clipPath.startsWith('s3://')) {
     const [, bucket, ...keyParts] = clipPath.split('/');
     const key = keyParts.join('/');
-    const client = new S3Client({region: process.env.AWS_REGION || 'us-east-1'});
     const command = new GetObjectCommand({Bucket: bucket, Key: key});
-    return await getSignedUrl(client, command, {expiresIn: 3600});
+    return await getSignedUrl(s3Client, command, {expiresIn: 3600});
   }
 
   const baseDir = path.join(process.cwd(), 'public', 'clips');

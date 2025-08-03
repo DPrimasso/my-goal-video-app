@@ -9,9 +9,13 @@ Create a `.env` file in the project root with the following entries:
 ```
 REACT_APP_ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
 ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
+AWS_ACCESS_KEY_ID=<your-access-key-id>
+AWS_SECRET_ACCESS_KEY=<your-secret-access-key>
+AWS_REGION=<your-region>
 ```
 
-Both variables define the base URL for static assets used in the frontend (`REACT_APP_ASSET_BASE`) and in the server (`ASSET_BASE`).
+`REACT_APP_ASSET_BASE` and `ASSET_BASE` define the base URL for static assets used in the frontend and in the server. The `AWS_*`
+entries provide the credentials and region required to access S3.
 
 ## Available Scripts
 
