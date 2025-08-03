@@ -9,7 +9,7 @@ const RemotionRoot: React.FC = () => {
   const defaultProps: MyGoalVideoProps = {
     playerName: 'Player Name',
     minuteGoal: '90+2',
-    goalClip: 'clips/goal.mp4',
+    goalClip: `${process.env.REACT_APP_ASSET_BASE || ''}/clips/goal.mp4`,
     overlayImage: 'logo192.png',
   };
 
