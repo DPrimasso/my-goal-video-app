@@ -7,8 +7,8 @@ require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
-const {fetchGoalClip} = require('../client/src/api/fetchGoalClip');
-const {getSignedS3Url} = require('../client/src/api/s3Signer');
+const {fetchGoalClip} = require('./api/fetchGoalClip');
+const {getSignedS3Url} = require('./api/s3Signer');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
