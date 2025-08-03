@@ -30,6 +30,28 @@ GET /api/signed-url?key=<object-key>
 
 The server responds with `{ url: "https://..." }`, which you can use in the browser before it expires.
 
+## Docker
+
+To run the application in a container:
+
+1. Ensure a `.env` file exists in the project root with the variables shown above
+   plus your AWS credentials:
+
+   ```
+   AWS_ACCESS_KEY_ID=<your-access-key>
+   AWS_SECRET_ACCESS_KEY=<your-secret-key>
+   ```
+
+2. Build and start the service:
+
+   ```bash
+   docker compose build
+   docker compose up
+   ```
+
+The application listens on port `4000` and stores generated videos in the `videos`
+directory, which is mounted from the host.
+
 ## Available Scripts
 
 In the project directory, you can run:
