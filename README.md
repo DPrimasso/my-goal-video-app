@@ -11,6 +11,8 @@ REACT_APP_ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
 ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
 ASSET_BUCKET=<bucket-name>
 AWS_REGION=<your-region>
+GOAL_CLIP=s3://<bucket-name>/clips/goal.mp4
+PORT=4000
 ```
 
 `REACT_APP_ASSET_BASE` and `ASSET_BASE` define the base URL for static assets used in the frontend and in the server.
