@@ -15,10 +15,36 @@ const {s3Client} = require('../src/api/awsClient');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
-// Prefix a relative path with ASSET_BASE if provided. If `p` already
-// contains a protocol, assume it's an absolute URL and return as-is.
-const asset = (p) =>
-  p && p.startsWith('http') ? p : ASSET_BASE ? `${ASSET_BASE}/${p}` : p;
+// Resolve an asset path. If it points to an object stored on S3 the function
+// generates a short-lived pre-signed URL so that private buckets can be used
+// transparently by all routes.
+const asset = async (p) => {
+  if (!p) {
+    return p;
+  }
+
+  // Prefix with ASSET_BASE if the path is relative
+  const full = p.startsWith('http')
+    ? p
+    : ASSET_BASE
+    ? `${ASSET_BASE}/${p}`
+    : p;
+
+  try {
+    const {hostname, pathname} = new URL(full);
+    // Detect URLs that target S3 and sign them
+    if (/\.s3\./.test(hostname)) {
+      const bucket = hostname.split('.')[0];
+      const key = pathname.replace(/^\//, '');
+      const command = new GetObjectCommand({Bucket: bucket, Key: key});
+      return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+    }
+  } catch (err) {
+    // If parsing fails, fall back to the unmodified path
+  }
+
+  return full;
+};
 const GOAL_CLIP = `s3://${process.env.ASSET_BUCKET}/clips/goal.mp4`;
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
@@ -67,7 +93,7 @@ app.post('/api/render', async (req, res) => {
   }
 
   const playerName = player.name;
-  const overlayImage = asset(player.overlayImagePath);
+  const overlayImage = await asset(player.overlayImagePath);
 
   try {
     const resolvedGoalClip = goalClip
@@ -146,17 +172,22 @@ app.post('/api/render-formation', async (req, res) => {
     return res.status(404).json({error: 'Player not found'});
   }
 
-  const toInput = (p) => ({name: p.name, image: asset(p.overlayImagePath)});
-  const toOptionalInput = (id) => {
+  const toInput = async (p) => ({
+    name: p.name,
+    image: await asset(p.overlayImagePath),
+  });
+  const toOptionalInput = async (id) => {
     const p = mapPlayer(id);
-    return p ? toInput(p) : null;
+    return p ? await toInput(p) : null;
   };
   const inputProps = {
-    goalkeeper: toInput(gk),
-    defenders: defenders.map(toOptionalInput),
-    midfielders: midfielders.map(toOptionalInput),
-    attackingMidfielders: attackingMidfielders.map(toOptionalInput),
-    forwards: forwards.map(toOptionalInput),
+    goalkeeper: await toInput(gk),
+    defenders: await Promise.all(defenders.map(toOptionalInput)),
+    midfielders: await Promise.all(midfielders.map(toOptionalInput)),
+    attackingMidfielders: await Promise.all(
+      attackingMidfielders.map(toOptionalInput)
+    ),
+    forwards: await Promise.all(forwards.map(toOptionalInput)),
   };
 
   try {
@@ -210,8 +241,8 @@ app.post('/api/render-result', async (req, res) => {
     .filter(Boolean);
 
   const inputProps = {
-    teamA: {name: tA.name, logo: asset(tA.logo)},
-    teamB: {name: tB.name, logo: asset(tB.logo)},
+    teamA: {name: tA.name, logo: await asset(tA.logo)},
+    teamB: {name: tB.name, logo: await asset(tB.logo)},
     scoreA,
     scoreB,
     scorers: scorerNames,
