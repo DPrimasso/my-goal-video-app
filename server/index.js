@@ -3,15 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
-const {GetObjectCommand} = require('@aws-sdk/client-s3');
-const {getSignedUrl} = require('@aws-sdk/s3-request-presigner');
 // Ensure TypeScript files are compiled to CommonJS so `require` can resolve them
 require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
 const {fetchGoalClip} = require('../src/api/fetchGoalClip');
-const {s3Client} = require('../src/api/awsClient');
+const {getSignedS3Url} = require('../src/api/s3Signer');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
@@ -36,8 +34,7 @@ const asset = async (p) => {
     if (/\.s3\./.test(hostname)) {
       const bucket = hostname.split('.')[0];
       const key = pathname.replace(/^\//, '');
-      const command = new GetObjectCommand({Bucket: bucket, Key: key});
-      return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+      return await getSignedS3Url({bucket, key});
     }
   } catch (err) {
     // If parsing fails, fall back to the unmodified path
@@ -70,8 +67,7 @@ app.get('/api/signed-url', async (req, res) => {
     if (!bucket) {
       return res.status(500).json({error: 'Missing ASSET_BUCKET'});
     }
-    const command = new GetObjectCommand({Bucket: bucket, Key: key});
-    const url = await getSignedUrl(s3Client, command, {expiresIn: 300});
+    const url = await getSignedS3Url({bucket, key, expiresIn: 300});
     res.json({url});
   } catch (err) {
     console.error(err);
