@@ -10,7 +10,10 @@ const teams = require('./teams');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
-const asset = (p) => (ASSET_BASE ? `${ASSET_BASE}/${p}` : p);
+// Prefix a relative path with ASSET_BASE if provided. If `p` already
+// contains a protocol, assume it's an absolute URL and return as-is.
+const asset = (p) =>
+  p && p.startsWith('http') ? p : ASSET_BASE ? `${ASSET_BASE}/${p}` : p;
 // Use a path relative to the public folder so Remotion can resolve it
 // via staticFile(). The actual file lives in public/clips/goal.mp4.
 const GOAL_CLIP = asset('clips/goal.mp4');

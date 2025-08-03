@@ -1,16 +1,15 @@
 export interface Team {
   id: string;
   name: string;
-  logo: string; // relative path in public folder
+  logo: string;
 }
 
-const assetBase = process.env.REACT_APP_ASSET_BASE || '';
-const asset = (p: string) => (assetBase ? `${assetBase}/${p}` : p);
+const ASSET_BASE = process.env.REACT_APP_ASSET_BASE;
 
 export const teams: Team[] = [
-  { id: 'casalpoglio', name: 'Casalpoglio', logo: asset('logo_casalpoglio.png') },
-  { id: 'amatori_club', name: 'Amatori Club', logo: asset('logo_amatori_club.png') },
-  { id: 'team2', name: 'Team 2', logo: asset('logo192.png') },
+  { id: 'casalpoglio', name: 'Casalpoglio', logo: `${ASSET_BASE}/logo_casalpoglio.png` },
+  { id: 'amatori_club', name: 'Amatori Club', logo: `${ASSET_BASE}/logo_amatori_club.png` },
+  { id: 'team2', name: 'Team 2', logo: `${ASSET_BASE}/logo192.png` },
 ];
 
 export default teams;
