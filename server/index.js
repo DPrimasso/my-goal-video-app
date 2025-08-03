@@ -19,7 +19,7 @@ const ASSET_BASE = process.env.ASSET_BASE || '';
 // contains a protocol, assume it's an absolute URL and return as-is.
 const asset = (p) =>
   p && p.startsWith('http') ? p : ASSET_BASE ? `${ASSET_BASE}/${p}` : p;
-const GOAL_CLIP = `${process.env.ASSET_BASE}/clips/goal.mp4`;
+const GOAL_CLIP = `s3://${process.env.ASSET_BUCKET}/clips/goal.mp4`;
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
