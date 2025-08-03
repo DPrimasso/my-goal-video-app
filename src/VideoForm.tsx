@@ -5,6 +5,7 @@ import {players} from './players';
 const VideoForm: React.FC = () => {
   const [playerId, setPlayerId] = useState('');
   const [minuteGoal, setMinuteGoal] = useState('');
+  const [goalClip, setGoalClip] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
@@ -19,10 +20,13 @@ const VideoForm: React.FC = () => {
     }
     setLoading(true);
     setGeneratedUrl(null);
-    const payload = {
+    const payload: Record<string, unknown> = {
       playerId,
       minuteGoal,
     };
+    if (goalClip) {
+      payload.goalClip = goalClip;
+    }
 
     try {
       const res = await fetch('/api/render', {
@@ -70,6 +74,15 @@ const VideoForm: React.FC = () => {
               type="text"
               value={minuteGoal}
               onChange={(e) => setMinuteGoal(e.target.value)}
+          />
+        </label>
+        <label className="form-label">
+          URL Clip personalizzata:
+          <input
+              className="form-input"
+              type="text"
+              value={goalClip}
+              onChange={(e) => setGoalClip(e.target.value)}
           />
         </label>
         <button className="form-button" onClick={handleGenerate} disabled={loading}>

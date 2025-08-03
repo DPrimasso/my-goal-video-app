@@ -7,6 +7,7 @@ require('ts-node/register');
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
+const {fetchGoalClip} = require('../src/api/fetchGoalClip');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
@@ -14,9 +15,7 @@ const ASSET_BASE = process.env.ASSET_BASE || '';
 // contains a protocol, assume it's an absolute URL and return as-is.
 const asset = (p) =>
   p && p.startsWith('http') ? p : ASSET_BASE ? `${ASSET_BASE}/${p}` : p;
-// Use a path relative to the public folder so Remotion can resolve it
-// via staticFile(). The actual file lives in public/clips/goal.mp4.
-const GOAL_CLIP = asset('clips/goal.mp4');
+const GOAL_CLIP = `${process.env.ASSET_BASE}/clips/goal.mp4`;
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
@@ -29,7 +28,7 @@ const PORT = 4000;
 app.use('/videos', express.static(VIDEOS_DIR));
 
 app.post('/api/render', async (req, res) => {
-  const {playerId, minuteGoal} = req.body || {};
+  const {playerId, minuteGoal, goalClip} = req.body || {};
   if (!playerId || !minuteGoal) {
     return res
       .status(400)
@@ -45,6 +44,10 @@ app.post('/api/render', async (req, res) => {
   const overlayImage = asset(player.overlayImagePath);
 
   try {
+    const resolvedGoalClip = goalClip
+      ? await fetchGoalClip({clipPath: goalClip})
+      : GOAL_CLIP;
+
     // Bundle the Remotion project
     const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
     const bundled = await bundle(entry);
@@ -53,7 +56,7 @@ app.post('/api/render', async (req, res) => {
     const inputProps = {
       playerName,
       minuteGoal,
-      goalClip: GOAL_CLIP,
+      goalClip: resolvedGoalClip,
       overlayImage,
     };
 
