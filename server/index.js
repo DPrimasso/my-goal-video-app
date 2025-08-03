@@ -43,6 +43,7 @@ if (!fs.existsSync(VIDEOS_DIR)) {
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 4000;
+const BUILD_DIR = path.join(__dirname, '..', 'build');
 
 app.use('/videos', express.static(VIDEOS_DIR));
 app.get('/api/signed-url', async (req, res) => {
@@ -251,6 +252,11 @@ app.post('/api/render-result', async (req, res) => {
     console.error(err);
     res.status(500).json({error: 'Failed to render result'});
   }
+});
+
+app.use(express.static(BUILD_DIR));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(BUILD_DIR, 'index.html'));
 });
 
 app.listen(PORT, () => {
