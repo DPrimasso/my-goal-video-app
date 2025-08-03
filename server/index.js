@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
-// Ensure TypeScript files are compiled to CommonJS so `require` can resolve them
 require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
@@ -13,15 +12,11 @@ const {getSignedS3Url} = require('../src/api/s3Signer');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
-// Resolve an asset path. If it points to an object stored on S3 the function
-// generates a short-lived pre-signed URL so that private buckets can be used
-// transparently by all routes.
 const asset = async (p) => {
   if (!p) {
     return p;
   }
 
-  // Prefix with ASSET_BASE if the path is relative
   const full = p.startsWith('http')
     ? p
     : ASSET_BASE
@@ -30,35 +25,26 @@ const asset = async (p) => {
 
   try {
     const {hostname, pathname} = new URL(full);
-    // Detect URLs that target S3 and sign them
     if (/\.s3\./.test(hostname)) {
       const bucket = hostname.split('.')[0];
       const key = pathname.replace(/^\//, '');
       return await getSignedS3Url({bucket, key});
     }
   } catch (err) {
-    // If parsing fails, fall back to the unmodified path
   }
 
   return full;
 };
-const GOAL_CLIP = `s3://${process.env.S3_BUCKET_NAME}/clips/goal.mp4`;
-console.log("GOAL_CLIP");
-console.log(GOAL_CLIP);
+const GOAL_CLIP =
+  process.env.GOAL_CLIP || `s3://${process.env.S3_BUCKET_NAME}/clips/goal.mp4`;
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
 const app = express();
 app.use(express.json());
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
-// Serve generated videos so that Remotion can access them through an HTTP URL
-// during the rendering phase.
 app.use('/videos', express.static(VIDEOS_DIR));
-
-// Generate a short-lived pre-signed URL for a given S3 object key.
-// The client can use this URL to access private assets without exposing
-// AWS credentials in the browser.
 app.get('/api/signed-url', async (req, res) => {
   const {key} = req.query;
   if (!key) {
@@ -78,8 +64,6 @@ app.get('/api/signed-url', async (req, res) => {
 });
 
 app.post('/api/render', async (req, res) => {
-  console.log("req.body");
-  console.log(req.body);
   const {playerId, minuteGoal} = req.body || {};
   if (!playerId || !minuteGoal) {
     return res
@@ -98,11 +82,8 @@ app.post('/api/render', async (req, res) => {
   try {
     const resolvedGoalClip = await fetchGoalClip({clipPath: GOAL_CLIP});
 
-    // Bundle the Remotion project
     const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
     const bundled = await bundle(entry);
-
-    // Select composition
     const inputProps = {
       playerName,
       minuteGoal,
