@@ -41,7 +41,7 @@ export const fetchGoalClip = async (
     return clipPath;
   }
 
-  const baseDir = path.join(process.cwd(), 'public', 'clips');
+  const baseDir = path.join(__dirname, '..', '..', 'public', 'clips');
   const candidatePath = path.isAbsolute(clipPath)
     ? clipPath
     : path.join(baseDir, clipPath);
