@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - ASSET_BUCKET=${ASSET_BUCKET}
+      - ASSET_BASE=${ASSET_BASE}
+    volumes:
+      - ./videos:/app/videos
