@@ -1,12 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
-import {GetObjectCommand} from '@aws-sdk/client-s3';
-import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
-// Use CommonJS `require` to ensure the module resolves correctly in both CJS
-// and ESM environments when executed via `ts-node`.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {s3Client} = require('./awsClient');
+import {getSignedS3Url} from './s3Signer';
 
 export type FetchGoalClipOptions = {
   /** Percorso del file fornito dall'utente */
@@ -31,8 +26,7 @@ export const fetchGoalClip = async (
   if (clipPath.startsWith('s3://')) {
     const [, bucket, ...keyParts] = clipPath.split('/');
     const key = keyParts.join('/');
-    const command = new GetObjectCommand({Bucket: bucket, Key: key});
-    return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+    return await getSignedS3Url({bucket, key});
   }
 
   if (/^https?:/.test(clipPath)) {
@@ -41,8 +35,7 @@ export const fetchGoalClip = async (
       if (/\.s3\./.test(hostname)) {
         const bucket = hostname.split('.')[0];
         const key = pathname.replace(/^\//, '');
-        const command = new GetObjectCommand({Bucket: bucket, Key: key});
-        return await getSignedUrl(s3Client, command, {expiresIn: 3600});
+        return await getSignedS3Url({bucket, key});
       }
     } catch {}
     return clipPath;
