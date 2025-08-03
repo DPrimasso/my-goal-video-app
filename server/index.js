@@ -3,12 +3,15 @@ const path = require('path');
 const fs = require('fs');
 const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
+const {GetObjectCommand} = require('@aws-sdk/client-s3');
+const {getSignedUrl} = require('@aws-sdk/s3-request-presigner');
 // Ensure TypeScript files are compiled to CommonJS so `require` can resolve them
 require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
 const {fetchGoalClip} = require('../src/api/fetchGoalClip');
+const {s3Client} = require('../src/api/awsClient');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
@@ -27,6 +30,28 @@ const PORT = 4000;
 // Serve generated videos so that Remotion can access them through an HTTP URL
 // during the rendering phase.
 app.use('/videos', express.static(VIDEOS_DIR));
+
+// Generate a short-lived pre-signed URL for a given S3 object key.
+// The client can use this URL to access private assets without exposing
+// AWS credentials in the browser.
+app.get('/api/signed-url', async (req, res) => {
+  const {key} = req.query;
+  if (!key) {
+    return res.status(400).json({error: 'Missing key'});
+  }
+  try {
+    const bucket = process.env.ASSET_BUCKET;
+    if (!bucket) {
+      return res.status(500).json({error: 'Missing ASSET_BUCKET'});
+    }
+    const command = new GetObjectCommand({Bucket: bucket, Key: key});
+    const url = await getSignedUrl(s3Client, command, {expiresIn: 300});
+    res.json({url});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({error: 'Failed to generate URL'});
+  }
+});
 
 app.post('/api/render', async (req, res) => {
   const {playerId, minuteGoal, goalClip} = req.body || {};
