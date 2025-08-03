@@ -3,7 +3,10 @@ import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 import {GetObjectCommand} from '@aws-sdk/client-s3';
 import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
-import {s3Client} from './awsClient';
+// Use CommonJS `require` to ensure the module resolves correctly in both CJS
+// and ESM environments when executed via `ts-node`.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const {s3Client} = require('./awsClient');
 
 export type FetchGoalClipOptions = {
   /** Percorso del file fornito dall'utente */
