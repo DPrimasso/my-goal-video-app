@@ -71,7 +71,7 @@ export const fetchGoalClip = async (
     }
     command
       .on('end', () => resolve())
-      .on('error', (err) => reject(err))
+      .on('error', (err: Error) => reject(err))
       .run();
   });
 
