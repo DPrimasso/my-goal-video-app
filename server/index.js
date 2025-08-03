@@ -76,7 +76,7 @@ app.get('/api/signed-url', async (req, res) => {
 });
 
 app.post('/api/render', async (req, res) => {
-  const {playerId, minuteGoal, goalClip} = req.body || {};
+  const {playerId, minuteGoal} = req.body || {};
   if (!playerId || !minuteGoal) {
     return res
       .status(400)
@@ -92,9 +92,7 @@ app.post('/api/render', async (req, res) => {
   const overlayImage = await asset(player.overlayImagePath);
 
   try {
-    const resolvedGoalClip = goalClip
-      ? await fetchGoalClip({clipPath: goalClip})
-      : GOAL_CLIP;
+    const resolvedGoalClip = await fetchGoalClip({clipPath: GOAL_CLIP});
 
     // Bundle the Remotion project
     const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
