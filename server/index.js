@@ -4,13 +4,16 @@ const fs = require('fs');
 const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
 require('ts-node/register');
+require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
+const ASSET_BASE = process.env.ASSET_BASE || '';
+const asset = (p) => (ASSET_BASE ? `${ASSET_BASE}/${p}` : p);
 // Use a path relative to the public folder so Remotion can resolve it
 // via staticFile(). The actual file lives in public/clips/goal.mp4.
-const GOAL_CLIP = 'clips/goal.mp4';
+const GOAL_CLIP = asset('clips/goal.mp4');
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
@@ -36,7 +39,7 @@ app.post('/api/render', async (req, res) => {
   }
 
   const playerName = player.name;
-  const overlayImage = player.overlayImagePath;
+  const overlayImage = asset(player.overlayImagePath);
 
   try {
     // Bundle the Remotion project
@@ -111,7 +114,7 @@ app.post('/api/render-formation', async (req, res) => {
     return res.status(404).json({error: 'Player not found'});
   }
 
-  const toInput = (p) => ({name: p.name, image: p.overlayImagePath});
+  const toInput = (p) => ({name: p.name, image: asset(p.overlayImagePath)});
   const toOptionalInput = (id) => {
     const p = mapPlayer(id);
     return p ? toInput(p) : null;
@@ -175,8 +178,8 @@ app.post('/api/render-result', async (req, res) => {
     .filter(Boolean);
 
   const inputProps = {
-    teamA: {name: tA.name, logo: tA.logo},
-    teamB: {name: tB.name, logo: tB.logo},
+    teamA: {name: tA.name, logo: asset(tA.logo)},
+    teamB: {name: tB.name, logo: asset(tB.logo)},
     scoreA,
     scoreB,
     scorers: scorerNames,

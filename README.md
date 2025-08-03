@@ -2,6 +2,17 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment Variables
+
+Create a `.env` file in the project root with the following entries:
+
+```
+REACT_APP_ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
+ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
+```
+
+Both variables define the base URL for static assets used in the frontend (`REACT_APP_ASSET_BASE`) and in the server (`ASSET_BASE`).
+
 ## Available Scripts
 
 In the project directory, you can run:
