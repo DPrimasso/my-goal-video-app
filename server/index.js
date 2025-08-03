@@ -42,7 +42,9 @@ const asset = async (p) => {
 
   return full;
 };
-const GOAL_CLIP = `s3://${process.env.ASSET_BUCKET}/clips/goal.mp4`;
+const GOAL_CLIP = `s3://${process.env.S3_BUCKET_NAME}/clips/goal.mp4`;
+console.log("GOAL_CLIP");
+console.log(GOAL_CLIP);
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
@@ -76,6 +78,8 @@ app.get('/api/signed-url', async (req, res) => {
 });
 
 app.post('/api/render', async (req, res) => {
+  console.log("req.body");
+  console.log(req.body);
   const {playerId, minuteGoal} = req.body || {};
   if (!playerId || !minuteGoal) {
     return res

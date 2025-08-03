@@ -21,10 +21,11 @@ export type FetchGoalClipOptions = {
 export const fetchGoalClip = async (
   options: FetchGoalClipOptions
 ): Promise<string> => {
+  console.log(`FetchGoalClip options: ${JSON.stringify(options)}`);
   const {clipPath = '', startTime, endTime} = options;
 
   if (clipPath.startsWith('s3://')) {
-    const [, bucket, ...keyParts] = clipPath.split('/');
+    const [,, bucket, ...keyParts] = clipPath.split('/');
     const key = keyParts.join('/');
     return await getSignedS3Url({bucket, key});
   }
