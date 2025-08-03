@@ -24,7 +24,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "docker:build": "docker build -t myapp-client:latest .",
-    "docker:run": "docker run --rm -p 3000:80 --env-file .env myapp-client:latest"
+    "docker:run": "docker run --rm -p 3000:8080 --env-file .env myapp-client:latest"
   },
   "eslintConfig": {
     "extends": [

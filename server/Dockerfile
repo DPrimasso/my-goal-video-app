@@ -9,7 +9,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup -g 1001 -S nodejs \
   && adduser -S nodeuser -G nodejs -u 1001 \
-  && apk add --no-cache ffmpeg curl
+  && apk add --no-cache ffmpeg curl \
+  && rm -rf /var/cache/apk/*
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 USER nodeuser
