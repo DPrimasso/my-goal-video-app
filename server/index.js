@@ -10,7 +10,21 @@ const teams = require('./teams');
 const {fetchGoalClip} = require('./api/fetchGoalClip');
 const {getSignedS3Url} = require('./api/s3Signer');
 
-const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
+// Determine where to store rendered videos. Originally the path was resolved
+// using `path.join(__dirname, '..', 'videos')`, which assumes the server code
+// lives in a `server` subdirectory. When the code is bundled or copied to a
+// different location (e.g. a Docker image with a working directory of `/app`),
+// that resolution pointed to `/videos` at the filesystem root and resulted in
+// a permission error when trying to create the folder. The logic below
+// attempts to resolve the project root; if resolving one directory above the
+// current file points to the filesystem root, we fall back to using the
+// current directory. This ensures videos are created inside the application
+// directory regardless of where the code is executed from.
+const rootDir = path.resolve(__dirname, '..');
+const VIDEOS_DIR =
+  rootDir === path.parse(rootDir).root
+    ? path.resolve(__dirname, 'videos')
+    : path.resolve(rootDir, 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
 const asset = async (p) => {
   if (!p) {
