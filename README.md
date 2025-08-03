@@ -9,14 +9,16 @@ Create a `.env` file in the project root with the following entries:
 ```
 REACT_APP_ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
 ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
-AWS_ACCESS_KEY_ID=<your-access-key-id>
-AWS_SECRET_ACCESS_KEY=<your-secret-access-key>
+ASSET_BUCKET=<bucket-name>
 AWS_REGION=<your-region>
 ```
 
 `REACT_APP_ASSET_BASE` and `ASSET_BASE` define the base URL for static assets used in the frontend and in the server.
-Only variables prefixed with `REACT_APP_` end up in the client bundle. The `AWS_*` entries stay on the server and are used to
-generate pre-signed URLs without exposing credentials.
+Only variables prefixed with `REACT_APP_` end up in the client bundle.
+
+Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your server's environment
+so the backend can generate pre-signed URLs. Do **not** expose these secrets in
+the browser or commit them to version control.
 
 To request a temporary URL for an asset stored in S3, call:
 

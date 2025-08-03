@@ -40,8 +40,10 @@ app.get('/api/signed-url', async (req, res) => {
     return res.status(400).json({error: 'Missing key'});
   }
   try {
-    const bucket =
-      process.env.ASSET_BUCKET || new URL(ASSET_BASE).hostname.split('.')[0];
+    const bucket = process.env.ASSET_BUCKET;
+    if (!bucket) {
+      return res.status(500).json({error: 'Missing ASSET_BUCKET'});
+    }
     const command = new GetObjectCommand({Bucket: bucket, Key: key});
     const url = await getSignedUrl(s3Client, command, {expiresIn: 300});
     res.json({url});
