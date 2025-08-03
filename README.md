@@ -13,6 +13,39 @@ ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
 
 Both variables define the base URL for static assets used in the frontend (`REACT_APP_ASSET_BASE`) and in the server (`ASSET_BASE`).
 
+## Deployment
+
+### Upload assets to S3
+
+Sync the `public/` folder (which contains `players/`, `clips/` and logo files) to an S3 bucket while preserving the directory structure and filenames:
+
+```
+aws s3 sync public s3://<bucket> --acl public-read
+```
+
+### Local build and server
+
+Build the React app and start the Node server, providing the bucket URL for both environment variables:
+
+```
+ASSET_BASE=https://<bucket>.s3.<region>.amazonaws.com \
+REACT_APP_ASSET_BASE=https://<bucket>.s3.<region>.amazonaws.com npm run build
+
+ASSET_BASE=https://<bucket>.s3.<region>.amazonaws.com npm run start:server
+```
+
+### Render a test video
+
+Use the API to render a sample goal video and ensure assets are retrieved from S3:
+
+```
+curl -X POST http://localhost:4000/api/render \
+  -H 'Content-Type: application/json' \
+  -d '{"playerId":"davide_fava","minuteGoal":42}'
+```
+
+The response includes the URL of the generated video.
+
 ## Available Scripts
 
 In the project directory, you can run:
