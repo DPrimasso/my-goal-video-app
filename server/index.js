@@ -3,7 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const {bundle} = require('@remotion/bundler');
 const {getCompositions, renderMedia} = require('@remotion/renderer');
-require('ts-node/register');
+// Ensure TypeScript files are compiled to CommonJS so `require` can resolve them
+require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
