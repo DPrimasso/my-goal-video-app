@@ -255,7 +255,11 @@ app.post('/api/render-result', async (req, res) => {
 });
 
 app.use(express.static(BUILD_DIR));
-app.get('*', (req, res) => {
+// Express 5 uses path-to-regexp v6 which requires a named wildcard.
+// Using "*" without a name causes "Missing parameter name" errors.
+// See https://git.new/pathToRegexpError for details.
+// The "*all" pattern matches any path and satisfies path-to-regexp.
+app.get('/*all', (req, res) => {
   res.sendFile(path.join(BUILD_DIR, 'index.html'));
 });
 
