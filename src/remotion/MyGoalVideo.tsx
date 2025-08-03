@@ -1,5 +1,6 @@
 import React from 'react';
-import {AbsoluteFill, Video, spring, useCurrentFrame, useVideoConfig, interpolate, staticFile} from 'remotion';
+import {AbsoluteFill, Video, spring, useCurrentFrame, useVideoConfig, interpolate} from 'remotion';
+import {resolveAsset} from './resolveAsset';
 import './MyGoalVideo.css';
 
 export interface MyGoalVideoProps extends Record<string, unknown> {
@@ -38,7 +39,7 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
     return (
         <AbsoluteFill>
             <Video
-                src={staticFile(goalClip)}
+                src={resolveAsset(goalClip)}
                 style={{
                     objectFit: 'cover',
                     zIndex: 0,
@@ -48,7 +49,7 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
             />
             {overlayImage && (
                 <img
-                    src={staticFile(overlayImage)}
+                    src={resolveAsset(overlayImage)}
                     className="overlay-image"
                     style={{
                         transform: `translateX(${imageTranslate}px)`,
