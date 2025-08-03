@@ -4,11 +4,11 @@ import {
   Img,
   Video,
   spring,
-  staticFile,
   useCurrentFrame,
   useVideoConfig,
   interpolate,
 } from 'remotion';
+import {resolveAsset} from './resolveAsset';
 import './FinalResultVideo.css';
 
 export interface TeamInfo {
@@ -58,14 +58,14 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
   return (
     <AbsoluteFill>
       <Video
-        src={staticFile('final_score.mp4')}
+        src={resolveAsset('final_score.mp4')}
         className="background-video"
       />
       <AbsoluteFill className="result-root">
         <div className="teams-row">
           <div className="team-block">
             <Img
-              src={staticFile(teamA.logo)}
+              src={resolveAsset(teamA.logo)}
               className="team-logo"
               style={{transform: `translateX(${translateA}px)`}}
             />
@@ -78,7 +78,7 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
           </div>
           <div className="team-block">
             <Img
-              src={staticFile(teamB.logo)}
+              src={resolveAsset(teamB.logo)}
               className="team-logo"
               style={{transform: `translateX(${translateB}px)`}}
             />

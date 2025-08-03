@@ -1,5 +1,6 @@
 import React from 'react';
-import {AbsoluteFill, Img, Sequence, staticFile, useCurrentFrame, useVideoConfig, spring, interpolate} from 'remotion';
+import {AbsoluteFill, Img, Sequence, useCurrentFrame, useVideoConfig, spring, interpolate} from 'remotion';
+import {resolveAsset} from './resolveAsset';
 import './FormationVideo.css';
 
 export interface FormationPlayer {
@@ -30,7 +31,7 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; sca
         transform: `translate(-50%, -50%) scale(${scale})`,
       }}
     >
-      <Img src={staticFile(player.image)} className="player-image" />
+      <Img src={resolveAsset(player.image)} className="player-image" />
       <div className="player-name">{player.name.replace(/\s+/g, '\n')}</div>
     </div>
   );
@@ -159,7 +160,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   return (
     <AbsoluteFill>
-      <Img src={staticFile('campo_da_calcio.png')} className="field-image" />
+      <Img src={resolveAsset('campo_da_calcio.png')} className="field-image" />
       {sequences}
     </AbsoluteFill>
   );
