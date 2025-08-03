@@ -1,13 +1,34 @@
 version: '3.9'
 services:
-  app:
-    build: .
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     ports:
       - "4000:4000"
-    environment:
-      - PORT=4000
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-      - ASSET_BUCKET=${ASSET_BUCKET}
-      - ASSET_BASE=${ASSET_BASE}
+    depends_on:
+      - mongo
     volumes:
       - ./videos:/app/videos
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+volumes:
+  mongo-data:
