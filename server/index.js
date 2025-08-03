@@ -7,8 +7,8 @@ require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
-const {fetchGoalClip} = require('../src/api/fetchGoalClip');
-const {getSignedS3Url} = require('../src/api/s3Signer');
+const {fetchGoalClip} = require('../client/src/api/fetchGoalClip');
+const {getSignedS3Url} = require('../client/src/api/s3Signer');
 
 const VIDEOS_DIR = path.join(__dirname, '..', 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
@@ -43,7 +43,7 @@ if (!fs.existsSync(VIDEOS_DIR)) {
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 4000;
-const BUILD_DIR = path.join(__dirname, '..', 'build');
+const BUILD_DIR = path.join(__dirname, '..', 'client', 'build');
 
 app.use('/videos', express.static(VIDEOS_DIR));
 app.get('/api/signed-url', async (req, res) => {
@@ -83,7 +83,7 @@ app.post('/api/render', async (req, res) => {
   try {
     const resolvedGoalClip = await fetchGoalClip({clipPath: GOAL_CLIP});
 
-    const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
+    const entry = path.join(__dirname, '..', 'client', 'src', 'remotion', 'index.tsx');
     const bundled = await bundle(entry);
     const inputProps = {
       playerName,
@@ -171,7 +171,7 @@ app.post('/api/render-formation', async (req, res) => {
   };
 
   try {
-    const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
+    const entry = path.join(__dirname, '..', 'client', 'src', 'remotion', 'index.tsx');
     const bundled = await bundle(entry);
     const comps = await getCompositions(bundled, {
       inputProps,
@@ -229,7 +229,7 @@ app.post('/api/render-result', async (req, res) => {
   };
 
   try {
-    const entry = path.join(__dirname, '..', 'src', 'remotion', 'index.tsx');
+    const entry = path.join(__dirname, '..', 'client', 'src', 'remotion', 'index.tsx');
     const bundled = await bundle(entry);
     const comps = await getCompositions(bundled, {inputProps});
     const comp = comps.find((c) => c.id === 'FinalResultComp');
@@ -255,7 +255,7 @@ app.post('/api/render-result', async (req, res) => {
 });
 
 app.use(express.static(BUILD_DIR));
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(BUILD_DIR, 'index.html'));
 });
 
