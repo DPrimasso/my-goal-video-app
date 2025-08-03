@@ -14,8 +14,17 @@ AWS_SECRET_ACCESS_KEY=<your-secret-access-key>
 AWS_REGION=<your-region>
 ```
 
-`REACT_APP_ASSET_BASE` and `ASSET_BASE` define the base URL for static assets used in the frontend and in the server. The `AWS_*`
-entries provide the credentials and region required to access S3.
+`REACT_APP_ASSET_BASE` and `ASSET_BASE` define the base URL for static assets used in the frontend and in the server.
+Only variables prefixed with `REACT_APP_` end up in the client bundle. The `AWS_*` entries stay on the server and are used to
+generate pre-signed URLs without exposing credentials.
+
+To request a temporary URL for an asset stored in S3, call:
+
+```
+GET /api/signed-url?key=<object-key>
+```
+
+The server responds with `{ url: "https://..." }`, which you can use in the browser before it expires.
 
 ## Available Scripts
 
