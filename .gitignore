@@ -4,3 +4,7 @@ videos/*
 uploads/*
 !uploads/.gitkeep
 .env
+
+build
+dist
+.DS_Store
