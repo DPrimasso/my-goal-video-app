@@ -70,12 +70,6 @@
   color: #666;
 }
 
-.video-preview {
-  width: 100%;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
 .download-link {
   margin-top: 0.5rem;
   color: #007bff;

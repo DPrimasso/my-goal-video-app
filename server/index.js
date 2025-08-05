@@ -60,6 +60,15 @@ const PORT = process.env.PORT || 4000;
 const BUILD_DIR = path.join(__dirname, '..', 'client', 'build');
 
 app.use('/videos', express.static(VIDEOS_DIR));
+app.get('/download/goal', (req, res) => {
+  const filePath = path.join(VIDEOS_DIR, 'goal.mp4');
+  res.download(filePath, 'goal.mp4', err => {
+    if (err) {
+      console.error('Download error:', err);
+      res.sendStatus(500);
+    }
+  });
+});
 app.get('/api/signed-url', async (req, res) => {
   const {key} = req.query;
   if (!key) {

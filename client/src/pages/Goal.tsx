@@ -1,6 +1,6 @@
 import React from 'react';
-import VideoForm from '../VideoForm';
+import DownloadButton from '../DownloadButton';
 
-const Goal: React.FC = () => <VideoForm />;
+const Goal: React.FC = () => <DownloadButton />;
 
 export default Goal;

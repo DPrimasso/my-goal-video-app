@@ -147,14 +147,11 @@ const Formazione: React.FC = () => {
         </div>
         <div className="preview-container">
           {generatedUrl ? (
-              <>
-                <video className="video-preview" src={generatedUrl} controls />
-                <a className="download-link" href={generatedUrl} download>
-                  Scarica video
-                </a>
-              </>
+            <a className="download-link" href={generatedUrl} download>
+              Scarica video
+            </a>
           ) : (
-              <div className="preview-placeholder">Anteprima video</div>
+            <div className="preview-placeholder">Nessun video generato</div>
           )}
         </div>
       </div>
