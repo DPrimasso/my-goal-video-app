@@ -1,7 +1,5 @@
 import React from 'react';
 import Goal from './Goal';
-import Formazione from './Formazione';
-import RisultatoFinale from './RisultatoFinale';
 
 export interface PageConfig {
   /** Unique identifier used for navigation */
@@ -14,6 +12,4 @@ export interface PageConfig {
 
 export const pages: PageConfig[] = [
   { id: 'goal', label: 'Goal', component: Goal },
-  { id: 'formazione', label: 'Formazione', component: Formazione },
-  { id: 'risultato-finale', label: 'Risultato Finale', component: RisultatoFinale },
 ];

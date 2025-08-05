@@ -2,17 +2,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders Genera Video button', () => {
+test('renders download button', () => {
   render(<App />);
-  const buttons = screen.getAllByText(/Genera Video/i);
-  expect(buttons.length).toBeGreaterThan(0);
+  expect(
+    screen.getByRole('button', {name: /Scarica il video/i})
+  ).toBeInTheDocument();
 });
 
-test('renders navigation buttons', () => {
+test('renders Goal navigation button', () => {
   render(<App />);
-  expect(screen.getByRole('button', { name: /Goal/i })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /Formazione/i })).toBeInTheDocument();
-  expect(
-    screen.getByRole('button', { name: /Risultato Finale/i })
-  ).toBeInTheDocument();
+  expect(screen.getByRole('button', {name: /Goal/i})).toBeInTheDocument();
 });
