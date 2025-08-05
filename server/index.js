@@ -50,7 +50,7 @@ const asset = async (p) => {
   return full;
 };
 const GOAL_CLIP =
-  process.env.GOAL_CLIP || `s3://${process.env.S3_BUCKET_NAME}/clips/goal.mp4`;
+  process.env.GOAL_CLIP || `s3://${process.env.S3_BUCKET_NAME}/clips/goal.mov`;
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR);
 }
