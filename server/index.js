@@ -1,30 +1,12 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
-const {bundle} = require('@remotion/bundler');
-const {getCompositions, renderMedia} = require('@remotion/renderer');
-require('ts-node').register({compilerOptions: {module: 'commonjs'}});
 require('dotenv').config();
 const players = require('./players');
 const teams = require('./teams');
 const {fetchGoalClip} = require('./api/fetchGoalClip');
 const {getSignedS3Url} = require('./api/s3Signer');
+const {renderOnLambda} = require('./api/renderOnLambda');
 
-// Determine where to store rendered videos. Originally the path was resolved
-// using `path.join(__dirname, '..', 'videos')`, which assumes the server code
-// lives in a `server` subdirectory. When the code is bundled or copied to a
-// different location (e.g. a Docker image with a working directory of `/app`),
-// that resolution pointed to `/videos` at the filesystem root and resulted in
-// a permission error when trying to create the folder. The logic below
-// attempts to resolve the project root; if resolving one directory above the
-// current file points to the filesystem root, we fall back to using the
-// current directory. This ensures videos are created inside the application
-// directory regardless of where the code is executed from.
-const rootDir = path.resolve(__dirname, '..');
-const VIDEOS_DIR =
-  rootDir === path.parse(rootDir).root
-    ? path.resolve(__dirname, 'videos')
-    : path.resolve(rootDir, 'videos');
 const ASSET_BASE = process.env.ASSET_BASE || '';
 const asset = async (p) => {
   if (!p) {
@@ -51,15 +33,10 @@ const asset = async (p) => {
 };
 const GOAL_CLIP =
   process.env.GOAL_CLIP || `s3://${process.env.S3_BUCKET_NAME}/clips/goal.mov`;
-if (!fs.existsSync(VIDEOS_DIR)) {
-  fs.mkdirSync(VIDEOS_DIR);
-}
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 4000;
 const BUILD_DIR = path.join(__dirname, '..', 'client', 'build');
-
-app.use('/videos', express.static(VIDEOS_DIR));
 app.get('/api/signed-url', async (req, res) => {
   const {key} = req.query;
   if (!key) {
@@ -96,40 +73,17 @@ app.post('/api/render', async (req, res) => {
 
   try {
     const resolvedGoalClip = await fetchGoalClip({clipPath: GOAL_CLIP});
-
-    const entry = path.join(__dirname, '..', 'client', 'src', 'remotion', 'index.tsx');
-    const bundled = await bundle(entry);
     const inputProps = {
       playerName,
       minuteGoal,
       goalClip: resolvedGoalClip,
       overlayImage,
     };
-
-    const comps = await getCompositions(bundled, {
+    const videoUrl = await renderOnLambda({
+      composition: 'GoalComp',
       inputProps,
+      outName: `${Date.now()}-${playerName.replace(/\s+/g, '_')}.mp4`,
     });
-    const comp = comps.find(c => c.id === 'GoalComp');
-    if (!comp) {
-      throw new Error('Composition GoalComp not found');
-    }
-
-    const outPath = path.join(
-      VIDEOS_DIR,
-      `${Date.now()}-${playerName.replace(/\s+/g, '_')}.mp4`
-    );
-
-    await renderMedia({
-      composition: comp,
-      serveUrl: bundled,
-      codec: 'h264',
-      outputLocation: outPath,
-      inputProps,
-    });
-
-    const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
-        outPath
-    )}`;
     res.json({video: videoUrl});
   } catch (err) {
     console.error(err);
@@ -185,29 +139,11 @@ app.post('/api/render-formation', async (req, res) => {
   };
 
   try {
-    const entry = path.join(__dirname, '..', 'client', 'src', 'remotion', 'index.tsx');
-    const bundled = await bundle(entry);
-    const comps = await getCompositions(bundled, {
+    const videoUrl = await renderOnLambda({
+      composition: 'FormationComp',
       inputProps,
+      outName: `${Date.now()}-formation.mp4`,
     });
-    const comp = comps.find((c) => c.id === 'FormationComp');
-    if (!comp) {
-      throw new Error('Composition FormationComp not found');
-    }
-    const outPath = path.join(
-        VIDEOS_DIR,
-        `${Date.now()}-formation.mp4`
-    );
-    await renderMedia({
-      composition: comp,
-      serveUrl: bundled,
-      codec: 'h264',
-      outputLocation: outPath,
-      inputProps,
-    });
-    const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
-        outPath
-    )}`;
     res.json({video: videoUrl});
   } catch (err) {
     console.error(err);
@@ -243,24 +179,11 @@ app.post('/api/render-result', async (req, res) => {
   };
 
   try {
-    const entry = path.join(__dirname, '..', 'client', 'src', 'remotion', 'index.tsx');
-    const bundled = await bundle(entry);
-    const comps = await getCompositions(bundled, {inputProps});
-    const comp = comps.find((c) => c.id === 'FinalResultComp');
-    if (!comp) {
-      throw new Error('Composition FinalResultComp not found');
-    }
-    const outPath = path.join(VIDEOS_DIR, `${Date.now()}-result.mp4`);
-    await renderMedia({
-      composition: comp,
-      serveUrl: bundled,
-      codec: 'h264',
-      outputLocation: outPath,
+    const videoUrl = await renderOnLambda({
+      composition: 'FinalResultComp',
       inputProps,
+      outName: `${Date.now()}-result.mp4`,
     });
-    const videoUrl = `${req.protocol}://${req.get('host')}/videos/${path.basename(
-      outPath
-    )}`;
     res.json({video: videoUrl});
   } catch (err) {
     console.error(err);
