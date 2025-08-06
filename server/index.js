@@ -1,10 +1,11 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
+require('ts-node/register');
 const players = require('./players');
 const teams = require('./teams');
-const {fetchGoalClip} = require('./api/fetchGoalClip');
-const {getSignedS3Url} = require('./api/s3Signer');
+const {fetchGoalClip} = require('./api/fetchGoalClip.ts');
+const {getSignedS3Url} = require('./api/s3Signer.ts');
 const {renderOnLambda} = require('./api/renderOnLambda');
 
 const ASSET_BASE = process.env.ASSET_BASE || '';
