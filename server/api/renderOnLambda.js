@@ -1,16 +1,22 @@
 const path = require('path');
-const {bundle} = require('@remotion/bundler');
 const {renderMediaOnLambda, deploySite, getOrCreateBucket} = require('@remotion/lambda');
 
 const REGION = process.env.AWS_REGION;
 const LAMBDA_NAME = process.env.REMOTION_LAMBDA_FUNCTION_NAME;
 
 async function renderOnLambda({composition, inputProps, outName}) {
-  const entry = path.join(__dirname, '..', '..', 'client', 'src', 'remotion', 'index.tsx');
-  const bundled = await bundle(entry);
+  const entry = path.join(
+    __dirname,
+    '..',
+    '..',
+    'client',
+    'src',
+    'remotion',
+    'index.tsx',
+  );
   const {bucketName} = await getOrCreateBucket({region: REGION});
   const {serveUrl} = await deploySite({
-    entryPoint: bundled,
+    entryPoint: entry,
     bucketName,
     region: REGION,
   });
