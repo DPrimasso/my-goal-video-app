@@ -1,10 +1,6 @@
 node_modules
-videos/*
-!videos/.gitkeep
-uploads/*
-!uploads/.gitkeep
 .env
-
 build
 dist
 .DS_Store
+.idea/
