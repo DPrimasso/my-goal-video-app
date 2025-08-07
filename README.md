@@ -59,3 +59,14 @@ Per avviare i servizi **senza** l'override (ad esempio per testare le immagini p
 docker-compose -f docker-compose.yml up --build
 ```
 
+## Endpoint serverless
+
+Nella cartella `lambda/` sono presenti due funzioni pensate per essere
+distribuite su AWS Lambda e richiamate tramite API Gateway:
+
+- `start-render` avvia un rendering Remotion e restituisce un `renderId`.
+- `render-status` interroga lo stato di un rendering in base al `renderId`.
+
+Entrambe rispondono con intestazioni CORS aperte per facilitare
+l'invocazione da un client statico.
+
