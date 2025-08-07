@@ -6,7 +6,7 @@ const players = require('./players');
 const teams = require('./teams');
 const {fetchGoalClip} = require('./api/fetchGoalClip.ts');
 const {getSignedS3Url} = require('./api/s3Signer.ts');
-const {renderOnLambda} = require('./api/renderOnLambda');
+const {renderOnLambda, initServeUrl} = require('./api/renderOnLambda');
 
 const ASSET_BASE = process.env.ASSET_BASE || '';
 const asset = async (p) => {
@@ -197,6 +197,13 @@ app.use((req, res) => {
   res.sendFile(path.join(BUILD_DIR, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+// Deploy Remotion site once at startup, then start the server
+initServeUrl()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to initialize Remotion site', err);
+  });
