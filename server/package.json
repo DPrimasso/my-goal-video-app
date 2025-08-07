@@ -4,7 +4,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js",
+    "start": "NODE_OPTIONS='--max-old-space-size=4096' node index.js",
     "docker:build": "docker build -t myapp-server:latest .",
     "docker:run": "docker run --rm -p 4000:4000 --env-file .env myapp-server:latest"
   },
