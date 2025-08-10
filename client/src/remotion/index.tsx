@@ -3,6 +3,7 @@ import {Composition, registerRoot} from 'remotion';
 import {MyGoalVideo, MyGoalVideoProps} from './MyGoalVideo';
 import {FormationVideo, FormationVideoProps} from './FormationVideo';
 import {FinalResultVideo, FinalResultVideoProps} from './FinalResultVideo';
+import {Ping} from './Ping';
 import {players} from '../players';
 
 const RemotionRoot: React.FC = () => {
@@ -67,6 +68,14 @@ const RemotionRoot: React.FC = () => {
             width={1080}
             height={1920}
             defaultProps={resultDefaults}
+        />
+        <Composition
+            id="PingComp"
+            component={Ping}
+            durationInFrames={90}
+            fps={30}
+            width={1280}
+            height={720}
         />
     </>
   );

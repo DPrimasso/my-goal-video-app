@@ -1,8 +1,6 @@
 {
   "name": "my-goal-video-app-lambda",
   "version": "1.0.0",
-  "private": true,
-  "type": "commonjs",
   "dependencies": {
     "@remotion/lambda": "^4.0.332"
   }
