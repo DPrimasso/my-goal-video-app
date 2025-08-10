@@ -1,61 +1,60 @@
 # My Goal Video App
 
-## Prerequisiti
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/)
+This repository contains a React front-end and two AWS Lambda handlers used to render Remotion videos on demand.
 
-Assicurati che entrambi i comandi `docker` e `docker-compose` siano disponibili nella tua shell.
+## Structure
+- `client/`: React app compiled to a static bundle.
+- `lambda/start-render`: Lambda handler that starts a render via `renderMediaOnLambda`.
+- `lambda/render-status`: Lambda handler that checks render progress.
 
-## Configurazione `.env`
-Crea un file `.env` nella radice del progetto con le variabili necessarie:
+## Environment variables
+Create a `.env` file (for local builds) or set these variables in your deployment:
 
 ```
-REACT_APP_ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
-ASSET_BASE=https://<bucket>.s3.<regione>.amazonaws.com
+REACT_APP_ASSET_BASE=https://<bucket>.s3.<region>.amazonaws.com
+AWS_REGION=<region>
+REMOTION_LAMBDA_FUNCTION_NAME=<name-of-remotion-render-lambda>
+REMOTION_SERVE_URL=https://<bucket>.s3.<region>.amazonaws.com/sites/<deploy-id>
 ASSET_BUCKET=<bucket-name>
-AWS_REGION=<your-region>
-GOAL_CLIP=s3://<bucket-name>/clips/goal.mov
-PORT=4000
 ```
 
-Le variabili che iniziano con `REACT_APP_` vengono incluse nel bundle del client.
-Configura inoltre `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` nell'ambiente del server.
+`REACT_APP_*` variables are embedded into the client at build time.
 
-## Comandi principali
-Costruisci e avvia tutti i servizi:
+## Testing
+Run the available tests:
 
-```bash
-docker-compose up --build
+```
+cd lambda
+npm test   # no tests yet
+
+cd ../client
+CI=true npm test -- --watchAll=false
 ```
 
-Ferma e rimuovi i container:
+## Build & deploy
 
-```bash
-docker-compose down
+### 1. Client
 ```
-
-Costruisci le immagini dei singoli componenti:
-
-```bash
-cd server && npm run docker:build
-cd client && npm run docker:build
+cd client
+npm install
+npm run build
 ```
+Upload the `build/` directory to an S3 bucket and serve it through CloudFront or Amplify.
 
-## Sviluppo con `docker-compose.override.yml`
-Il file `docker-compose.override.yml` viene caricato automaticamente da `docker-compose`
-e fornisce configurazioni utili per lo sviluppo:
-monta il codice sorgente locale e usa comandi come `npm run dev` per il server e
-`npm start` per il client. In questo modo le modifiche vengono ricaricate in tempo reale.
-
-Per avviare l'ambiente di sviluppo è sufficiente:
-
-```bash
-docker-compose up --build
+### 2. Lambda handlers
 ```
-
-Per avviare i servizi **senza** l'override (ad esempio per testare le immagini prodotte):
-
-```bash
-docker-compose -f docker-compose.yml up --build
+cd lambda
+npm install
+zip -r start-render.zip start-render node_modules package.json package-lock.json
+zip -r render-status.zip render-status node_modules package.json package-lock.json
 ```
+Create two Lambda functions using Node.js 18 and upload the corresponding zip files.
+Set the environment variables listed above.
 
+### 3. API Gateway
+- Create an HTTP API with CORS enabled for your client domain.
+- Routes:
+  - `POST /start-render` → start-render Lambda
+  - `GET /render-status` → render-status Lambda
+
+The client can now trigger renders via the API and poll for completion.
