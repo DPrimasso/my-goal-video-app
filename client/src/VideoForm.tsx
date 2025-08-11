@@ -59,6 +59,13 @@ const VideoForm: React.FC = () => {
     if (!playerId) { alert('Seleziona un giocatore'); return; }
     if (!minuteGoal) { alert('Inserisci il minuto del gol'); return; }
 
+    if (isNaN(Number(minuteGoal)) || Number(minuteGoal) < 0) {
+      alert('Il minuto del gol deve essere un numero positivo');
+      return;
+    }
+
+    const s3PlayerUrl = players.find(p => p.id === playerId)?.image || '';
+
     setLoading(true);
     setGeneratedUrl(null);
     setProgress(0);
@@ -66,7 +73,7 @@ const VideoForm: React.FC = () => {
     try {
       const payload = {
         compositionId: 'GoalComp',           // usa la tua composition
-        inputProps: { playerId, minuteGoal: Number(minuteGoal) } // parametri per il video
+        inputProps: { playerId, minuteGoal: Number(minuteGoal), s3PlayerUrl: s3PlayerUrl },
       };
 
       // 1) Avvio render

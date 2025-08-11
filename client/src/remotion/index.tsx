@@ -10,8 +10,11 @@ const RemotionRoot: React.FC = () => {
   const defaultProps: MyGoalVideoProps = {
     playerName: 'Player Name',
     minuteGoal: '90+2',
-    goalClip: `${process.env.REACT_APP_ASSET_BASE || ''}/clips/goal.mp4`,
+    // Usa un asset locale del site per il preview; a runtime potrai passare s3PlayerUrl
+    goalClip: 'clips/goal.mp4',
     overlayImage: 'logo192.png',
+    // URL completo (pubblico o presigned) dell'immagine del giocatore; vuoto nel preview
+    s3PlayerUrl: '',
   };
 
   const mapFormationPlayer = (p: {name: string; image: string}) => ({

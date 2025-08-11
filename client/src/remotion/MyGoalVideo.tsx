@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Video, spring, useCurrentFrame, useVideoConfig, interpolate} from 'remotion';
+import {AbsoluteFill, Video, Img, spring, useCurrentFrame, useVideoConfig, interpolate} from 'remotion';
 import {resolveAsset} from './resolveAsset';
 import './MyGoalVideo.css';
 
@@ -8,6 +8,7 @@ export interface MyGoalVideoProps extends Record<string, unknown> {
     minuteGoal: string;
     goalClip: string;
     overlayImage?: string;
+    s3PlayerUrl?: string; // URL completo (pubblico o presigned) dell'immagine del giocatore
     textColor?: string;
     titleSize?: number;
     playerSize?: number;
@@ -19,6 +20,7 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                                                             minuteGoal,
                                                             goalClip,
                                                             overlayImage,
+                                                            s3PlayerUrl,
                                                             textColor = 'white',
                                                             titleSize = 80,
                                                             playerSize = 110,
@@ -27,6 +29,18 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
     // Animation hooks
     const frame = useCurrentFrame();
     const {fps} = useVideoConfig();
+
+    const isAbsoluteUrl = (u?: string): u is string => !!u && /^https?:\/\//i.test(u);
+
+    // Video: se goalClip è una URL assoluta la uso, altrimenti risolvo dall'asset bundle
+    const videoSrc = isAbsoluteUrl(goalClip) ? goalClip : resolveAsset(goalClip);
+
+    // Overlay giocatore: priorità a s3PlayerUrl (URL runtime), poi overlayImage (URL assoluta o asset locale)
+    const overlaySrc = s3PlayerUrl
+      ? s3PlayerUrl
+      : overlayImage
+        ? (isAbsoluteUrl(overlayImage) ? overlayImage : resolveAsset(overlayImage))
+        : undefined;
 
     // Springs for entry animations
     const textSpring = spring({ frame, fps });
@@ -39,7 +53,7 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
     return (
         <AbsoluteFill>
             <Video
-                src={resolveAsset(goalClip)}
+                src={videoSrc}
                 style={{
                     objectFit: 'cover',
                     zIndex: 0,
@@ -47,9 +61,9 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                     height: '100%',
                 }}
             />
-            {overlayImage && (
-                <img
-                    src={resolveAsset(overlayImage)}
+            {overlaySrc && (
+                <Img
+                    src={overlaySrc}
                     className="overlay-image"
                     style={{
                         transform: `translateX(${imageTranslate}px)`,
