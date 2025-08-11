@@ -6,6 +6,7 @@ const START_URL = process.env.REACT_APP_START_RENDER_URL!;
 const STATUS_URL = process.env.REACT_APP_RENDER_STATUS_URL!;
 const AWS_REGION = process.env.REACT_APP_AWS_REGION || 'eu-west-1';
 const S3_PUBLIC_BASE = process.env.REACT_APP_S3_PUBLIC_BASE || '';
+const ASSET_BUCKET = process.env.REACT_APP_ASSET_BUCKET || '';
 const POLL_INTERVAL_MS = Number(process.env.REACT_APP_POLL_INTERVAL_MS || 2000);
 const MAX_ATTEMPTS = Number(process.env.REACT_APP_MAX_POLL_ATTEMPTS || 300);
 
@@ -31,6 +32,15 @@ const urlFromStatus = (
 
   const base = s3Base ? s3Base : `https://${bucket}.s3.${region}.amazonaws.com`;
   return `${base}/${key}`;
+};
+
+// Se è già una URL assoluta la lascia com'è; se è una chiave tipo "players/7.png" e conosciamo il bucket, la trasformiamo in URL S3
+const makeAbsoluteIfKey = (value: string): string => {
+  if (!value) return value;
+  if (/^https?:\/\//i.test(value)) return value; // già assoluta
+  if (!ASSET_BUCKET) return value;               // lascio che normalizzi la Lambda
+  const key = value.replace(/^\/+/, '');
+  return `https://${ASSET_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${key}`;
 };
 
 type StartResp = { bucketName: string; renderId: string; error?: string };
@@ -64,7 +74,10 @@ const VideoForm: React.FC = () => {
       return;
     }
 
-    const s3PlayerUrl = players.find(p => p.id === playerId)?.image || '';
+    const selected = players.find(p => p.id === playerId);
+    const playerNameVal = selected?.name || '';
+    const rawPlayerImage = selected?.image || '';
+    const s3PlayerUrl = makeAbsoluteIfKey(rawPlayerImage);
 
     setLoading(true);
     setGeneratedUrl(null);
@@ -72,8 +85,13 @@ const VideoForm: React.FC = () => {
 
     try {
       const payload = {
-        compositionId: 'GoalComp',           // usa la tua composition
-        inputProps: { playerId, minuteGoal: Number(minuteGoal), s3PlayerUrl: s3PlayerUrl },
+        compositionId: 'GoalComp',
+        inputProps: {
+          playerId,
+          playerName: playerNameVal,
+          minuteGoal: Number(minuteGoal),
+          s3PlayerUrl,
+        },
       };
 
       // 1) Avvio render
