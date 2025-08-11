@@ -9,10 +9,36 @@ const S3_PUBLIC_BASE = process.env.REACT_APP_S3_PUBLIC_BASE || '';
 const POLL_INTERVAL_MS = Number(process.env.REACT_APP_POLL_INTERVAL_MS || 2000);
 const MAX_ATTEMPTS = Number(process.env.REACT_APP_MAX_POLL_ATTEMPTS || 300);
 
+// Costruisce l'URL pubblico in modo resiliente
+const urlFromStatus = (
+  status: any,
+  bucketName: string,
+  region: string,
+  s3Base: string
+): string | null => {
+  // 1) Se outputFile è già una URL assoluta, usala così com'è
+  if (typeof status.outputFile === 'string' && /^https?:\/\//i.test(status.outputFile)) {
+    return status.outputFile;
+  }
+
+  // 2) Altrimenti usa una chiave: preferisci outKey, poi outputFile
+  const key = status.outKey || status.outputFile;
+  if (!key) return null;
+
+  // 3) Bucket: preferisci outBucket, altrimenti quello dello start
+  const bucket = status.outBucket || bucketName;
+  if (!bucket) return null;
+
+  const base = s3Base ? s3Base : `https://${bucket}.s3.${region}.amazonaws.com`;
+  return `${base}/${key}`;
+};
+
 type StartResp = { bucketName: string; renderId: string; error?: string };
 type StatusResp = {
   overallProgress?: number;
-  outputFile?: string;        // chiave S3 del file finale
+  outputFile?: string;        // può essere URL assoluta o chiave S3
+  outKey?: string;            // chiave S3 (alcune versioni la restituiscono)
+  outBucket?: string;         // bucket di output (alcune versioni lo restituiscono)
   errors?: any[];
   error?: string;
 };
@@ -45,7 +71,6 @@ const VideoForm: React.FC = () => {
       // 1) Avvio render
       const startRes = await fetch(START_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -95,15 +120,9 @@ const VideoForm: React.FC = () => {
           throw new Error(msg);
         }
 
-        if (stJson.outputFile) {
-          // Costruisci un URL pubblico per l’anteprima:
-          // 1) se hai impostato REACT_APP_S3_PUBLIC_BASE, usalo
-          // 2) altrimenti prova a costruire l’URL standard S3
-          const finalUrl = S3_PUBLIC_BASE
-              ? `${S3_PUBLIC_BASE}/${stJson.outputFile}`
-              : `https://${bucketName}.s3.${AWS_REGION}.amazonaws.com/${stJson.outputFile}`;
-
-          setGeneratedUrl(finalUrl);
+        const maybeUrl = urlFromStatus(stJson, bucketName, AWS_REGION, S3_PUBLIC_BASE);
+        if (maybeUrl) {
+          setGeneratedUrl(maybeUrl);
           setLoading(false);
           return;
         }
