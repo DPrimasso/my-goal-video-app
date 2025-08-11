@@ -24,14 +24,26 @@ exports.handler = async (event) => {
     // Helper: controlla se una stringa è una URL assoluta
     const isAbsoluteUrl = (u) => typeof u === 'string' && /^https?:\/\//i.test(u);
 
-    // Normalizza i props: se s3PlayerUrl è una chiave S3, trasformala in URL completa
+    // Normalizza i props: se s3PlayerUrl o overlayImage sono chiavi S3, trasformale in URL complete
     let mergedProps = { ...inputProps };
-    if (mergedProps && mergedProps.s3PlayerUrl && !isAbsoluteUrl(mergedProps.s3PlayerUrl)) {
-      if (!ASSET_BUCKET) {
-        console.warn('ASSET_BUCKET non impostato: s3PlayerUrl è una chiave ma non posso costruire la URL. La lascio invariata.');
-      } else {
-        const key = String(mergedProps.s3PlayerUrl).replace(/^\/+/, '');
-        mergedProps.s3PlayerUrl = `https://${ASSET_BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
+
+    const toS3Url = (val) => `https://${ASSET_BUCKET}.s3.${REGION}.amazonaws.com/${String(val).replace(/^\/+/, '')}`;
+
+    if (mergedProps) {
+      if (mergedProps.s3PlayerUrl && !isAbsoluteUrl(mergedProps.s3PlayerUrl)) {
+        if (!ASSET_BUCKET) {
+          console.warn('ASSET_BUCKET non impostato: s3PlayerUrl è una chiave ma non posso costruire la URL. La lascio invariata.');
+        } else {
+          mergedProps.s3PlayerUrl = toS3Url(mergedProps.s3PlayerUrl);
+        }
+      }
+
+      if (mergedProps.overlayImage && !isAbsoluteUrl(mergedProps.overlayImage)) {
+        if (!ASSET_BUCKET) {
+          console.warn('ASSET_BUCKET non impostato: overlayImage è una chiave ma non posso costruire la URL. La lascio invariata.');
+        } else {
+          mergedProps.overlayImage = toS3Url(mergedProps.overlayImage);
+        }
       }
     }
 
