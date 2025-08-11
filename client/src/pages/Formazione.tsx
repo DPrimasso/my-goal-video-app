@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import './Formazione.css';
 import '../VideoForm.css';
 import {players} from '../players';
+import {forceDownload} from '../utils/download';
 
 const Formazione: React.FC = () => {
   const [goalkeeper, setGoalkeeper] = useState(players[1]?.id || '');
@@ -33,6 +34,7 @@ const Formazione: React.FC = () => {
   ]);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const handleArrayChange = (
       setter: React.Dispatch<React.SetStateAction<string[]>>,
@@ -79,6 +81,18 @@ const Formazione: React.FC = () => {
       alert('Errore nella richiesta');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadVideo = async () => {
+    if (!generatedUrl) return;
+    try {
+      setDownloading(true);
+      await forceDownload(generatedUrl, 'formazione.mp4');
+    } catch (e) {
+      alert('Errore durante il download');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -149,9 +163,14 @@ const Formazione: React.FC = () => {
           {generatedUrl ? (
               <>
                 <video className="video-preview" src={generatedUrl} controls />
-                <a className="download-link" href={generatedUrl} download>
-                  Scarica video
-                </a>
+                <div style={{display: 'flex', gap: 12, alignItems: 'center', marginTop: 8}}>
+                  <button className="form-button" onClick={downloadVideo} disabled={downloading}>
+                    {downloading ? 'Preparazione download…' : 'Scarica video'}
+                  </button>
+                  <a className="download-link" href={generatedUrl} target="_blank" rel="noopener noreferrer">
+                    Apri in nuova scheda
+                  </a>
+                </div>
               </>
           ) : (
               <div className="preview-placeholder">Anteprima video</div>
