@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import '../VideoForm.css';
 import {players} from '../players';
 import {teams} from '../teams';
+import {forceDownload} from '../utils/download';
 
 const CASALPOGLIO_ID = teams[0].id;
 
@@ -13,6 +14,7 @@ const RisultatoFinale: React.FC = () => {
   const [scorers, setScorers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const handleTeamAChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -87,6 +89,18 @@ const RisultatoFinale: React.FC = () => {
       alert('Errore nella richiesta');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadVideo = async () => {
+    if (!generatedUrl) return;
+    try {
+      setDownloading(true);
+      await forceDownload(generatedUrl, 'risultato.mp4');
+    } catch (e) {
+      window.open(generatedUrl, '_blank', 'noopener,noreferrer');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -170,9 +184,14 @@ const RisultatoFinale: React.FC = () => {
         {generatedUrl ? (
           <>
             <video className="video-preview" src={generatedUrl} controls />
-            <a className="download-link" href={generatedUrl} download>
-              Scarica video
-            </a>
+            <div style={{display: 'flex', gap: 12, alignItems: 'center', marginTop: 8}}>
+              <button className="form-button" onClick={downloadVideo} disabled={downloading}>
+                {downloading ? 'Preparazione download…' : 'Scarica video'}
+              </button>
+              <a className="download-link" href={generatedUrl} target="_blank" rel="noopener noreferrer">
+                Apri in nuova scheda
+              </a>
+            </div>
           </>
         ) : (
           <div className="preview-placeholder">Anteprima video</div>
