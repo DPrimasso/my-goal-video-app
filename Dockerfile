@@ -27,10 +27,11 @@ ENV REACT_APP_S3_PUBLIC_BASE=$REACT_APP_S3_PUBLIC_BASE
 
 RUN npm run build
 
-# ---- serve statici con nginx unprivileged ----
-FROM nginxinc/nginx-unprivileged:stable-alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/client/build /usr/share/nginx/html
-
-EXPOSE 8080
-USER 101
+# ---- runtime con serve su 10000 ----
+FROM node:20-alpine
+WORKDIR /app
+RUN npm i -g serve
+COPY --from=builder /app/client/build /app/build
+ENV PORT=10000
+EXPOSE 10000
+CMD ["serve", "-s", "build", "-l", "10000"]
