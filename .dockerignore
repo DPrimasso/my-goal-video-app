@@ -1,0 +1,9 @@
+.git
+.idea
+.vscode
+.venv
+**/node_modules
+**/.env
+dist
+build
+lambda
