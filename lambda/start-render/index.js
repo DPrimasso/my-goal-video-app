@@ -29,6 +29,9 @@ exports.handler = async (event) => {
 
     const toS3Url = (val) => `https://${ASSET_BUCKET}.s3.${REGION}.amazonaws.com/${String(val).replace(/^\/+/, '')}`;
 
+    console.log("!!! FIRST S3PlayerUrl:", mergedProps.s3PlayerUrl);
+    console.log("!!! FIST OverlayImage:", mergedProps.overlayImage);
+
     if (mergedProps) {
       if (mergedProps.s3PlayerUrl && !isAbsoluteUrl(mergedProps.s3PlayerUrl)) {
         if (!ASSET_BUCKET) {
@@ -46,6 +49,8 @@ exports.handler = async (event) => {
         }
       }
     }
+    console.log("??? AFTER S3PlayerUrl:", mergedProps.s3PlayerUrl);
+    console.log("??? AFTER OverlayImage:", mergedProps.overlayImage);
 
     if (!FUNCTION_NAME) {
       return { statusCode: 500, body: JSON.stringify({ error: 'Missing REMOTION_LAMBDA_FUNCTION_NAME' }) };

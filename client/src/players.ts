@@ -10,17 +10,17 @@ export const players: Player[] = [
   {
     id: 'davide_fava',
     name: 'Davide Fava',
-    image: `${ASSET_BASE}/players/davide_fava.png`,
+    image: `/players/davide_fava.png`,
   },
   {
     id: 'lorenzo_campagnari',
     name: 'Lorenzo Campagnari',
-    image: `${ASSET_BASE}/players/lorenzo_campagnari.png`,
+    image: `/players/lorenzo_campagnari.png`,
   },
   {
     id: 'davide_scalmana',
     name: 'Davide Scalmana',
-    image: `${ASSET_BASE}/players/davide_scalmana.png`,
+    image: `/players/davide_scalmana.png`,
   },
 ];
 
