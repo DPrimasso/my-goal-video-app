@@ -77,7 +77,7 @@ const VideoForm: React.FC = () => {
     const selected = players.find(p => p.id === playerId);
     const playerNameVal = selected?.name || '';
     const rawPlayerImage = selected?.image || '';
-    const s3PlayerUrl = makeAbsoluteIfKey(rawPlayerImage);
+    const playerImageUrl = makeAbsoluteIfKey(rawPlayerImage);
 
     setLoading(true);
     setGeneratedUrl(null);
@@ -90,13 +90,15 @@ const VideoForm: React.FC = () => {
           playerId,
           playerName: playerNameVal,
           minuteGoal: Number(minuteGoal),
-          s3PlayerUrl,
+          s3PlayerUrl: playerImageUrl,
+          overlayImage: playerImageUrl,
         },
       };
 
       // 1) Avvio render
       const startRes = await fetch(START_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
