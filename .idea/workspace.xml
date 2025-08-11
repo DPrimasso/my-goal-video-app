@@ -5,11 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/client/src/remotion/Ping.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/change.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/VideoForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/VideoForm.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-goal-video-app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/my-goal-video-app.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/app-bundle.zip" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/app-bundle.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/render-status/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/render-status/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/start-render/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/start-render/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,6 +28,7 @@
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "npm.start.executor": "Run",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",

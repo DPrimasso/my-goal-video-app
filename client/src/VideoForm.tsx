@@ -6,12 +6,15 @@ const START_URL = process.env.REACT_APP_START_RENDER_URL!;
 const STATUS_URL = process.env.REACT_APP_RENDER_STATUS_URL!;
 const AWS_REGION = process.env.REACT_APP_AWS_REGION || 'eu-west-1';
 const S3_PUBLIC_BASE = process.env.REACT_APP_S3_PUBLIC_BASE || '';
+const POLL_INTERVAL_MS = Number(process.env.REACT_APP_POLL_INTERVAL_MS || 2000);
+const MAX_ATTEMPTS = Number(process.env.REACT_APP_MAX_POLL_ATTEMPTS || 300);
 
-type StartResp = { bucketName: string; renderId: string };
+type StartResp = { bucketName: string; renderId: string; error?: string };
 type StatusResp = {
   overallProgress?: number;
   outputFile?: string;        // chiave S3 del file finale
-  errors?: string[];
+  errors?: any[];
+  error?: string;
 };
 
 const VideoForm: React.FC = () => {
@@ -22,6 +25,10 @@ const VideoForm: React.FC = () => {
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
 
   const handleGenerate = async () => {
+    if (!START_URL || !STATUS_URL) {
+      alert('Config mancante: START_URL o STATUS_URL');
+      return;
+    }
     if (!playerId) { alert('Seleziona un giocatore'); return; }
     if (!minuteGoal) { alert('Inserisci il minuto del gol'); return; }
 
@@ -30,29 +37,36 @@ const VideoForm: React.FC = () => {
     setProgress(0);
 
     try {
+      const payload = {
+        compositionId: 'GoalComp',           // usa la tua composition
+        inputProps: { playerId, minuteGoal: Number(minuteGoal) } // parametri per il video
+      };
+
       // 1) Avvio render
       const startRes = await fetch(START_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          compositionId: 'GoalComp',           // usa la tua composition
-          inputProps: { playerId, minuteGoal } // parametri per il video
-        })
+        body: JSON.stringify(payload)
       });
 
-      const startJson: StartResp | {error?: string} = await startRes.json();
-      if (!startRes.ok || !(startJson as StartResp).renderId) {
-        throw new Error((startJson as any).error || 'Errore start-render');
+      let startJson: StartResp;
+      try {
+        startJson = await startRes.json();
+      } catch {
+        throw new Error('Risposta non valida da start-render');
       }
 
-      const { bucketName, renderId } = startJson as StartResp;
+      if (!startRes.ok || !startJson.renderId || !startJson.bucketName) {
+        throw new Error(startJson.error || 'Errore start-render');
+      }
+
+      const { bucketName, renderId } = startJson;
 
       // 2) Polling stato
       let attempts = 0;
-      const maxAttempts = 300; // ~10 minuti con interval 2s
       const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-      while (attempts < maxAttempts) {
+      while (attempts < MAX_ATTEMPTS) {
         attempts += 1;
 
         const url = new URL(STATUS_URL);
@@ -60,17 +74,25 @@ const VideoForm: React.FC = () => {
         url.searchParams.set('renderId', renderId);
 
         const stRes = await fetch(url.toString(), { method: 'GET' });
-        const stJson: StatusResp = await stRes.json();
+        let stJson: StatusResp;
+        try {
+          stJson = await stRes.json();
+        } catch {
+          throw new Error('Risposta non valida da render-status');
+        }
 
         if (!stRes.ok) {
-          throw new Error((stJson as any).error || 'Errore render-status');
+          throw new Error(stJson.error || 'Errore render-status');
         }
 
         const p = Math.round(((stJson.overallProgress || 0) * 100));
-        setProgress(p);
+        if (!Number.isNaN(p)) setProgress(p);
 
         if (stJson.errors && stJson.errors.length) {
-          throw new Error(stJson.errors.join(' | '));
+          const msg = stJson.errors
+            .map((e: any) => typeof e === 'string' ? e : e?.message || e?.stack || JSON.stringify(e))
+            .join(' | ');
+          throw new Error(msg);
         }
 
         if (stJson.outputFile) {
@@ -86,13 +108,14 @@ const VideoForm: React.FC = () => {
           return;
         }
 
-        await sleep(2000);
+        await sleep(POLL_INTERVAL_MS);
       }
 
       throw new Error('Timeout in attesa del render');
     } catch (err: any) {
       console.error(err);
       alert(err?.message || 'Errore nella generazione');
+    } finally {
       setLoading(false);
     }
   };
@@ -118,7 +141,8 @@ const VideoForm: React.FC = () => {
             Minuto del Gol:
             <input
                 className="form-input"
-                type="text"
+                type="number"
+                min="0"
                 value={minuteGoal}
                 onChange={(e) => setMinuteGoal(e.target.value)}
                 placeholder="es. 78"
