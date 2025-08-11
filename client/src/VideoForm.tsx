@@ -49,6 +49,7 @@ const VideoForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<number>(0);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const handleGenerate = async () => {
     if (!START_URL || !STATUS_URL) {
@@ -139,6 +140,39 @@ const VideoForm: React.FC = () => {
     }
   };
 
+  // Funzione per forzare il download via fetch+Blob con fallback
+  const downloadVideo = async () => {
+    if (!generatedUrl) return;
+    try {
+      setDownloading(true);
+      // Provo a scaricare via fetch -> blob (richiede CORS sul bucket S3)
+      const res = await fetch(generatedUrl, { mode: 'cors' });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      // Nome file "parlante"
+      const namePart = playerId ? `player-${playerId}` : 'video';
+      const minutePart = minuteGoal ? `-min-${minuteGoal}` : '';
+      const filename = `goal-${namePart}${minutePart}.mp4`;
+
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      // Se CORS blocca il fetch o c'è un errore, faccio fallback aprendo la URL (comportamento attuale)
+      window.open(generatedUrl, '_blank', 'noopener,noreferrer');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
       <div className="video-form">
         <div className="form-section">
@@ -177,9 +211,14 @@ const VideoForm: React.FC = () => {
           {generatedUrl ? (
               <>
                 <video className="video-preview" src={generatedUrl} controls />
-                <a className="download-link" href={generatedUrl} download>
-                  Scarica video
-                </a>
+                <div style={{display: 'flex', gap: 12, alignItems: 'center', marginTop: 8}}>
+                  <button className="form-button" onClick={downloadVideo} disabled={downloading}>
+                    {downloading ? 'Preparazione download…' : 'Scarica video'}
+                  </button>
+                  <a className="download-link" href={generatedUrl} target="_blank" rel="noopener noreferrer">
+                    Apri in nuova scheda
+                  </a>
+                </div>
               </>
           ) : (
               <div className="preview-placeholder">
