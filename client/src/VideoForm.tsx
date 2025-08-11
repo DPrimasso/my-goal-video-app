@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import './VideoForm.css';
 import {players} from './players';
+import {forceDownload} from './utils/download';
 
 const START_URL = process.env.REACT_APP_START_RENDER_URL!;
 const STATUS_URL = process.env.REACT_APP_RENDER_STATUS_URL!;
@@ -167,34 +168,18 @@ const VideoForm: React.FC = () => {
     }
   };
 
-  // Funzione per forzare il download via fetch+Blob con fallback
+  // Forza il download del video aggiungendo un parametro che suggerisce
+  // al browser il `Content-Disposition: attachment`
   const downloadVideo = async () => {
     if (!generatedUrl) return;
     try {
       setDownloading(true);
-      // Provo a scaricare via fetch -> blob (richiede CORS sul bucket S3)
-      const res = await fetch(generatedUrl, { mode: 'cors' });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-
-      // Nome file "parlante"
       const namePart = playerId ? `player-${playerId}` : 'video';
       const minutePart = minuteGoal ? `-min-${minuteGoal}` : '';
       const filename = `goal-${namePart}${minutePart}.mp4`;
-
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objectUrl);
+      await forceDownload(generatedUrl, filename);
     } catch (e) {
-      // Se CORS blocca il fetch o c'è un errore, faccio fallback aprendo la URL (comportamento attuale)
-      window.open(generatedUrl, '_blank', 'noopener,noreferrer');
+      alert('Errore durante il download');
     } finally {
       setDownloading(false);
     }
