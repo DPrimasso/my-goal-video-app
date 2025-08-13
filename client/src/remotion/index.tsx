@@ -4,7 +4,7 @@ import {MyGoalVideo, MyGoalVideoProps} from './MyGoalVideo';
 import {FormationVideo, FormationVideoProps} from './FormationVideo';
 import {FinalResultVideo, FinalResultVideoProps} from './FinalResultVideo';
 import {Ping} from './Ping';
-import {players} from '../players';
+import {players, getSurname} from '../players';
 
 const RemotionRoot: React.FC = () => {
   const defaultProps: MyGoalVideoProps = {
@@ -19,7 +19,7 @@ const RemotionRoot: React.FC = () => {
   };
 
   const mapFormationPlayer = (p: {name: string; image: string}) => ({
-    name: p.name.split(" ")[1], // Use only the last name
+    name: getSurname(p.name), // Use only the last name
     image: p.image,
   });
 
@@ -49,7 +49,7 @@ const RemotionRoot: React.FC = () => {
         <Composition<any, MyGoalVideoProps>
             id="GoalComp"
             component={MyGoalVideo}
-            durationInFrames={180}
+            durationInFrames={300}
             fps={30}
             width={1080}
             height={1920}

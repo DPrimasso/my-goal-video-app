@@ -6,8 +6,19 @@
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/client/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/public/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/public/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/Goal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Goal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/players.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/players.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/localVideoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/localVideoService.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/app-bundle.zip" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/app-bundle.zip" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -158,7 +169,7 @@
       <workItem from="1754909140990" duration="11000" />
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
-      <workItem from="1755098950112" duration="10921000" />
+      <workItem from="1755098950112" duration="14060000" />
     </task>
     <servers />
   </component>

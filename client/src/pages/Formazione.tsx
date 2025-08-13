@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button } from '../components/ui';
-import { players } from '../players';
+import { players, getSurname } from '../players';
 import './Formazione.css';
 
 const Formazione: React.FC = () => {
@@ -88,7 +88,7 @@ const Formazione: React.FC = () => {
         <option value="">--</option>
         {players.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name.split(" ")[1]}
+              {getSurname(p.name)}
             </option>
         ))}
       </select>

@@ -1,5 +1,6 @@
 import { GoalVideoRequest } from '../types';
 import { APP_CONFIG } from '../config/environment';
+import { isDevelopment } from '../config/environment';
 
 interface LocalRenderStatus {
   overallProgress: number;
@@ -20,8 +21,10 @@ class LocalVideoService {
 
   async generateGoalVideo(request: GoalVideoRequest): Promise<string> {
     try {
-      console.log('Starting local video generation with Express server...');
-      console.log('Request data:', request);
+      if (isDevelopment()) {
+        console.log('Starting local video generation with Express server...');
+        console.log('Request data:', request);
+      }
       
       // Generate a unique render ID
       const renderId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -50,7 +53,9 @@ class LocalVideoService {
       // Update progress to 10%
       this.updateProgress(renderId, 0.1);
 
-      console.log('Sending request to local Express server...');
+      if (isDevelopment()) {
+        console.log('Sending request to local Express server...');
+      }
       
       // Send request to local Express server for real video generation
       const response = await fetch(`${this.serverUrl}/api/render`, {
@@ -94,7 +99,9 @@ class LocalVideoService {
         });
       }
 
-      console.log(`Video generated successfully: ${result.video}`);
+      if (isDevelopment()) {
+        console.log(`Video generated successfully: ${result.video}`);
+      }
     } catch (error: unknown) {
       console.error('Error in render process:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -124,8 +131,10 @@ class LocalVideoService {
 
   async downloadVideo(filename: string): Promise<void> {
     try {
-      console.log(`Local video ready for download: ${filename}`);
-      console.log('Video is available at:', `${this.serverUrl}/videos/${filename}`);
+      if (isDevelopment()) {
+        console.log(`Local video ready for download: ${filename}`);
+        console.log('Video is available at:', `${this.serverUrl}/videos/${filename}`);
+      }
     } catch (error: unknown) {
       console.error('Error downloading local video:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

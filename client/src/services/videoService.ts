@@ -12,7 +12,9 @@ class VideoService {
 
   async startGoalVideoGeneration(request: GoalVideoRequest): Promise<VideoGenerationResponse> {
 
-    console.log("ISDEV:", isDevelopment());
+    if (isDevelopment()) {
+      console.log("ISDEV:", isDevelopment());
+    }
 
     // Check if we're in development mode
     if (isDevelopment()) {

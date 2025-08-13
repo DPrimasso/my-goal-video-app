@@ -18,6 +18,14 @@
   margin-bottom: 15px;
 }
 
+.surname {
+  margin-right: 40px;
+}
+
+.minute {
+  margin-left: 40px;
+}
+
 .goal-minute {
   font-size: var(--minute-size, 80px);
   margin-bottom: 25px;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
-import { players } from '../players';
+import { players, getSurname } from '../players';
 import './RisultatoFinale.css';
 
 interface TeamScore {
@@ -97,7 +97,7 @@ const RisultatoFinale: React.FC = () => {
     }
   };
 
-  const getSurname = (name: string) => name.split(" ").slice(-1)[0];
+
 
   return (
     <PageTemplate

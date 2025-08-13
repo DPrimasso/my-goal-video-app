@@ -3,12 +3,12 @@
   "name": "Casalpoglio",
   "icons": [
     {
-      "src": "logo_app.jpg",
+      "src": "logo_casalpoglio.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo_app.jpg",
+      "src": "logo_casalpoglio.png",
       "type": "image/png",
       "sizes": "512x512"
     }

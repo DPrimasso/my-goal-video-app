@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import { validateConfig } from './config/environment';
+import { validateConfig, isDevelopment } from './config/environment';
 
 // Validate environment configuration on startup
 validateConfig();
@@ -31,7 +31,9 @@ window.addEventListener('error', (event) => {
 
 // Disable hot reload temporarily to debug refresh issues
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔧 Development mode - hot reload disabled for debugging');
+  if (isDevelopment()) {
+    console.log('🔧 Development mode - hot reload disabled for debugging');
+  }
   // @ts-ignore
   if (module.hot) {
     // @ts-ignore
@@ -41,12 +43,16 @@ if (process.env.NODE_ENV === 'development') {
 
 // Detect page refresh/reload
 window.addEventListener('beforeunload', (event) => {
-  console.log('🔄 Page is about to refresh/reload');
+  if (isDevelopment()) {
+    console.log('🔄 Page is about to refresh/reload');
+  }
 });
 
 // Detect page visibility changes
 document.addEventListener('visibilitychange', () => {
-  console.log('👁️ Page visibility changed:', document.visibilityState);
+  if (isDevelopment()) {
+    console.log('👁️ Page visibility changed:', document.visibilityState);
+  }
 });
 
 const root = ReactDOM.createRoot(

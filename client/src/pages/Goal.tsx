@@ -3,7 +3,8 @@ import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
 import { useVideoGeneration } from '../hooks/useVideoGeneration';
 import { videoService } from '../services/videoService';
-import { players } from '../players';
+import { players, getSurname } from '../players';
+import { isDevelopment } from '../config/environment';
 import './Goal.css';
 
 interface TeamScore {
@@ -30,14 +31,14 @@ const Goal: React.FC = () => {
   }, []);
 
   // Debug logging for re-renders
-  if (generatedUrl) {
+  if (generatedUrl && isDevelopment()) {
     console.log('🎯 Video ready for preview:', generatedUrl);
   }
 
   // Monitor state changes
   useEffect(() => {
     // Log when URL is lost
-    if (generatedUrl === null && progress === 100) {
+    if (generatedUrl === null && progress === 100 && isDevelopment()) {
       console.log('🚨 URL was lost after completion!');
     }
   }, [generatedUrl, progress]);
@@ -84,7 +85,9 @@ const Goal: React.FC = () => {
     const playerImageUrl = videoService.makeAssetUrl(selectedPlayer.image);
     const partialScore = `${score.home}-${score.away}`;
     
-    console.log('Generating video with partialScore:', partialScore);
+    if (isDevelopment()) {
+      console.log('Generating video with partialScore:', partialScore);
+    }
 
     try {
       await generateVideo({
@@ -120,8 +123,10 @@ const Goal: React.FC = () => {
 
   const playerOptions = players.map(player => ({
     value: player.id,
-    label: player.name,
+    label: getSurname(player.name),
   }));
+
+  playerOptions.sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <PageTemplate

@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Video, Img, spring, useCurrentFrame, useVideoConfig, interpolate} from 'remotion';
 import {resolveAsset} from './resolveAsset';
+import { isDevelopment } from '../config/environment';
 import './MyGoalVideo.css';
 
 export interface MyGoalVideoProps extends Record<string, unknown> {
@@ -29,8 +30,10 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                                                             textShadow = '0 0 10px black',
                                                         }) => {
     // Debug logging
-    console.log('MyGoalVideo props:', { playerName, minuteGoal, partialScore });
-    console.log('Partial score type:', typeof partialScore, 'value:', partialScore);
+    if (isDevelopment()) {
+        console.log('MyGoalVideo props:', { playerName, minuteGoal, partialScore });
+        console.log('Partial score type:', typeof partialScore, 'value:', partialScore);
+    }
     
     // Animation hooks
     const frame = useCurrentFrame();
@@ -48,10 +51,13 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
         ? (isAbsoluteUrl(overlayImage) ? overlayImage : resolveAsset(overlayImage))
         : undefined;
 
-    // Springs for entry animations
-    const textSpring = spring({ frame, fps });
-    const imageSpring = spring({ frame: frame - 10, fps });
-    const scoreSpring = spring({ frame: frame - 20, fps }); // Delayed animation for score
+    // Extract surname (second part of the name)
+    const surname = playerName.split(' ').slice(-1)[0];
+
+    // Springs for entry animations - delayed by 1 second (30 frames at 30fps)
+    const imageSpring = spring({ frame: frame - 60, fps }); // Delayed by 1 second + 10 frames
+    const textSpring = spring({ frame: frame - 80, fps });
+    const scoreSpring = spring({ frame: frame - 100, fps }); // Delayed by 1 second + 20 frames
 
     // Interpolated values
     const textTranslate = interpolate(textSpring, [0, 1], [200, 0]);
@@ -96,8 +102,10 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                         '--text-shadow': textShadow,
                     } as React.CSSProperties}
                 >
-                    <div className="goal-text player-name-goal">{playerName}</div>
-                    <div className="goal-text goal-minute">{minuteGoal}°</div>
+                    <div className="goal-text player-name-goal">
+                        <span className="surname">{surname}</span>
+                        <span className="minute">{minuteGoal}°</span>
+                    </div>
                     {partialScore && partialScore.trim() !== '' && (
                         <div
                             className="score-section"
@@ -106,7 +114,6 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
                                 opacity: scoreSpring,
                             }}
                         >
-                            <div className="goal-text partial-score">Risultato parziale</div>
                             <div className="goal-text score-value">{partialScore}</div>
                         </div>
                     )}
