@@ -14,23 +14,20 @@ export interface Formation {
 }
 
 export interface GoalVideoRequest {
-  playerId: string;
+  playerId?: string;
   playerName: string;
-  minuteGoal: number;
-  s3PlayerUrl: string;
-  overlayImage: string;
-  partialScore: string;
+  minuteGoal: string | number;
+  goalClip?: string;
+  s3PlayerUrl?: string;
+  overlayImage?: string;
+  partialScore?: string;
+  textColor?: string;
+  titleSize?: number;
+  playerSize?: number;
+  textShadow?: string;
 }
 
-// Nuova interfaccia per la richiesta semplificata
-export interface SimplifiedGoalVideoRequest {
-  playerId: string;
-  playerName: string;
-  minuteGoal: number;
-  partialScore: string;
-  playerImage: string; // Solo il nome del file
-  overlayImage: string; // Solo il nome del file
-}
+
 
 export interface VideoGenerationStatus {
   overallProgress?: number;
@@ -45,14 +42,13 @@ export interface VideoGenerationResponse {
   bucketName: string;
   renderId: string;
   error?: string;
+  localFile?: string; // For local development
 }
 
 export interface AppConfig {
+  environment: string;
   startRenderUrl: string;
   renderStatusUrl: string;
-  awsRegion: string;
-  s3PublicBase: string;
-  assetBucket: string;
   pollIntervalMs: number;
   maxPollAttempts: number;
 }

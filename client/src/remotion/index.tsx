@@ -15,6 +15,7 @@ const RemotionRoot: React.FC = () => {
     overlayImage: 'logo192.png',
     // URL completo (pubblico o presigned) dell'immagine del giocatore; vuoto nel preview
     s3PlayerUrl: '',
+    partialScore: '2-1',
   };
 
   const mapFormationPlayer = (p: {name: string; image: string}) => ({
@@ -48,7 +49,7 @@ const RemotionRoot: React.FC = () => {
         <Composition<any, MyGoalVideoProps>
             id="GoalComp"
             component={MyGoalVideo}
-            durationInFrames={150}
+            durationInFrames={180}
             fps={30}
             width={1080}
             height={1920}

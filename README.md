@@ -1,60 +1,95 @@
 # My Goal Video App
 
-This repository contains a React front-end and two AWS Lambda handlers used to render Remotion videos on demand.
+Un'applicazione per la generazione di video personalizzati di gol calcistici con animazioni e overlay personalizzati.
 
-## Structure
-- `client/`: React app compiled to a static bundle.
-- `lambda/start-render`: Lambda handler that starts a render via `renderMediaOnLambda`.
-- `lambda/render-status`: Lambda handler that checks render progress.
-
-## Environment variables
-Create a `.env` file (for local builds) or set these variables in your deployment:
+## 🏗️ Architettura del Progetto
 
 ```
-REACT_APP_ASSET_BASE=https://<bucket>.s3.<region>.amazonaws.com
-AWS_REGION=<region>
-REMOTION_LAMBDA_FUNCTION_NAME=<name-of-remotion-render-lambda>
-REMOTION_SERVE_URL=https://<bucket>.s3.<region>.amazonaws.com/sites/<deploy-id>
-ASSET_BUCKET=<bucket-name>
+my-goal-video-app/
+├── client/          # Frontend React + Server Express locale
+├── lambda/          # Funzioni AWS Lambda per produzione
+├── build/           # Build di produzione
+└── dist/            # Distribuzione
 ```
 
-`REACT_APP_*` variables are embedded into the client at build time.
+## 🚀 Modalità di Esecuzione
 
-## Testing
-Run the available tests:
+### **Development (Locale)**
+- **Frontend**: React app su `localhost:3000`
+- **Backend**: Server Express su `localhost:4000`
+- **Generazione Video**: Locale con Remotion
+- **Storage**: File system locale
 
-```
-cd lambda
-npm test   # no tests yet
+### **Production (AWS Lambda)**
+- **Frontend**: Build statico su CDN/S3
+- **Backend**: Funzioni AWS Lambda
+- **Generazione Video**: Serverless su AWS
+- **Storage**: Amazon S3
 
-cd ../client
-CI=true npm test -- --watchAll=false
-```
+## 🛠️ Tecnologie Utilizzate
 
-## Build & deploy
+- **Frontend**: React + TypeScript
+- **Video Generation**: Remotion
+- **Backend Locale**: Express.js
+- **Backend Production**: AWS Lambda
+- **Storage**: File System (dev) / S3 (prod)
 
-### 1. Client
-```
+## 📁 Struttura Principale
+
+- **`client/`**: Applicazione React completa con server Express integrato
+- **`lambda/`**: Funzioni AWS Lambda per la generazione video in produzione
+- **`build/`**: Build ottimizzato per produzione
+- **`dist/`**: Distribuzione finale
+
+## 🚦 Avvio Rapido
+
+### **Sviluppo Locale**
+```bash
 cd client
 npm install
-npm run build
+npm run dev        # Avvia tutto (React + Server)
 ```
-Upload the `build/` directory to an S3 bucket and serve it through CloudFront or Amplify.
 
-### 2. Lambda handlers
+### **Produzione**
+```bash
+cd client
+npm run build     # Build per produzione
+# Deploy su AWS Lambda + S3
 ```
-cd lambda
-npm install
-zip -r start-render.zip start-render node_modules package.json package-lock.json
-zip -r render-status.zip render-status node_modules package.json package-lock.json
-```
-Create two Lambda functions using Node.js 18 and upload the corresponding zip files.
-Set the environment variables listed above.
 
-### 3. API Gateway
-- Create an HTTP API with CORS enabled for your client domain.
-- Routes:
-  - `POST /start-render` → start-render Lambda
-  - `GET /render-status` → render-status Lambda
+## 🔧 Configurazione
 
-The client can now trigger renders via the API and poll for completion.
+### **Variabili d'Ambiente**
+- `REACT_APP_ENVIRONMENT`: `dev` (locale) | `prod` (Lambda)
+- `REACT_APP_START_RENDER_URL`: URL Lambda per produzione
+- `REACT_APP_RENDER_STATUS_URL`: URL status Lambda per produzione
+
+### **Porte**
+- **React App**: 3000
+- **Video Server**: 4000
+- **Lambda**: 443 (HTTPS)
+
+## 📚 Documentazione Dettagliata
+
+- **`client/README.md`**: Documentazione frontend e server locale
+- **`lambda/README.md`**: Documentazione funzioni Lambda
+
+## 🎯 Funzionalità
+
+- ✅ Generazione video personalizzati con overlay
+- ✅ Selezione giocatori e minuti gol
+- ✅ Gestione punteggi parziali
+- ✅ Anteprima video in tempo reale
+- ✅ Download video generati
+- ✅ Modalità locale e produzione
+
+## 🔄 Workflow
+
+1. **Input**: Selezione giocatore, minuto, punteggio
+2. **Generazione**: Creazione video con Remotion
+3. **Output**: Video personalizzato con overlay
+4. **Download**: Salvataggio video generato
+
+## 📝 Licenza
+
+Progetto privato per uso interno.

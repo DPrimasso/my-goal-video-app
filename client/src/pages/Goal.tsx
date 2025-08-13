@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
 import { useVideoGeneration } from '../hooks/useVideoGeneration';
@@ -18,6 +18,29 @@ const Goal: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const { loading, progress, generatedUrl, error, generateVideo, reset } = useVideoGeneration();
+
+  // Error boundary for the component
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error('🚨 Goal component error:', error);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  // Debug logging for re-renders
+  if (generatedUrl) {
+    console.log('🎯 Video ready for preview:', generatedUrl);
+  }
+
+  // Monitor state changes
+  useEffect(() => {
+    // Log when URL is lost
+    if (generatedUrl === null && progress === 100) {
+      console.log('🚨 URL was lost after completion!');
+    }
+  }, [generatedUrl, progress]);
 
   const handleScoreChange = (team: 'home' | 'away', value: string) => {
     const numValue = parseInt(value) || 0;
@@ -44,6 +67,10 @@ const Goal: React.FC = () => {
       newErrors.score = 'Il punteggio non può essere negativo';
     }
 
+    if (score.home === 0 && score.away === 0) {
+      newErrors.score = 'Inserisci almeno un gol per una delle due squadre';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -56,6 +83,8 @@ const Goal: React.FC = () => {
 
     const playerImageUrl = videoService.makeAssetUrl(selectedPlayer.image);
     const partialScore = `${score.home}-${score.away}`;
+    
+    console.log('Generating video with partialScore:', partialScore);
 
     try {
       await generateVideo({
@@ -113,11 +142,10 @@ const Goal: React.FC = () => {
             />
 
             <div className="score-section">
-              <h3>Risultato Parziale</h3>
               <div className="score-inputs">
                 <div className="score-input">
                   <Input
-                    label="Casa"
+                    label="Parziale casa"
                     value={score.home.toString()}
                     onChange={(value) => handleScoreChange('home', value)}
                     type="number"
@@ -131,7 +159,7 @@ const Goal: React.FC = () => {
                 
                 <div className="score-input">
                   <Input
-                    label="Ospite"
+                    label="Parziale Ospite"
                     value={score.away.toString()}
                     onChange={(value) => handleScoreChange('away', value)}
                     type="number"

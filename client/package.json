@@ -3,6 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "dependencies": {
+    "@remotion/bundler": "^4.0.332",
+    "@remotion/renderer": "^4.0.332",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
@@ -11,6 +13,8 @@
     "@types/node": "^24.1.0",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^6.22.0",
@@ -25,11 +29,21 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "docker:build": "docker build -t myapp-client:latest .",
-    "docker:run": "docker run --rm -p 3000:8080 --env-file .env myapp-client:latest",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    
+    "server": "node server.js",
+    "dev": "concurrently \"npm run server\" \"npm start\"",
+    "start:full": "npm run dev",
+    "start:react": "PORT=3000 react-scripts start",
+    "start:server": "PORT_SERVER=4000 node server.js",
+    
+    "check-ports": "lsof -i :3000 && lsof -i :4000",
+    "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
+    "clean-start": "npm run kill-ports && npm run dev",
+    
+    "studio": "npx @remotion/studio src/remotion/index.tsx"
   },
   "eslintConfig": {
     "extends": [
@@ -50,7 +64,7 @@
     ]
   },
   "devDependencies": {
-    "@types/fluent-ffmpeg": "^2.1.27"
-  },
-  "proxy": "http://localhost:4000"
+    "@types/fluent-ffmpeg": "^2.1.27",
+    "concurrently": "^8.2.2"
+  }
 }

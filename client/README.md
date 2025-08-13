@@ -1,128 +1,202 @@
-# Casalpoglio Official
+# Client - My Goal Video App
 
-Applicazione React per la generazione di video calcistici personalizzati con tema rossoblu ispirato al calcio italiano.
+Frontend React con server Express integrato per la generazione locale di video.
 
-## 🚀 Caratteristiche
+> **💡 IMPORTANTE**: Tutti i comandi npm si eseguono da questa cartella (`client/`).
 
-- **Generazione Video Goal**: Crea video personalizzati con giocatori, minuti e risultati parziali
-- **Gestione Formazione**: Organizza la squadra con posizionamento visivo
-- **Risultati Finali**: Crea video celebrativi con marcatori e punteggi
-- **Tema Rossoblu**: Design moderno con colori del calcio italiano
-- **Responsive Design**: Ottimizzato per desktop, tablet e mobile
-- **TypeScript**: Codice type-safe e robusto
+## 🏗️ Architettura
 
-## 🎨 Tema e Design
+```
+client/
+├── src/                    # Codice sorgente React
+│   ├── components/         # Componenti UI riutilizzabili
+│   ├── pages/             # Pagine dell'applicazione
+│   ├── services/          # Servizi per video e API
+│   ├── hooks/             # Custom hooks React
+│   ├── config/            # Configurazione unificata
+│   ├── types/             # Definizioni TypeScript
+│   └── remotion/          # Composizioni video Remotion
+├── public/                 # Asset statici
+├── server.js              # Server Express per generazione video
+└── package.json           # Dipendenze e script
+```
 
-### Colori Principali
-- **Blu Scuro** (`#1e3a8a`): Colore primario
-- **Rosso** (`#dc2626`): Colore secondario
-- **Blu Chiaro** (`#3b82f6`): Colore accent
-- **Sfondo Scuro**: Per migliore leggibilità
+## 🚀 Avvio Sviluppo
 
-### Logo
-- Logo ufficiale del Casalpoglio
-- Design responsive e moderno
-- Hover effects per interattività
+### **Installazione Dipendenze**
+```bash
+npm install
+```
 
-## 📱 Responsive Design
+### **Avvio Frontend (React)**
+```bash
+npm start
+# Avvia su http://localhost:3000
+```
 
-L'applicazione è ottimizzata per tutti i dispositivi:
+### **Avvio Server Video (Express)**
+```bash
+node server.js
+# Avvia su http://localhost:4000
+```
 
-- **Desktop**: Layout a due colonne con navigazione orizzontale
-- **Tablet**: Layout adattivo con elementi ridimensionati
-- **Mobile**: Layout a colonna singola con navigazione ottimizzata
+### **Avvio Completo (Entrambi)**
+```bash
+# Opzione 1: Comando unico (raccomandato)
+npm run dev
+
+# Opzione 2: Comandi separati
+# Terminal 1
+npm start
+
+# Terminal 2  
+npm run server
+```
+
+### **Comandi Utili**
+```bash
+npm run dev          # Avvia tutto (React + Server)
+npm run start:full   # Alias per npm run dev
+npm run clean-start  # Ferma tutto e riavvia
+npm run kill-ports   # Ferma tutti i processi
+npm run check-ports  # Controlla porte in uso
+```
+
+## 🎯 Funzionalità Frontend
+
+### **Pagina Goal**
+- Selezione giocatore
+- Inserimento minuto gol
+- Gestione punteggio parziale
+- Generazione video personalizzato
+- Anteprima video in tempo reale
+- Download video generato
+
+### **Pagina Formazione**
+- Visualizzazione formazione squadra
+- Posizionamento giocatori
+- Generazione video formazione
+
+### **Pagina Risultato Finale**
+- Visualizzazione punteggio finale
+- Generazione video risultato
+
+## 🔧 Configurazione
+
+### **Configurazione Unificata**
+Tutta la configurazione è centralizzata in `src/config/environment.ts`:
+
+```typescript
+export const APP_CONFIG = {
+  environment: 'dev' | 'prod',
+  startRenderUrl: string,      // URL Lambda per produzione
+  renderStatusUrl: string,     // URL status Lambda per produzione
+  pollIntervalMs: number,      // Intervallo polling
+  maxPollAttempts: number,    // Max tentativi polling
+  ports: { ... },             // Porte server
+  serverUrls: { ... }         // URL server
+};
+```
+
+### **Modalità di Esecuzione**
+- **`dev`**: Generazione locale con server Express
+- **`prod`**: Generazione Lambda AWS
+
+## 🎬 Generazione Video
+
+### **Modalità Locale (Development)**
+1. **Input**: Dati giocatore, minuto, punteggio
+2. **Processo**: Invio a server Express locale
+3. **Generazione**: Remotion su server locale
+4. **Output**: File salvato in `public/generated/`
+5. **Anteprima**: URL `http://localhost:4000/videos/filename.mp4`
+
+### **Modalità Lambda (Production)**
+1. **Input**: Dati giocatore, minuto, punteggio
+2. **Processo**: Invio a AWS Lambda
+3. **Generazione**: Remotion su AWS
+4. **Output**: File salvato su S3
+5. **Anteprima**: URL S3 pubblico
 
 ## 🛠️ Tecnologie
 
-- **React 19**: Framework principale
-- **TypeScript**: Type safety
-- **CSS Variables**: Sistema di colori centralizzato
-- **Custom Hooks**: Logica di business incapsulata
-- **Component Architecture**: Design system modulare
+- **React 18** + TypeScript
+- **Remotion** per generazione video
+- **Express.js** per server locale
+- **CSS Modules** per styling
+- **Custom Hooks** per gestione stato
 
-## 📦 Installazione
+## 📁 Struttura Dettagliata
+
+### **`src/components/`**
+- **`layout/`**: Header, PageTemplate
+- **`ui/`**: Button, Input, Select riutilizzabili
+
+### **`src/pages/`**
+- **`Goal.tsx`**: Generazione video gol
+- **`Formazione.tsx`**: Visualizzazione formazione
+- **`RisultatoFinale.tsx`**: Risultato finale
+
+### **`src/services/`**
+- **`localVideoService.ts`**: Generazione locale
+- **`videoService.ts`**: Gestione video (locale + Lambda)
+
+### **`src/hooks/`**
+- **`useVideoGeneration.ts`**: Hook per generazione video
+
+### **`src/remotion/`**
+- **`MyGoalVideo.tsx`**: Composizione video gol
+- **`FormationVideo.tsx`**: Composizione video formazione
+- **`FinalResultVideo.tsx`**: Composizione video risultato
+
+## 🔄 Workflow Sviluppo
+
+1. **Modifica codice** in `src/`
+2. **Hot reload** automatico su `localhost:3000`
+3. **Test generazione** video su `localhost:4000`
+4. **Debug** con console browser e server
+
+## 🚨 Troubleshooting
+
+### **Porta 3000 occupata**
+```bash
+# Usa porta diversa
+PORT=3001 npm start
+```
+
+### **Porta 4000 occupata**
+```bash
+# Ferma processi esistenti
+pkill -f "node server.js"
+```
+
+### **Errori di compilazione**
+```bash
+# Pulisci cache
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## 📦 Build Produzione
 
 ```bash
-# Installa le dipendenze
-npm install
-
-# Avvia il server di sviluppo
-npm start
-
-# Build per produzione
 npm run build
-
-# Esegui i test
-npm test
+# Genera cartella build/ ottimizzata
 ```
 
-## 🔧 Script Disponibili
+## 🔍 Debug
 
-- `npm start`: Avvia il server di sviluppo
-- `npm run build`: Crea il build di produzione
-- `npm test`: Esegue i test
-- `npm run lint`: Controlla il codice
-- `npm run type-check`: Verifica TypeScript
+### **Log Console**
+- Frontend: Console browser (F12)
+- Server: Terminal con `node server.js`
 
-## 📁 Struttura del Progetto
+### **File Video Generati**
+- **Locale**: `public/generated/`
+- **Produzione**: S3 bucket configurato
 
-```
-src/
-├── components/          # Componenti riutilizzabili
-│   ├── ui/             # Design system base
-│   ├── forms/          # Form components
-│   └── layout/         # Layout components
-├── hooks/              # Custom hooks
-├── services/           # API services
-├── types/              # TypeScript interfaces
-├── constants/          # Configurazioni e tema
-└── pages/              # Page components
-```
+## 📚 Risorse
 
-## 🎯 Utilizzo
-
-### 1. **Generazione Goal**
-- Seleziona il giocatore che ha segnato
-- Inserisci il minuto del goal
-- Specifica il risultato parziale
-- Genera il video personalizzato
-
-### 2. **Gestione Formazione**
-- Seleziona 11 giocatori nelle loro posizioni
-- Organizza la squadra sul campo
-- Genera il video della formazione
-
-### 3. **Risultato Finale**
-- Seleziona le due squadre
-- Inserisci il risultato finale
-- Specifica chi ha segnato per il Casalpoglio
-- Crea il video celebrativo
-
-## 🌐 Browser Supportati
-
-- Chrome (ultima versione)
-- Firefox (ultima versione)
-- Safari (ultima versione)
-- Edge (ultima versione)
-
-## 📱 Mobile Support
-
-- iOS Safari 12+
-- Android Chrome 80+
-- Responsive design ottimizzato
-- Touch-friendly interface
-
-## 🔒 TypeScript
-
-L'applicazione utilizza TypeScript per:
-- Type safety
-- Migliore IntelliSense
-- Debugging avanzato
-- Refactoring sicuro
-
-## 📈 Performance
-
-- Componenti ottimizzati
-- Lazy loading ready
-- CSS ottimizzato
-- Bundle splitting ready
+- [React Documentation](https://react.dev/)
+- [Remotion Documentation](https://www.remotion.dev/)
+- [Express.js Documentation](https://expressjs.com/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)

@@ -1,14 +1,37 @@
-import { APP_CONFIG } from '../constants/config';
+import { APP_CONFIG } from '../config/environment';
 import { 
   GoalVideoRequest, 
   VideoGenerationResponse, 
   VideoGenerationStatus 
 } from '../types';
+import { localVideoService } from './localVideoService';
+import { isDevelopment, isProduction } from '../config/environment';
 
 class VideoService {
   private config = APP_CONFIG;
 
   async startGoalVideoGeneration(request: GoalVideoRequest): Promise<VideoGenerationResponse> {
+    // Check if we're in development mode
+    if (isDevelopment()) {
+      // For local development, generate video locally
+      const filename = await localVideoService.generateGoalVideo(request);
+      
+      // Return a mock response for local generation
+      return {
+        bucketName: 'local',
+        renderId: filename,
+        localFile: filename,
+      };
+    }
+
+    // For production, validate Lambda URLs are configured
+    if (isProduction()) {
+      if (!this.config.startRenderUrl) {
+        throw new Error('Lambda start render URL not configured for production environment');
+      }
+    }
+
+    // For production, use Lambda function
     const response = await fetch(this.config.startRenderUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -27,6 +50,37 @@ class VideoService {
   }
 
   async getVideoGenerationStatus(bucketName: string, renderId: string): Promise<VideoGenerationStatus> {
+    // If it's a local generation, get status from local service
+    if (bucketName === 'local') {
+      const status = localVideoService.getRenderStatus(renderId);
+      
+      if (status) {
+        return {
+          overallProgress: status.overallProgress,
+          outputFile: status.outputFile,
+          outKey: status.outKey,
+          outBucket: status.outBucket,
+          errors: status.errors,
+        };
+      }
+      
+      // Fallback to completed status if not found
+      return {
+        overallProgress: 1,
+        outputFile: renderId,
+        outKey: renderId,
+        outBucket: 'local',
+      };
+    }
+
+    // For production, validate Lambda URLs are configured
+    if (isProduction()) {
+      if (!this.config.renderStatusUrl) {
+        throw new Error('Lambda render status URL not configured for production environment');
+      }
+    }
+
+    // For production, use Lambda function
     const url = new URL(this.config.renderStatusUrl);
     url.searchParams.set('bucketName', bucketName);
     url.searchParams.set('renderId', renderId);
@@ -47,24 +101,21 @@ class VideoService {
       return status.outputFile;
     }
 
-    // Altrimenti costruisci l'URL S3
-    const key = status.outKey || status.outputFile;
-    if (!key) return null;
+    // If it's a local file, return the local path
+    if (bucketName === 'local' && status.outputFile) {
+      return `file://${status.outputFile}`;
+    }
 
-    const bucket = status.outBucket || bucketName;
-    if (!bucket) return null;
-
-    const base = this.config.s3PublicBase || `https://${bucket}.s3.${this.config.awsRegion}.amazonaws.com`;
-    return `${base}/${key}`;
+    // For Lambda generation, return the outputFile as is
+    return status.outputFile || null;
   }
 
   makeAssetUrl(assetPath: string): string {
     if (!assetPath) return assetPath;
     if (/^https?:\/\//i.test(assetPath)) return assetPath;
-    if (!this.config.assetBucket) return assetPath;
     
-    const key = assetPath.replace(/^\/+/, '');
-    return `https://${this.config.assetBucket}.s3.${this.config.awsRegion}.amazonaws.com/${key}`;
+    // For local development, return as is
+    return assetPath;
   }
 
   async downloadVideo(videoUrl: string, filename: string): Promise<void> {
