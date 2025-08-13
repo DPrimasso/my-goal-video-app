@@ -11,6 +11,9 @@ class VideoService {
   private config = APP_CONFIG;
 
   async startGoalVideoGeneration(request: GoalVideoRequest): Promise<VideoGenerationResponse> {
+
+    console.log("ISDEV:", isDevelopment());
+
     // Check if we're in development mode
     if (isDevelopment()) {
       // For local development, generate video locally

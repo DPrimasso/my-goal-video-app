@@ -6,27 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/client/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/App.test.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/constants/config.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/constants/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/constants/theme.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/useVideoGeneration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useVideoGeneration.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/Goal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Goal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/resolveAsset.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/resolveAsset.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/reportWebVitals.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/setupTests.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -177,7 +158,7 @@
       <workItem from="1754909140990" duration="11000" />
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
-      <workItem from="1755098950112" duration="9527000" />
+      <workItem from="1755098950112" duration="10921000" />
     </task>
     <servers />
   </component>
