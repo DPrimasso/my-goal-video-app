@@ -1,6 +1,17 @@
 .App {
   text-align: center;
   font-family: var(--font-base);
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  overflow-x: hidden;
+}
+
+.main-content {
+  padding-top: 120px; /* Spazio per l'header fisso */
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .navbar {
@@ -52,6 +63,11 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .main-content {
+    padding-top: 140px;
+    min-height: calc(100vh - 140px);
+  }
+
   .pages-container {
     flex-direction: column;
     overflow-x: hidden;
@@ -66,6 +82,11 @@
 }
 
 @media (max-width: 480px) {
+  .main-content {
+    padding-top: 130px;
+    min-height: calc(100vh - 130px);
+  }
+
   .nav-link {
     font-size: 0.875rem;
   }

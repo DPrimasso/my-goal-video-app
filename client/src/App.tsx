@@ -1,34 +1,38 @@
-import React from 'react';
-import './App.css';
+import React, { useState } from 'react';
+import { Header } from './components/layout';
 import { pages } from './pages';
+import './App.css';
 
 function App() {
-  const scrollToPage = (id: string) => {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+  const [currentPage, setCurrentPage] = useState('goal');
+
+  const handlePageChange = (pageId: string) => {
+    setCurrentPage(pageId);
+  };
+
+  const renderCurrentPage = () => {
+    const page = pages.find(p => p.id === currentPage);
+    if (!page) return null;
+
+    switch (page.id) {
+      case 'goal':
+        return <page.component />;
+      case 'formazione':
+        return <page.component />;
+      case 'risultato-finale':
+        return <page.component />;
+      default:
+        return <page.component />;
+    }
   };
 
   return (
     <div className="App">
-      <nav className="navbar">
-        {pages.map(({ id, label }) => (
-          <button
-            key={id}
-            className="nav-link"
-            onClick={() => scrollToPage(id)}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      <div className="pages-container">
-        {pages.map(({ id, component: Page }) => (
-          <section key={id} className="page" id={id}>
-            <Page />
-          </section>
-        ))}
-      </div>
+      <Header currentPage={currentPage} onPageChange={handlePageChange} />
+      
+      <main className="main-content">
+        {renderCurrentPage()}
+      </main>
     </div>
   );
 }

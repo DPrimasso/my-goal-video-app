@@ -7,20 +7,34 @@
 }
 
 .formation-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.formation-field-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  gap: 2rem;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(30, 58, 138, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .field {
-  position: relative;
   width: 100%;
-  max-width: 600px;
+  height: 400px;
   background-size: cover;
   background-position: center;
-  /* Maintain aspect ratio so the field scales on small screens */
-  aspect-ratio: 3 / 4;
+  background-repeat: no-repeat;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .position {
@@ -29,19 +43,195 @@
 }
 
 .player-select {
-  padding: 0.25rem;
-  font-size: 1rem;
+  padding: 0.5rem;
+  border: 2px solid rgba(30, 58, 138, 0.3);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  min-width: 80px;
+  text-align: center;
 }
 
-/* Responsive adjustments */
+.player-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.player-select:hover {
+  border-color: rgba(30, 58, 138, 0.5);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.formation-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.formation-generate-btn {
+  min-width: 200px;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.video-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.video-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px dashed rgba(30, 58, 138, 0.4);
+  border-radius: 12px;
+  min-height: 300px;
+  backdrop-filter: blur(10px);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.preview-placeholder h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.preview-placeholder p {
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.download-link {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: rgba(30, 58, 138, 0.1);
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid rgba(30, 58, 138, 0.3);
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.download-link:hover {
+  background: rgba(30, 58, 138, 0.2);
+  border-color: rgba(30, 58, 138, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design - Mobile First */
+@media (max-width: 1024px) {
+  .formation-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .formation-field-container {
+    padding: 1.5rem;
+  }
+  
+  .field {
+    height: 350px;
+  }
+}
+
 @media (max-width: 768px) {
-  .formation-page {
+  .formation-field-container {
+    padding: 1rem;
+  }
+  
+  .field {
+    height: 300px;
+  }
+  
+  .player-select {
+    font-size: 0.75rem;
+    min-width: 70px;
+    padding: 0.375rem;
+  }
+  
+  .video-actions {
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
   }
+  
+  .preview-placeholder {
+    min-height: 250px;
+    padding: 2rem 1rem;
+  }
+  
+  .placeholder-icon {
+    font-size: 3rem;
+  }
+  
+  .preview-placeholder h3 {
+    font-size: 1.25rem;
+  }
+}
 
+@media (max-width: 480px) {
+  .formation-field-container {
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+  
   .field {
-    max-width: 100%;
+    height: 250px;
+  }
+  
+  .player-select {
+    font-size: 0.625rem;
+    min-width: 60px;
+    padding: 0.25rem;
+  }
+  
+  .preview-placeholder {
+    min-height: 200px;
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .placeholder-icon {
+    font-size: 2.5rem;
+  }
+  
+  .preview-placeholder h3 {
+    font-size: 1.125rem;
+  }
+  
+  .preview-placeholder p {
+    font-size: 0.875rem;
   }
 }

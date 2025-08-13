@@ -4,8 +4,6 @@ export interface Player {
   image: string;
 }
 
-const ASSET_BASE = process.env.REACT_APP_ASSET_BASE;
-
 export const players: Player[] = [
   {
     id: 'davide_fava',

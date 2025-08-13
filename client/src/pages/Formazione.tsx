@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
+import { PageTemplate } from '../components/layout';
+import { Button } from '../components/ui';
+import { players } from '../players';
 import './Formazione.css';
-import '../VideoForm.css';
-import {players} from '../players';
 
 const Formazione: React.FC = () => {
   const [goalkeeper, setGoalkeeper] = useState(players[1]?.id || '');
@@ -94,9 +95,13 @@ const Formazione: React.FC = () => {
   );
 
   return (
-      <div className="formation-page">
-        <div className="formation-container">
-          <h2>Formazione iniziale</h2>
+    <PageTemplate
+      title="Formazione Titolare"
+      description="Seleziona 11 giocatori nelle loro posizioni"
+      icon="🏟️"
+    >
+      <div className="formation-container">
+        <div className="formation-field-container">
           <div
               className="field"
               style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.png)`}}
@@ -141,23 +146,47 @@ const Formazione: React.FC = () => {
                 </div>
             ))}
           </div>
-          <button className="form-button" onClick={generate} disabled={loading}>
-            {loading ? 'Generazione...' : 'Genera Video'}
-          </button>
+          
+          <div className="formation-actions">
+            <Button 
+              onClick={generate} 
+              disabled={loading}
+              loading={loading}
+              size="large"
+              className="formation-generate-btn"
+            >
+              {loading ? 'Generazione...' : 'Genera Video'}
+            </Button>
+          </div>
         </div>
-        <div className="preview-container">
+        
+        <div className="preview-section">
           {generatedUrl ? (
-              <>
-                <video className="video-preview" src={generatedUrl} controls />
-                <a className="download-link" href={generatedUrl} download>
-                  Scarica video
-                </a>
-              </>
+              <div className="video-preview">
+                <video className="video-player" src={generatedUrl} controls />
+                <div className="video-actions">
+                  <Button 
+                    onClick={() => window.open(generatedUrl, '_blank', 'noopener,noreferrer')}
+                    variant="secondary"
+                    size="medium"
+                  >
+                    Apri in Nuova Scheda
+                  </Button>
+                  <a className="download-link" href={generatedUrl} download>
+                    Scarica video
+                  </a>
+                </div>
+              </div>
           ) : (
-              <div className="preview-placeholder">Anteprima video</div>
+              <div className="preview-placeholder">
+                <div className="placeholder-icon">🎥</div>
+                <h3>Anteprima Video</h3>
+                <p>Organizza la formazione e genera il tuo video personalizzato</p>
+              </div>
           )}
         </div>
       </div>
+    </PageTemplate>
   );
 };
 

@@ -1,0 +1,265 @@
+.goal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: var(--color-text);
+  min-height: calc(100vh - 120px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.goal-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(30, 58, 138, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Sezione Risultato Parziale */
+.score-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.score-section h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+  margin: 0;
+}
+
+.score-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.score-input {
+  display: flex;
+  flex-direction: column;
+}
+
+.score-separator {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-text);
+  text-align: center;
+  padding: 1rem;
+}
+
+.error-text {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-submit-btn {
+  width: 100%;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 8px;
+  color: var(--color-error);
+  font-weight: 500;
+}
+
+.error-icon {
+  font-size: 1.25rem;
+}
+
+.video-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.video-player {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.video-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px dashed rgba(30, 58, 138, 0.4);
+  border-radius: 12px;
+  min-height: 300px;
+  backdrop-filter: blur(10px);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.preview-placeholder h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.preview-placeholder p {
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Responsive Design - Mobile First */
+@media (max-width: 1024px) {
+  .goal-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .goal-container {
+    padding: 1.5rem;
+  }
+  
+  .goal-form-container {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .goal-container {
+    padding: 1rem;
+  }
+  
+  .goal-form-container {
+    padding: 1rem;
+  }
+  
+  .score-inputs {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .score-separator {
+    order: -1;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .form-submit-btn {
+    width: 100%;
+  }
+  
+  .video-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .preview-placeholder {
+    min-height: 250px;
+    padding: 2rem 1rem;
+  }
+  
+  .placeholder-icon {
+    font-size: 3rem;
+  }
+  
+  .preview-placeholder h3 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .goal-container {
+    padding: 0.5rem;
+  }
+  
+  .goal-form-container {
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+  
+  .form-section {
+    gap: 1rem;
+  }
+  
+  .goal-container {
+    gap: 1.5rem;
+  }
+  
+  .score-section h3 {
+    font-size: 1.25rem;
+  }
+  
+  .score-separator {
+    font-size: 1.25rem;
+    padding: 0.375rem;
+  }
+  
+  .preview-placeholder {
+    min-height: 200px;
+    padding: 1.5rem 0.75rem;
+  }
+  
+  .placeholder-icon {
+    font-size: 2.5rem;
+  }
+  
+  .preview-placeholder h3 {
+    font-size: 1.125rem;
+  }
+  
+  .preview-placeholder p {
+    font-size: 0.875rem;
+  }
+}
