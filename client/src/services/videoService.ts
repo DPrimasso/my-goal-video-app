@@ -1,6 +1,8 @@
 import { APP_CONFIG } from '../config/environment';
 import { 
   GoalVideoRequest, 
+  FormationVideoRequest,
+  FinalResultVideoRequest,
   VideoGenerationResponse, 
   VideoGenerationStatus 
 } from '../types';
@@ -49,6 +51,92 @@ class VideoService {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || 'Errore nell\'avvio della generazione video');
+    }
+
+    return response.json();
+  }
+
+  async startFormationVideoGeneration(request: FormationVideoRequest): Promise<VideoGenerationResponse> {
+    if (isDevelopment()) {
+      console.log("ISDEV - Formation:", isDevelopment());
+    }
+
+    // Check if we're in development mode
+    if (isDevelopment()) {
+      // For local development, generate video locally
+      const filename = await localVideoService.generateFormationVideo(request);
+      
+      // Return a mock response for local generation
+      return {
+        bucketName: 'local',
+        renderId: filename,
+        localFile: filename,
+      };
+    }
+
+    // For production, validate Lambda URLs are configured
+    if (isProduction()) {
+      if (!this.config.startRenderUrl) {
+        throw new Error('Lambda start render URL not configured for production environment');
+      }
+    }
+
+    // For production, use Lambda function
+    const response = await fetch(this.config.startRenderUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        compositionId: 'FormationComp',
+        inputProps: request,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Errore nell\'avvio della generazione video formazione');
+    }
+
+    return response.json();
+  }
+
+  async startFinalResultVideoGeneration(request: FinalResultVideoRequest): Promise<VideoGenerationResponse> {
+    if (isDevelopment()) {
+      console.log("ISDEV - Final Result:", isDevelopment());
+    }
+
+    // Check if we're in development mode
+    if (isDevelopment()) {
+      // For local development, generate video locally
+      const filename = await localVideoService.generateFinalResultVideo(request);
+      
+      // Return a mock response for local generation
+      return {
+        bucketName: 'local',
+        renderId: filename,
+        localFile: filename,
+      };
+    }
+
+    // For production, validate Lambda URLs are configured
+    if (isProduction()) {
+      if (!this.config.startRenderUrl) {
+        throw new Error('Lambda start render URL not configured for production environment');
+      }
+    }
+
+    // For production, use Lambda function
+    const response = await fetch(this.config.startRenderUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        compositionId: 'FinalResultComp',
+        inputProps: request,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Errore nell\'avvio della generazione video risultato finale');
     }
 
     return response.json();

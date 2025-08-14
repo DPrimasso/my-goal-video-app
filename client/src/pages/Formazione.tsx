@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button } from '../components/ui';
 import { players, getSurname } from '../players';
+import { useFormationVideoGeneration } from '../hooks/useFormationVideoGeneration';
+import { isDevelopment } from '../config/environment';
 import './Formazione.css';
 
 const Formazione: React.FC = () => {
@@ -32,8 +34,23 @@ const Formazione: React.FC = () => {
     players[1]?.id || '', // Attaccante dx
     '', // Esterno dx
   ]);
-  const [loading, setLoading] = useState(false);
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+
+  const { loading, progress, generatedUrl, error, generateVideo, reset } = useFormationVideoGeneration();
+
+  // Error boundary for the component
+  React.useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error('🚨 Formazione component error:', error);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  // Debug logging for re-renders
+  if (generatedUrl && isDevelopment()) {
+    console.log('🎯 Formation video ready for preview:', generatedUrl);
+  }
 
   const handleArrayChange = (
       setter: React.Dispatch<React.SetStateAction<string[]>>,
@@ -61,25 +78,19 @@ const Formazione: React.FC = () => {
       alert('Seleziona 11 giocatori');
       return;
     }
-    setLoading(true);
-    setGeneratedUrl(null);
-    const payload = {goalkeeper, defenders, midfielders, attackingMidfielders, forwards};
+
+    const payload = {
+      goalkeeper, 
+      defenders, 
+      midfielders, 
+      attackingMidfielders, 
+      forwards
+    };
+
     try {
-      const res = await fetch('/api/render-formation', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        setGeneratedUrl(json.video);
-      } else {
-        alert(json.error || 'Errore nella generazione');
-      }
+      await generateVideo(payload);
     } catch (err) {
-      alert('Errore nella richiesta');
-    } finally {
-      setLoading(false);
+      console.error('Error in formation video generation:', err);
     }
   };
 
@@ -157,8 +168,47 @@ const Formazione: React.FC = () => {
             >
               {loading ? 'Generazione...' : 'Genera Video'}
             </Button>
+            
+            {generatedUrl && (
+              <Button 
+                onClick={reset}
+                variant="secondary"
+                size="medium"
+                className="formation-reset-btn"
+              >
+                Genera Nuovo Video
+              </Button>
+            )}
           </div>
         </div>
+        
+        {loading && (
+          <div className="progress-section">
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <p className="progress-text">Generazione in corso... {progress}%</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="error-section">
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              <span className="error-text">{error}</span>
+            </div>
+            <Button 
+              onClick={reset}
+              variant="secondary"
+              size="small"
+            >
+              Riprova
+            </Button>
+          </div>
+        )}
         
         <div className="preview-section">
           {generatedUrl ? (

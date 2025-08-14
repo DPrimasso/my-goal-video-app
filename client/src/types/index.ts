@@ -5,13 +5,6 @@ export interface Player {
   position?: 'goalkeeper' | 'defender' | 'midfielder' | 'forward';
 }
 
-export interface Formation {
-  goalkeeper: string;
-  defenders: string[];
-  midfielders: string[];
-  attackingMidfielders: string[];
-  forwards: string[];
-}
 
 export interface GoalVideoRequest {
   playerId?: string;
@@ -27,6 +20,23 @@ export interface GoalVideoRequest {
   textShadow?: string;
 }
 
+export interface FormationVideoRequest {
+  goalkeeper: string;
+  defenders: string[];
+  midfielders: string[];
+  attackingMidfielders: string[];
+  forwards: string[];
+}
+
+export interface FinalResultVideoRequest {
+  homeTeam: string;
+  awayTeam: string;
+  score: {
+    home: number;
+    away: number;
+  };
+  casalpoglioScorers: string[];
+}
 
 
 export interface VideoGenerationStatus {

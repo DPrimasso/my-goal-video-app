@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
 import { players, getSurname } from '../players';
+import { useFinalResultVideoGeneration } from '../hooks/useFinalResultVideoGeneration';
+import { isDevelopment } from '../config/environment';
 import './RisultatoFinale.css';
 
 interface TeamScore {
@@ -14,8 +16,23 @@ const RisultatoFinale: React.FC = () => {
   const [awayTeam, setAwayTeam] = useState('');
   const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
   const [casalpoglioScorers, setCasalpoglioScorers] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+
+  const { loading, progress, generatedUrl, error, generateVideo, reset } = useFinalResultVideoGeneration();
+
+  // Error boundary for the component
+  React.useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error('🚨 RisultatoFinale component error:', error);
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  // Debug logging for re-renders
+  if (generatedUrl && isDevelopment()) {
+    console.log('🎯 Final result video ready for preview:', generatedUrl);
+  }
 
   const teamOptions = [
     { value: 'casalpoglio', label: 'Casalpoglio' },
@@ -64,7 +81,7 @@ const RisultatoFinale: React.FC = () => {
     updateScorersArray();
   }, [score, homeTeam, awayTeam]);
 
-  const generateVideo = async () => {
+  const handleGenerateVideo = async () => {
     if (!homeTeam || !awayTeam) {
       alert('Seleziona entrambe le squadre');
       return;
@@ -81,19 +98,17 @@ const RisultatoFinale: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    setGeneratedUrl(null);
+    const payload = {
+      homeTeam,
+      awayTeam,
+      score,
+      casalpoglioScorers,
+    };
 
     try {
-      // Simula la generazione del video
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Per ora generiamo un URL di esempio
-      setGeneratedUrl('https://example.com/video.mp4');
-    } catch (error) {
-      alert('Errore nella generazione del video');
-    } finally {
-      setLoading(false);
+      await generateVideo(payload);
+    } catch (err) {
+      console.error('Error in final result video generation:', err);
     }
   };
 
@@ -190,7 +205,7 @@ const RisultatoFinale: React.FC = () => {
 
           <div className="result-actions">
             <Button
-              onClick={generateVideo}
+              onClick={handleGenerateVideo}
               disabled={loading}
               loading={loading}
               size="large"
@@ -198,8 +213,47 @@ const RisultatoFinale: React.FC = () => {
             >
               {loading ? 'Generazione...' : 'Genera Video'}
             </Button>
+            
+            {generatedUrl && (
+              <Button 
+                onClick={reset}
+                variant="secondary"
+                size="medium"
+                className="result-reset-btn"
+              >
+                Genera Nuovo Video
+              </Button>
+            )}
           </div>
         </div>
+
+        {loading && (
+          <div className="progress-section">
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <p className="progress-text">Generazione in corso... {progress}%</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="error-section">
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              <span className="error-text">{error}</span>
+            </div>
+            <Button 
+              onClick={reset}
+              variant="secondary"
+              size="small"
+            >
+              Riprova
+            </Button>
+          </div>
+        )}
 
         <div className="preview-section">
           {generatedUrl ? (

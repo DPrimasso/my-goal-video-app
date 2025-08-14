@@ -30,7 +30,7 @@ app.post('/api/render', async (req, res) => {
   }
 
   try {
-    console.log('Starting video render...');
+    console.log('Starting goal video render...');
 
     // Bundle the Remotion project (exactly like the working server)
     const entry = path.join(__dirname, 'src', 'remotion', 'index.tsx');
@@ -69,7 +69,7 @@ app.post('/api/render', async (req, res) => {
       minuteGoal: String(minuteGoal),
       goalClip: getAssetUrl(goalClip) || `${baseUrl}/clips/goal.mp4`,
       overlayImage: getAssetUrl(overlayImage) || `${baseUrl}/logo_casalpoglio.png`,
-      s3PlayerUrl: getAssetUrl(s3PlayerUrl) || `${baseUrl}/players/davide_fava.png`,
+      s3PlayerUrl: getAssetUrl(s3PlayerUrl) || `${baseUrl}/players/default_player.png`,
       partialScore: partialScore || '',
       textColor: 'white',
       titleSize: 80,
@@ -88,7 +88,7 @@ app.post('/api/render', async (req, res) => {
     const outputFilename = `${Date.now()}-${playerName.replace(/\s+/g, '_')}.mp4`;
     const outputPath = path.join(VIDEOS_DIR, outputFilename);
 
-    console.log('Rendering video...');
+    console.log('Rendering goal video...');
     
     // Render the video (exactly like the working server)
     await renderMedia({
@@ -100,7 +100,7 @@ app.post('/api/render', async (req, res) => {
     });
 
     const videoUrl = `http://localhost:4000/videos/${outputFilename}`;
-    console.log(`Video rendered successfully: ${videoUrl}`);
+    console.log(`Goal video rendered successfully: ${videoUrl}`);
     
     res.json({ 
       video: videoUrl,
@@ -108,8 +108,313 @@ app.post('/api/render', async (req, res) => {
       path: outputPath
     });
   } catch (err) {
-    console.error('Error rendering video:', err);
-    res.status(500).json({ error: 'Failed to render video', details: err.message });
+    console.error('Error rendering goal video:', err);
+    res.status(500).json({ error: 'Failed to render goal video', details: err.message });
+  }
+});
+
+// API endpoint for formation video generation
+app.post('/api/formation-render', async (req, res) => {
+  const { goalkeeper, defenders, midfielders, attackingMidfielders, forwards } = req.body || {};
+  
+  if (!goalkeeper || !defenders || !midfielders || !attackingMidfielders || !forwards) {
+    return res.status(400).json({ error: 'Missing formation data' });
+  }
+
+  try {
+    console.log('Starting formation video render...');
+
+    // Bundle the Remotion project
+    const entry = path.join(__dirname, 'src', 'remotion', 'index.tsx');
+    const bundled = await bundle({
+      entryPoint: entry,
+    });
+
+    // Handle asset paths correctly - local assets vs S3 URLs
+    const baseUrl = 'http://localhost:4000';
+    
+    // Helper function to determine if a path is a local asset or S3 URL
+    const getAssetUrl = (assetPath) => {
+      if (!assetPath) return '';
+      
+      // If it's already a full URL (S3), use it as is
+      if (assetPath.startsWith('http://') || assetPath.startsWith('https://')) {
+        console.log(`S3 URL detected: ${assetPath}`);
+        return assetPath;
+      }
+      
+      // If it's a local asset, prepend localhost:4000
+      if (assetPath.startsWith('players/') || assetPath.startsWith('/players/') || assetPath.startsWith('clips/') || assetPath.startsWith('logo')) {
+        const localUrl = `${baseUrl}/${assetPath}`;
+        console.log(`Local asset: ${assetPath} -> ${localUrl}`);
+        return localUrl;
+      }
+      
+      // Default case
+      console.log(`Default case: ${assetPath}`);
+      return assetPath;
+    };
+
+    // Helper function to get a safe player image URL
+    const getSafePlayerImage = (playerId) => {
+      if (!playerId) return `${baseUrl}/players/default_player.png`;
+      
+      const player = players.find(p => p.id === playerId);
+      if (!player || !player.image) return `${baseUrl}/players/default_player.png`;
+      
+      // Check if the image path is valid
+      if (player.image.startsWith('players/') || player.image.startsWith('/players/')) {
+        return `${baseUrl}/${player.image}`;
+      }
+      
+      // If it's an S3 URL, use it as is
+      if (player.image.startsWith('http://') || player.image.startsWith('https://')) {
+        return player.image;
+      }
+      
+      // Fallback to default
+      return `${baseUrl}/players/default_player.png`;
+    };
+
+    // Get player names for the filename
+    const playersModule = require('./players');
+    
+    // Check if we have the players array
+    const players = playersModule.players || playersModule;
+    
+    const getPlayerName = (playerId) => {
+      if (!Array.isArray(players)) {
+        console.error('Players is not an array:', players);
+        return 'Unknown Player';
+      }
+      if (!playerId) {
+        return 'Default Player';
+      }
+      const player = players.find(p => p.id === playerId);
+      return player ? player.name : 'Unknown Player';
+    };
+
+    const getFormationPlayer = (playerId) => {
+      if (!playerId) {
+        // Return null when no player is selected for this position
+        return null;
+      }
+      const player = players.find(p => p.id === playerId);
+      if (!player) {
+        // Return null when player ID is not found
+        return null;
+      }
+      
+      // Use getSafePlayerImage to handle missing or invalid images
+      const safeImageUrl = getSafePlayerImage(playerId);
+      const imagePath = safeImageUrl.replace(baseUrl + '/', ''); // Remove baseUrl for the component
+      
+      return {
+        name: player.name,
+        image: imagePath
+      };
+    };
+
+    const goalkeeperName = getPlayerName(goalkeeper);
+    
+    const inputProps = {
+      goalkeeper: getFormationPlayer(goalkeeper),
+      defenders: defenders.map(getFormationPlayer),
+      midfielders: midfielders.map(getFormationPlayer),
+      attackingMidfielders: attackingMidfielders.map(getFormationPlayer),
+      forwards: forwards.map(getFormationPlayer),
+      goalkeeperName,
+      baseUrl,
+    };
+    
+    // Get compositions
+    const comps = await getCompositions(bundled, { inputProps });
+    const comp = comps.find(c => c.id === 'FormationComp');
+    if (!comp) {
+      throw new Error('Composition FormationComp not found');
+    }
+
+    // Prepare output filename
+    const outputFilename = `${Date.now()}-${goalkeeperName.replace(/\s+/g, '_')}_Formation.mp4`;
+    const outputPath = path.join(VIDEOS_DIR, outputFilename);
+
+    console.log('Rendering formation video...');
+    
+    // Render the video
+    await renderMedia({
+      composition: comp,
+      serveUrl: bundled,
+      codec: 'h264',
+      outputLocation: outputPath,
+      inputProps,
+    });
+
+    const videoUrl = `http://localhost:4000/videos/${outputFilename}`;
+    console.log(`Formation video rendered successfully: ${videoUrl}`);
+    
+    res.json({ 
+      video: videoUrl,
+      filename: outputFilename,
+      path: outputPath
+    });
+  } catch (err) {
+    console.error('Error rendering formation video:', err);
+    res.status(500).json({ error: 'Failed to render formation video', details: err.message });
+  }
+});
+
+// API endpoint for final result video generation
+app.post('/api/final-result-render', async (req, res) => {
+  const { homeTeam, awayTeam, score, casalpoglioScorers } = req.body || {};
+  
+  if (!homeTeam || !awayTeam || !score) {
+    return res.status(400).json({ error: 'Missing match data' });
+  }
+
+  try {
+    console.log('Starting final result video render...');
+
+    // Bundle the Remotion project
+    const entry = path.join(__dirname, 'src', 'remotion', 'index.tsx');
+    const bundled = await bundle({
+      entryPoint: entry,
+    });
+
+    // Handle asset paths correctly - local assets vs S3 URLs
+    const baseUrl = 'http://localhost:4000';
+    
+    // Helper function to determine if a path is a local asset or S3 URL
+    const getAssetUrl = (assetPath) => {
+      if (!assetPath) return '';
+      
+      // If it's already a full URL (S3), use it as is
+      if (assetPath.startsWith('http://') || assetPath.startsWith('https://')) {
+        console.log(`S3 URL detected: ${assetPath}`);
+        return assetPath;
+      }
+      
+      // If it's a local asset, prepend localhost:4000
+      if (assetPath.startsWith('players/') || assetPath.startsWith('/players/') || assetPath.startsWith('clips/') || assetPath.startsWith('logo')) {
+        const localUrl = `${baseUrl}/${assetPath}`;
+        console.log(`Local asset: ${assetPath} -> ${localUrl}`);
+        return localUrl;
+      }
+      
+      // Default case
+      console.log(`Default case: ${assetPath}`);
+      return assetPath;
+    };
+
+    // Helper function to get a safe player image URL
+    const getSafePlayerImage = (playerId) => {
+      if (!playerId) return `${baseUrl}/players/default_player.png`;
+      
+      const player = players.find(p => p.id === playerId);
+      if (!player || !player.image) return `${baseUrl}/players/default_player.png`;
+      
+      // Check if the image path is valid
+      if (player.image.startsWith('players/') || player.image.startsWith('/players/')) {
+        return `${baseUrl}/${player.image}`;
+      }
+      
+      // If it's an S3 URL, use it as is
+      if (player.image.startsWith('http://') || player.image.startsWith('https://')) {
+        return player.image;
+      }
+      
+      // Fallback to default
+      return `${baseUrl}/players/default_player.png`;
+    };
+
+    // Get player names for the filename
+    const playersModule = require('./players');
+    
+    // Check if we have the players array
+    const players = playersModule.players || playersModule;
+    
+    const getPlayerName = (playerId) => {
+      if (!Array.isArray(players)) {
+        console.error('Players is not an array (final result):', players);
+        return 'Unknown Player';
+      }
+      if (!playerId) {
+        return 'Default Player';
+      }
+      const player = players.find(p => p.id === playerId);
+      return player ? player.name : 'Unknown Player';
+    };
+
+    // Get scorer names
+    const scorerNames = casalpoglioScorers
+      .map(scorerId => {
+        if (!scorerId) return null; // Return null for empty scorer slots
+        return getPlayerName(scorerId);
+      })
+      .filter(name => name !== null && name !== 'Default Player' && name !== 'Unknown Player');
+    
+    // Map team names to display names
+    const getTeamDisplayName = (teamId) => {
+      const teamNames = {
+        'casalpoglio': 'Casalpoglio',
+        'amatori_club': 'Amatori Club',
+        'team_3': 'Team 3',
+        'team_4': 'Team 4'
+      };
+      return teamNames[teamId] || teamId;
+    };
+
+    // Map team IDs to team info
+    const teamA = homeTeam === 'casalpoglio' ? 
+      { name: 'Casalpoglio', logo: 'logo_casalpoglio.png' } :
+      { name: getTeamDisplayName(homeTeam), logo: 'logo192.png' };
+    
+    const teamB = awayTeam === 'casalpoglio' ? 
+      { name: 'Casalpoglio', logo: 'logo_casalpoglio.png' } :
+      { name: getTeamDisplayName(awayTeam), logo: 'logo192.png' };
+    
+    const inputProps = {
+      teamA,
+      teamB,
+      scoreA: score.home,
+      scoreB: score.away,
+      scorers: scorerNames,
+      baseUrl,
+    };
+    
+    // Get compositions
+    const comps = await getCompositions(bundled, { inputProps });
+    const comp = comps.find(c => c.id === 'FinalResultComp');
+    if (!comp) {
+      throw new Error('Composition FinalResultComp not found');
+    }
+
+    // Prepare output filename
+    const matchResult = `${score.home}-${score.away}`;
+    const outputFilename = `${Date.now()}-${homeTeam}_vs_${awayTeam}_${matchResult}.mp4`;
+    const outputPath = path.join(VIDEOS_DIR, outputFilename);
+
+    console.log('Rendering final result video...');
+    
+    // Render the video
+    await renderMedia({
+      composition: comp,
+      serveUrl: bundled,
+      codec: 'h264',
+      outputLocation: outputPath,
+      inputProps,
+    });
+
+    const videoUrl = `http://localhost:4000/videos/${outputFilename}`;
+    console.log(`Final result video rendered successfully: ${videoUrl}`);
+    
+    res.json({ 
+      video: videoUrl,
+      filename: outputFilename,
+      path: outputPath
+    });
+  } catch (err) {
+    console.error('Error rendering final result video:', err);
+    res.status(500).json({ error: 'Failed to render final result video', details: err.message });
   }
 });
 
@@ -133,5 +438,9 @@ app.listen(PORT, () => {
   console.log(`📁 Videos will be saved to: ${VIDEOS_DIR}`);
   console.log(`🌐 Server URL: http://localhost:${PORT}`);
   console.log(`🔗 React app should be running on: http://localhost:3000`);
-  console.log(`📋 API endpoint: http://localhost:${PORT}/api/render`);
+  console.log(`📋 Available API endpoints:`);
+  console.log(`   • POST http://localhost:${PORT}/api/render (Goal video)`);
+  console.log(`   • POST http://localhost:${PORT}/api/formation-render (Formation video)`);
+  console.log(`   • POST http://localhost:${PORT}/api/final-result-render (Final result video)`);
+  console.log(`   • GET  http://localhost:${PORT}/api/render-status/:renderId (Render status)`);
 });
