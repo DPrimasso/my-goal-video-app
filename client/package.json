@@ -43,7 +43,8 @@
     "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
     "clean-start": "npm run kill-ports && npm run dev",
     
-    "studio": "npx @remotion/studio src/remotion/index.tsx"
+    "studio": "npx @remotion/studio src/remotion/index.tsx",
+    "build:lambda": "remotion bundle src/remotion/index.tsx --out-dir lambda-bundle && cd lambda-bundle && zip -r ../lambda-bundle.zip . -x '*.mp4' '*.png' '*.jpg' '*.ai' '*.svg' 'public/generated/*' '*.map' 'public/players/*' 'public/clips/*' && cd .. && cp lambda-bundle.zip ../lambda/app-bundle.zip && rm -rf lambda-bundle lambda-bundle.zip"
   },
   "eslintConfig": {
     "extends": [

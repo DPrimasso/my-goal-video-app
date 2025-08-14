@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Video, Img, spring, useCurrentFrame, useVideoConfig, interpolate} from 'remotion';
+import {AbsoluteFill, Video, Img, spring, useCurrentFrame, useVideoConfig, interpolate, staticFile} from 'remotion';
 import {resolveAsset} from './resolveAsset';
 import { isDevelopment } from '../config/environment';
 import './MyGoalVideo.css';
@@ -41,8 +41,8 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
 
     const isAbsoluteUrl = (u?: string): u is string => !!u && /^https?:\//i.test(u);
 
-    // Video: se goalClip è una URL assoluta la uso, altrimenti risolvo dall'asset bundle
-    const videoSrc = goalClip ? (isAbsoluteUrl(goalClip) ? goalClip : resolveAsset(goalClip)) : '';
+    // Video: se goalClip è una URL assoluta la uso, altrimenti uso staticFile per asset locali
+    const videoSrc = goalClip ? (isAbsoluteUrl(goalClip) ? goalClip : staticFile(goalClip)) : '';
 
     // Overlay giocatore: priorità a s3PlayerUrl (URL runtime), poi overlayImage (URL assoluta o asset locale)
     const overlaySrc = s3PlayerUrl

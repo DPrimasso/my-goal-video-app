@@ -93,7 +93,7 @@ app.post('/api/render', async (req, res) => {
     // Render the video (exactly like the working server)
     await renderMedia({
       composition: comp,
-      serveUrl: bundled,
+      serveUrl: bundled, // Per sviluppo locale usa bundled, per Lambda usa la serveUrl del sito
       codec: 'h264',
       outputLocation: outputPath,
       inputProps,
