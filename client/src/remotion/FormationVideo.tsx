@@ -21,18 +21,32 @@ interface PlayerPosition {
   y: number;
 }
 
-const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; scale: number}> = ({player, x, y, scale}) => {
+const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; imageScale: number; nameScale: number, nameMarginTop: number}> = ({player, x, y, imageScale, nameScale, nameMarginTop}) => {
   return (
     <div
       className="player-container"
       style={{
         left: x,
         top: y,
-        transform: `translate(-50%, -50%) scale(${scale})`,
+        transform: `translate(-50%, -50%)`,
       }}
     >
-      <Img src={resolveAsset(player.image)} className="player-image" />
-      <div className="player-name">{player.name.replace(/\s+/g, '\n')}</div>
+      <Img 
+        src={resolveAsset(player.image)} 
+        className="player-image" 
+        style={{
+          transform: `scale(${imageScale})`,
+        }}
+      />
+      <div 
+        className="player-name"
+        style={{
+          transform: `scale(${nameScale})`,
+          marginTop: `${nameMarginTop}px`, // Distanza fissa basata sulla scala del nome
+        }}
+      >
+        {player.name.split(' ').pop()}
+      </div>
     </div>
   );
 };
@@ -44,9 +58,23 @@ const GroupIntro: React.FC<{
 }> = ({players, finalPositions, duration}) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
-  const progress = spring({frame, fps, durationInFrames: duration, config: {damping: 400}});
+  
+  // I giocatori rimangono fermi al centro per 2 secondi
+  const holdDuration = fps * 2;
+  const moveDuration = duration - holdDuration;
+  
+  // Progress per la fase di movimento (dopo i 2 secondi di attesa)
+  const moveProgress = frame < holdDuration ? 0 : 
+    spring({
+      frame: frame - holdDuration, 
+      fps, 
+      durationInFrames: moveDuration, 
+      config: {damping: 100} // Ridotto ulteriormente per velocizzare ancora di più
+    });
 
-  const lineY = height - 200;
+  // Posizione centrale dello schermo dove appaiono i giocatori
+  const centerX = width / 2;
+  const centerY = height / 2;
 
   const withPositions = players
     .map((p, idx) => ({player: p, idx}))
@@ -55,13 +83,26 @@ const GroupIntro: React.FC<{
   return (
     <>
       {withPositions.map(({player, idx}, i) => {
-        const startX = width / 2 + (i - (withPositions.length - 1) / 2) * 180;
-        const startY = lineY;
         const end = finalPositions[idx];
-        const x = interpolate(progress, [0, 1], [startX, end.x], {extrapolateRight: 'clamp'});
-        const y = interpolate(progress, [0, 1], [startY, end.y], {extrapolateRight: 'clamp'});
-        const scale = interpolate(progress, [0, 1], [2, 1], {extrapolateRight: 'clamp'});
-        return <PlayerVisual key={idx} player={player} x={x} y={y} scale={scale} />;
+        
+        // Calcola la posizione iniziale in riga al centro con più spazio
+        const totalPlayers = withPositions.length;
+        const spacing = 250; // Spazio ridotto per evitare sovrapposizioni
+        const startX = centerX + (i - (totalPlayers - 1) / 2) * spacing;
+        const startY = centerY;
+        
+        // I giocatori partono dalla riga centrale e vanno alla posizione finale
+        const x = interpolate(moveProgress, [0, 1], [startX, end.x], {extrapolateRight: 'clamp'});
+        const y = interpolate(moveProgress, [0, 1], [startY, end.y], {extrapolateRight: 'clamp'});
+        
+        // Scala: partono grandi (2x) e finiscono piccoli (0.5x) - solo per l'immagine
+        const imageScale = interpolate(moveProgress, [0, 1], [2, 1], {extrapolateRight: 'clamp'});
+        
+        // Nome: mantiene sempre la stessa dimensione
+        const nameScale = 1;
+        const nameMarginTop = interpolate(moveProgress, [0, 1], [40, 5], {extrapolateRight: 'clamp'});
+        
+        return <PlayerVisual key={idx} player={player} x={x} y={y} imageScale={imageScale} nameScale={nameScale} nameMarginTop={nameMarginTop} />;
       })}
     </>
   );
@@ -76,7 +117,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 }) => {
   const {fps, width, height} = useVideoConfig();
   const intro = fps; // initial empty field
-  const groupDuration = fps * 3; // 3 seconds per group
+  const groupDuration = fps * 3; // 3 secondi per gruppo - modifica questo valore per cambiare la durata
 
   const positions = {
     goalkeeper: [{x: width / 2, y: height - 300}],
@@ -92,7 +133,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
       {x: width * 0.35, y: height - 900},
       {x: width * 0.5, y: height - 800},
       {x: width * 0.65, y: height - 900},
-      {x: width * 0.9, y: height - 900},
+      {x: width * 0.9, y: height - 1000},
     ],
     attackingMidfielders: [
       {x: width * 0.3, y: height - 1100},

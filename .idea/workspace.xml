@@ -6,72 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/437.bundle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/437.bundle.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/801.bundle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/801.bundle.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/930.bundle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/930.bundle.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/bundle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/bundle.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/campo_da_calcio.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/clips/.gitkeep" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/clips/goal.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/field.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/final_score.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755106973339-Lorenzo_Campagnari.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107094007-Lorenzo_Campagnari.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107184054-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107286887-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107319386-Lorenzo_Campagnari.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107339343-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107362228-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107439542-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107523738-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107651206-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107746125-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107768911-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107874354-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107911562-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755107991216-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755108032284-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755108132595-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755108558408-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755108737149-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755109686028-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755110041477-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755110436566-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755114882946-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755114970638-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755115054269-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755115337344-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755115481201-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755115643733-Davide_Fava.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755116380929-Daniele_Primasso.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/generated/1755116922985-Saif_Ardhaoui.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/logo192.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/logo512.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/logo_amatori_club.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/logo_app.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/logo_casalpoglio.ai" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/logo_casalpoglio.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/players/davide_fava.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/players/davide_scalmana.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/players/default_player.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/players/lorenzo_campagnari.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/public/robots.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/remotion-site/source-map-helper.wasm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/services/localVideoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/localVideoService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -225,7 +162,7 @@
       <workItem from="1754909140990" duration="11000" />
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
-      <workItem from="1755098950112" duration="23985000" />
+      <workItem from="1755098950112" duration="30857000" />
     </task>
     <servers />
   </component>

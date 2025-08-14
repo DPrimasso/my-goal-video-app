@@ -58,7 +58,7 @@ const RemotionRoot: React.FC = () => {
         <Composition<any, FormationVideoProps>
             id="FormationComp"
             component={FormationVideo}
-            durationInFrames={450}
+            durationInFrames={600}
             fps={30}
             width={1080}
             height={1920}

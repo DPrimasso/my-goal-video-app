@@ -235,7 +235,7 @@ app.post('/api/formation-render', async (req, res) => {
     }
 
     // Prepare output filename
-    const outputFilename = `${Date.now()}-${goalkeeperName.replace(/\s+/g, '_')}_Formation.mp4`;
+    const outputFilename = `StartingLineUp_${Date.now()}.mp4`;
     const outputPath = path.join(VIDEOS_DIR, outputFilename);
 
     console.log('Rendering formation video...');
