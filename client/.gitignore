@@ -28,3 +28,4 @@ yarn-error.log*
 
 build
 lambda-bundle
+src/remotion/lambda-bundle

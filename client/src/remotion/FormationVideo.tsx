@@ -21,7 +21,10 @@ interface PlayerPosition {
   y: number;
 }
 
-const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; imageScale: number; nameScale: number, nameMarginTop: number}> = ({player, x, y, imageScale, nameScale, nameMarginTop}) => {
+const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; imageScale: number; nameScale: number, nameMarginTop: number; zIndex: number; blur: number}> = ({player, x, y, imageScale, nameScale, nameMarginTop, zIndex, blur}) => {
+  // Protezione per assicurarsi che player.name sia sempre definito
+  const playerName = player?.name || 'Unknown Player';
+  
   return (
     <div
       className="player-container"
@@ -29,6 +32,8 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; ima
         left: x,
         top: y,
         transform: `translate(-50%, -50%)`,
+        zIndex: zIndex,
+        filter: `blur(${blur}px)`,
       }}
     >
       <Img 
@@ -45,7 +50,7 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; ima
           marginTop: `${nameMarginTop}px`, // Distanza fissa basata sulla scala del nome
         }}
       >
-        {player.name.split(' ').pop()}
+        {playerName.split(' ').pop()}
       </div>
     </div>
   );
@@ -55,7 +60,8 @@ const GroupIntro: React.FC<{
   players: (FormationPlayer | null)[];
   finalPositions: PlayerPosition[];
   duration: number;
-}> = ({players, finalPositions, duration}) => {
+  finalBlur: number;
+}> = ({players, finalPositions, duration, finalBlur}) => {
   const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
   
@@ -76,17 +82,25 @@ const GroupIntro: React.FC<{
   const centerX = width / 2;
   const centerY = height / 2;
 
-  const withPositions = players
-    .map((p, idx) => ({player: p, idx}))
-    .filter((p): p is {player: FormationPlayer; idx: number} => Boolean(p.player));
+  // Filtra i giocatori validi e mantieni la loro posizione originale nell'array
+  const validPlayersWithPositions = players
+    .map((player, originalIndex) => ({player, originalIndex}))
+    .filter((item): item is {player: FormationPlayer; originalIndex: number} => item.player !== null);
+
+  // DEBUG: Log della mappatura
+  console.log('🔍 REMOTION DEBUG - Players mapping:');
+  validPlayersWithPositions.forEach(({player, originalIndex}) => {
+    console.log(`  ${player.name}: originalIndex=${originalIndex}, finalPosition=${JSON.stringify(finalPositions[originalIndex])}`);
+  });
 
   return (
     <>
-      {withPositions.map(({player, idx}, i) => {
-        const end = finalPositions[idx];
+      {validPlayersWithPositions.map(({player, originalIndex}, i) => {
+        // Usa la posizione originale nell'array per mappare correttamente alle posizioni finali
+        const end = finalPositions[originalIndex];
         
         // Calcola la posizione iniziale in riga al centro con più spazio
-        const totalPlayers = withPositions.length;
+        const totalPlayers = validPlayersWithPositions.length;
         const spacing = 250; // Spazio ridotto per evitare sovrapposizioni
         const startX = centerX + (i - (totalPlayers - 1) / 2) * spacing;
         const startY = centerY;
@@ -102,9 +116,32 @@ const GroupIntro: React.FC<{
         const nameScale = 1;
         const nameMarginTop = interpolate(moveProgress, [0, 1], [40, 5], {extrapolateRight: 'clamp'});
         
-        return <PlayerVisual key={idx} player={player} x={x} y={y} imageScale={imageScale} nameScale={nameScale} nameMarginTop={nameMarginTop} />;
+        // Z-index: i giocatori sono sempre sopra la sfocatura, ma la sfocatura viene applicata direttamente a loro
+        const zIndex = 10;
+        // Sfocatura applicata direttamente ai giocatori: durante il movimento + fade out finale
+        const playerBlur = moveProgress < 0.5 ? 0 : finalBlur;
+        
+        return <PlayerVisual key={`${originalIndex}-${player.name}`} player={player} x={x} y={y} imageScale={imageScale} nameScale={nameScale} nameMarginTop={nameMarginTop} zIndex={zIndex} blur={playerBlur} />;
       })}
     </>
+  );
+};
+
+// Componente per l'effetto sfocato
+const BlurOverlay: React.FC<{blurIntensity: number}> = ({blurIntensity}) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backdropFilter: `blur(${blurIntensity}px)`,
+        pointerEvents: 'none',
+        zIndex: 1,
+      }}
+    />
   );
 };
 
@@ -115,7 +152,9 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   attackingMidfielders,
   forwards,
 }) => {
+  const frame = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
+  
   const intro = fps; // initial empty field
   const groupDuration = fps * 3; // 3 secondi per gruppo - modifica questo valore per cambiare la durata
 
@@ -149,51 +188,69 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
     ],
   };
 
+  // Calcola la durata totale prima per poter calcolare il blur finale
   let current = intro;
+  let totalDuration = current;
+  
+  // Calcola la durata totale
+  totalDuration += groupDuration; // goalkeeper
+  if (defenders.some(player => player !== null)) totalDuration += groupDuration;
+  if (midfielders.some(player => player !== null)) totalDuration += groupDuration;
+  if (attackingMidfielders.some(player => player !== null)) totalDuration += groupDuration;
+  if (forwards.some(player => player !== null)) totalDuration += groupDuration;
+  
+  // Calcola l'intensità della sfocatura finale
+  const blurFadeOutStart = totalDuration - fps * 2; // Inizia a ridurre la sfocatura 2 secondi prima della fine
+  const blurFadeOutDuration = fps * 2; // 2 secondi per rimuovere completamente la sfocatura
+  
+  let blurIntensity = 15; // Intensità massima della sfocatura
+  
+  if (frame >= blurFadeOutStart) {
+    const fadeProgress = (frame - blurFadeOutStart) / blurFadeOutDuration;
+    blurIntensity = interpolate(fadeProgress, [0, 1], [15, 0], {extrapolateRight: 'clamp'});
+  }
+
+  current = intro;
   const sequences: React.ReactNode[] = [];
 
   sequences.push(
     <Sequence from={current} key="goalkeeper">
-      <GroupIntro players={[goalkeeper]} finalPositions={positions.goalkeeper} duration={groupDuration} />
+      <GroupIntro players={[goalkeeper]} finalPositions={positions.goalkeeper} duration={groupDuration} finalBlur={blurIntensity} />
     </Sequence>
   );
   current += groupDuration;
 
-  if (defenders.some(Boolean)) {
+  if (defenders.some(player => player !== null)) {
     sequences.push(
       <Sequence from={current} key="defenders">
-        <GroupIntro players={defenders} finalPositions={positions.defenders} duration={groupDuration} />
+        <GroupIntro players={defenders} finalPositions={positions.defenders} duration={groupDuration} finalBlur={blurIntensity} />
       </Sequence>
     );
     current += groupDuration;
   }
 
-  if (midfielders.some(Boolean)) {
+  if (midfielders.some(player => player !== null)) {
     sequences.push(
       <Sequence from={current} key="midfielders">
-        <GroupIntro players={midfielders} finalPositions={positions.midfielders} duration={groupDuration} />
+        <GroupIntro players={midfielders} finalPositions={positions.midfielders} duration={groupDuration} finalBlur={blurIntensity} />
       </Sequence>
     );
     current += groupDuration;
   }
 
-  if (attackingMidfielders.some(Boolean)) {
+  if (attackingMidfielders.some(player => player !== null)) {
     sequences.push(
       <Sequence from={current} key="attackingMidfielders">
-        <GroupIntro
-          players={attackingMidfielders}
-          finalPositions={positions.attackingMidfielders}
-          duration={groupDuration}
-        />
+        <GroupIntro players={attackingMidfielders} finalPositions={positions.attackingMidfielders} duration={groupDuration} finalBlur={blurIntensity} />
       </Sequence>
     );
     current += groupDuration;
   }
 
-  if (forwards.some(Boolean)) {
+  if (forwards.some(player => player !== null)) {
     sequences.push(
       <Sequence from={current} key="forwards">
-        <GroupIntro players={forwards} finalPositions={positions.forwards} duration={groupDuration} />
+        <GroupIntro players={forwards} finalPositions={positions.forwards} duration={groupDuration} finalBlur={blurIntensity} />
       </Sequence>
     );
     current += groupDuration;
@@ -202,6 +259,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
   return (
     <AbsoluteFill>
       <Img src={resolveAsset('campo_da_calcio.png')} className="field-image" />
+      <BlurOverlay blurIntensity={blurIntensity} />
       {sequences}
     </AbsoluteFill>
   );

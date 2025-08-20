@@ -3,8 +3,9 @@
   "version": "0.2.0",
   "private": true,
   "dependencies": {
-    "@remotion/bundler": "^4.0.332",
-    "@remotion/renderer": "^4.0.332",
+    "@remotion/bundler": "4.0.333",
+    "@remotion/lambda": "^4.0.333",
+    "@remotion/renderer": "4.0.333",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
@@ -19,7 +20,7 @@
     "react-dom": "^19.1.1",
     "react-router-dom": "^6.22.0",
     "react-scripts": "^5.0.1",
-    "remotion": "^4.0.329",
+    "remotion": "4.0.333",
     "typescript": "^4.9.5",
     "web-vitals": "^5.1.0",
     "zustand": "^4.5.0"
@@ -32,19 +33,18 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "type-check": "tsc --noEmit",
-    
     "server": "node server.js",
     "dev": "concurrently \"npm run server\" \"npm start\"",
     "start:full": "npm run dev",
     "start:react": "PORT=3000 react-scripts start",
     "start:server": "PORT_SERVER=4000 node server.js",
-    
     "check-ports": "lsof -i :3000 && lsof -i :4000",
     "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
     "clean-start": "npm run kill-ports && npm run dev",
-    
     "studio": "npx @remotion/studio src/remotion/index.tsx",
-    "build:lambda": "remotion bundle src/remotion/index.tsx --out-dir lambda-bundle && cd lambda-bundle && zip -r ../lambda-bundle.zip . -x '*.mp4' '*.png' '*.jpg' '*.ai' '*.svg' 'public/generated/*' '*.map' 'public/players/*' 'public/clips/*' && cd .. && cp lambda-bundle.zip ../lambda/app-bundle.zip && rm -rf lambda-bundle lambda-bundle.zip"
+    "build:lambda": "npx remotion versions --log=verbose && remotion bundle src/remotion/index.tsx --out-dir lambda-bundle && cd lambda-bundle && zip -r ../lambda-bundle.zip . -x '*.mp4' '*.png' '*.jpg' '*.ai' '*.svg' 'public/generated/*' '*.map' 'public/players/*' 'public/clips/*' && echo 'Lambda bundle updated successfully!'",
+    "build:lambda:check": "npx remotion versions --log=verbose",
+    "build:lambda:clean": "rm -rf lambda-bundle lambda-bundle.zip && echo 'Lambda build artifacts cleaned'"
   },
   "eslintConfig": {
     "extends": [

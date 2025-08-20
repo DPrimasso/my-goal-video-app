@@ -46,18 +46,50 @@ exports.handler = async (event) => {
     const FUNCTION_NAME = process.env.REMOTION_LAMBDA_FUNCTION_NAME;
 
     if (!renderId) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing renderId' }) };
+      return { 
+        statusCode: 400, 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          success: false,
+          error: 'Missing renderId parameter' 
+        }) 
+      };
     }
+    
     if (!FUNCTION_NAME) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Missing REMOTION_LAMBDA_FUNCTION_NAME' }) };
+      return { 
+        statusCode: 500, 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          success: false,
+          error: 'Missing REMOTION_LAMBDA_FUNCTION_NAME environment variable' 
+        }) 
+      };
     }
 
     const envBucket = process.env.ASSET_BUCKET || process.env.BUCKET_NAME;
     let bucketName = qs.bucketName || qs.bucket || body.bucketName || body.bucket || envBucket;
+    
     if (!bucketName) {
-      const r = await getOrCreateBucket({ region: REGION });
-      bucketName = r.bucketName;
+      try {
+        const r = await getOrCreateBucket({ region: REGION });
+        bucketName = r.bucketName;
+        console.log(`Using auto-created bucket: ${bucketName}`);
+      } catch (bucketError) {
+        console.error('Error creating/getting bucket:', bucketError);
+        return {
+          statusCode: 500,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            success: false,
+            error: 'Failed to create or get bucket',
+            details: String(bucketError.message || bucketError)
+          })
+        };
+      }
     }
+
+    console.log(`Checking status for renderId: ${renderId} in bucket: ${bucketName}`);
 
     const status = await getRenderProgress({
       region: REGION,
@@ -66,9 +98,28 @@ exports.handler = async (event) => {
       bucketName,
     });
 
-    return { statusCode: 200, body: JSON.stringify(status) };
+    console.log(`Status retrieved successfully for renderId: ${renderId}`);
+
+    return { 
+      statusCode: 200, 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success: true,
+        renderId,
+        bucketName,
+        status
+      }) 
+    };
   } catch (e) {
-    console.error(e);
-    return { statusCode: 500, body: JSON.stringify({ error: String(e && e.message ? e.message : e) }) };
+    console.error('Error in render-status lambda:', e);
+    return { 
+      statusCode: 500, 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        success: false,
+        error: String(e && e.message ? e.message : e),
+        stack: e.stack
+      }) 
+    };
   }
 };

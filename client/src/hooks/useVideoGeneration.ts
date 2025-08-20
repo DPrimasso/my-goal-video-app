@@ -89,6 +89,7 @@ export const useVideoGeneration = (): UseVideoGenerationReturn => {
 
         // Controlla se il video è pronto
         const videoUrl = videoService.buildVideoUrl(status, bucketName);
+        
         if (videoUrl) {
           setGeneratedUrl(videoUrl);
           setProgress(100);

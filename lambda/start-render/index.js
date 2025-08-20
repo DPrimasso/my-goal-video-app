@@ -10,6 +10,19 @@ exports.handler = async (event) => {
       inputProps = {},
       outName,
       codec = 'h264',
+      jpegQuality = 80,
+      frameRange,
+      numberOfGifLoops,
+      audioBitrate,
+      videoBitrate,
+      crf,
+      pixelFormat,
+      audioCodec,
+      videoCodec,
+      height,
+      width,
+      fps,
+      durationInFrames,
     } = payload;
 
     const REGION = process.env.AWS_REGION || 'eu-west-1';
@@ -29,9 +42,6 @@ exports.handler = async (event) => {
 
     const toS3Url = (val) => `https://${ASSET_BUCKET}.s3.${REGION}.amazonaws.com/${String(val).replace(/^\/+/, '')}`;
 
-    console.log("!!! FIRST S3PlayerUrl:", mergedProps.s3PlayerUrl);
-    console.log("!!! FIST OverlayImage:", mergedProps.overlayImage);
-
     if (mergedProps) {
       if (mergedProps.s3PlayerUrl && !isAbsoluteUrl(mergedProps.s3PlayerUrl)) {
         if (!ASSET_BUCKET) {
@@ -49,21 +59,27 @@ exports.handler = async (event) => {
         }
       }
     }
-    console.log("??? AFTER S3PlayerUrl:", mergedProps.s3PlayerUrl);
-    console.log("??? AFTER OverlayImage:", mergedProps.overlayImage);
-
     if (!FUNCTION_NAME) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Missing REMOTION_LAMBDA_FUNCTION_NAME' }) };
+      return { 
+        statusCode: 500, 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Missing REMOTION_LAMBDA_FUNCTION_NAME' }) 
+      };
     }
 
     const comp = composition || compositionId || DEFAULT_COMP;
 
     if (!SERVE_URL && !SITE_NAME) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Missing REMOTION_SERVE_URL or REMOTION_SITE_NAME' }) };
+      return { 
+        statusCode: 500, 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Missing REMOTION_SERVE_URL or REMOTION_SITE_NAME' }) 
+      };
     }
 
     const {bucketName} = await getOrCreateBucket({ region: REGION });
 
+    // Configurazione avanzata per il rendering
     const options = {
       region: REGION,
       functionName: FUNCTION_NAME,
@@ -72,24 +88,60 @@ exports.handler = async (event) => {
       codec,
       outName,
       forceBucketName: bucketName,
+      jpegQuality,
+      audioBitrate,
+      videoBitrate,
+      crf,
+      pixelFormat,
+      audioCodec,
+      videoCodec,
+      height,
+      width,
+      fps,
+      durationInFrames,
     };
+
+    // Aggiungi opzioni condizionali
+    if (frameRange) {
+      options.frameRange = frameRange;
+    }
+    
+    if (numberOfGifLoops !== undefined) {
+      options.numberOfGifLoops = numberOfGifLoops;
+    }
+
     if (SERVE_URL) {
       options.serveUrl = SERVE_URL;
     } else {
       options.siteName = SITE_NAME;
     }
 
+    console.log('Starting render with options:', JSON.stringify(options, null, 2));
+
     const {renderId} = await renderMediaOnLambda(options);
+
+    console.log(`Render started successfully with ID: ${renderId}`);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ bucketName, renderId }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        success: true,
+        bucketName, 
+        renderId,
+        message: 'Render started successfully'
+      }),
     };
   } catch (e) {
-    console.error(e);
+    console.error('Error in start-render lambda:', e);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: String(e && e.message ? e.message : e) }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        success: false,
+        error: String(e && e.message ? e.message : e),
+        stack: e.stack
+      }),
     };
   }
 };

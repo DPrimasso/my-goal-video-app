@@ -185,7 +185,14 @@ class VideoService {
       throw new Error(error.error || 'Errore nel recupero dello stato');
     }
 
-    return response.json();
+    const result = await response.json();
+    
+    // Extract the actual status from the Lambda response
+    if (result.success && result.status) {
+      return result.status;
+    }
+    
+    return result;
   }
 
   buildVideoUrl(status: VideoGenerationStatus, bucketName: string): string | null {
@@ -199,8 +206,21 @@ class VideoService {
       return `file://${status.outputFile}`;
     }
 
-    // For Lambda generation, return the outputFile as is
-    return status.outputFile || null;
+    // For Lambda generation, check if we have outKey (Remotion's output key)
+    if (bucketName !== 'local' && status.outKey) {
+      const region = process.env.REACT_APP_S3_REGION || 'eu-west-1';
+      const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${status.outKey}`;
+      return s3Url;
+    }
+
+    // For Lambda generation, check if we have outputFile
+    if (bucketName !== 'local' && status.outputFile) {
+      const region = process.env.REACT_APP_S3_REGION || 'eu-west-1';
+      const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${status.outputFile}`;
+      return s3Url;
+    }
+
+    return null;
   }
 
   makeAssetUrl(assetPath: string): string {

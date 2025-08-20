@@ -1,214 +1,139 @@
-# Lambda - My Goal Video App
+# My Goal Video App - Lambda Functions
 
-Funzioni AWS Lambda per la generazione video in produzione.
+Questo repository contiene le AWS Lambda functions per il rendering video utilizzando Remotion 4.0.333.
 
-## 🏗️ Architettura Lambda
+## 🚀 Funzionalità
 
-```
-lambda/
-├── start-render/           # Avvia generazione video
-│   └── index.js           # Handler principale
-├── render-status/          # Controlla stato generazione
-│   └── index.js           # Handler status
-├── package.json            # Dipendenze Lambda
-└── app-bundle.zip          # Bundle Remotion per Lambda
-```
+### start-render Lambda
+Avvia il processo di rendering di un video Remotion su AWS Lambda.
 
-## 🚀 Funzioni Lambda
+**Parametri di input supportati:**
+- `composition` / `compositionId`: ID della composizione da renderizzare
+- `inputProps`: Props personalizzati per la composizione
+- `outName`: Nome del file di output
+- `codec`: Codec video (default: 'h264')
+- `jpegQuality`: Qualità JPEG per immagini (default: 80, range: 0-100)
+- `frameRange`: Range di frame specifico
+- `numberOfGifLoops`: Numero di loop per GIF
+- `audioBitrate`: Bitrate audio personalizzato
+- `videoBitrate`: Bitrate video personalizzato
+- `crf`: Costant Rate Factor per la compressione
+- `pixelFormat`: Formato pixel
+- `audioCodec`: Codec audio
+- `videoCodec`: Codec video
+- `height`: Altezza personalizzata
+- `width`: Larghezza personalizzata
+- `fps`: FPS personalizzati
+- `durationInFrames`: Durata in frame
 
-### **1. start-render**
-**Endpoint**: `POST /start-render`
-
-**Funzione**: Avvia la generazione di un video personalizzato
-
-**Input**:
+**Risposta di successo:**
 ```json
 {
-  "compositionId": "GoalComp",
-  "inputProps": {
-    "playerName": "Davide Fava",
-    "minuteGoal": 35,
-    "partialScore": "2-1",
-    "s3PlayerUrl": "https://...",
-    "overlayImage": "https://...",
-    "goalClip": "https://..."
+  "success": true,
+  "bucketName": "remotion-render-xxx",
+  "renderId": "render-xxx",
+  "message": "Render started successfully"
+}
+```
+
+### render-status Lambda
+Controlla lo stato di un rendering in corso.
+
+**Parametri di input:**
+- `renderId`: ID del rendering da controllare
+- `bucketName`: Nome del bucket S3 (opzionale)
+
+**Risposta di successo:**
+```json
+{
+  "success": true,
+  "renderId": "render-xxx",
+  "bucketName": "remotion-render-xxx",
+  "status": {
+    "renderId": "render-xxx",
+    "status": "rendering",
+    "progress": 0.5
   }
 }
 ```
 
-**Output**:
-```json
-{
-  "renderId": "abc123",
-  "bucketName": "video-bucket",
-  "status": "rendering"
-}
-```
+## 🔧 Configurazione
 
-### **2. render-status**
-**Endpoint**: `GET /render-status?bucketName=...&renderId=...`
+### Variabili d'ambiente richieste:
+- `REMOTION_LAMBDA_FUNCTION_NAME`: Nome della funzione Lambda Remotion
+- `REMOTION_SERVE_URL` o `REMOTION_SITE_NAME`: URL o nome del sito Remotion
+- `ASSET_BUCKET`: Bucket S3 per gli asset dinamici (opzionale)
+- `AWS_REGION`: Regione AWS (default: eu-west-1)
 
-**Funzione**: Controlla lo stato di generazione di un video
+### Variabili d'ambiente opzionali:
+- `DEFAULT_COMPOSITION_ID`: Composizione di default (default: 'GoalComp')
 
-**Input**:
-- `bucketName`: Nome bucket S3
-- `renderId`: ID del render
+## 📦 Installazione e Deploy
 
-**Output**:
-```json
-{
-  "overallProgress": 0.75,
-  "outputFile": "video.mp4",
-  "outKey": "videos/video.mp4",
-  "outBucket": "video-bucket",
-  "errors": []
-}
-```
+1. **Installazione dipendenze:**
+   ```bash
+   npm install
+   ```
 
-## 🔧 Configurazione AWS
+2. **Build del bundle:**
+   ```bash
+   cd ../client
+   npm run build:lambda
+   ```
 
-### **Variabili d'Ambiente Lambda**
+3. **Deploy su AWS Lambda:**
+   - Carica il file `app-bundle.zip` come layer per la funzione Lambda
+   - Configura le variabili d'ambiente
+   - Imposta i timeout appropriati (raccomandato: 15 minuti)
+
+## 🆕 Novità in Remotion 4.0.333
+
+- **Migliore gestione degli errori** con stack trace dettagliati
+- **Headers HTTP standardizzati** per tutte le risposte
+- **Logging migliorato** per debugging
+- **Supporto per parametri avanzati** di rendering
+- **Gestione automatica dei bucket** S3
+- **Validazione dei parametri** migliorata
+
+## 🐛 Troubleshooting
+
+### Version mismatch
+Se vedi errori di version mismatch:
 ```bash
-# Remotion
-REMOTION_LAMBDA_FUNCTION_NAME=your-function-name
-REMOTION_SERVE_URL=https://your-bucket.s3.region.amazonaws.com/sites/deploy-id
-
-# S3
-S3_BUCKET=your-video-bucket
-S3_REGION=eu-west-1
-
-# API Gateway
-API_GATEWAY_URL=https://your-api-gateway-url.com
+cd client
+npm run build:lambda:check
 ```
 
-### **IAM Permissions**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:DeleteObject"
-      ],
-      "Resource": "arn:aws:s3:::your-video-bucket/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "lambda:InvokeFunction"
-      ],
-      "Resource": "arn:aws:lambda:region:account:function:*"
-    }
-  ]
-}
-```
-
-## 📦 Deploy
-
-### **1. Installazione Dipendenze**
+### Clean build
+Per un build pulito:
 ```bash
-cd lambda
-npm install
-```
-
-### **2. Creazione Bundle Remotion**
-```bash
-# Dal client directory
+cd client
+npm run build:lambda:clean
 npm run build:lambda
-# Genera app-bundle.zip per Lambda
 ```
 
-### **3. Deploy Lambda Functions**
-```bash
-# start-render
-zip -r start-render.zip start-render/ node_modules/ package.json
+### Logs
+Controlla i CloudWatch logs per:
+- Errori di parsing dei parametri
+- Problemi di connessione S3
+- Timeout delle funzioni
 
-# render-status  
-zip -r render-status.zip render-status/ node_modules/ package.json
+## 📊 Monitoraggio
 
-# Upload su AWS Lambda
-```
-
-### **4. Configurazione API Gateway**
-- **HTTP API** con CORS abilitato
-- **Route**: `POST /start-render` → start-render Lambda
-- **Route**: `GET /render-status` → render-status Lambda
-
-## 🎬 Generazione Video
-
-### **Workflow Completo**
-1. **Client** invia richiesta a `start-render`
-2. **Lambda** avvia render con Remotion
-3. **Client** polla `render-status` per progresso
-4. **Lambda** completa render e salva su S3
-5. **Client** riceve URL video finale
-
-### **Composizioni Video Supportate**
-- **`GoalComp`**: Video gol personalizzato
-- **`FormationComp`**: Video formazione squadra
-- **`FinalResultComp`**: Video risultato finale
-
-## 🔍 Monitoraggio
-
-### **CloudWatch Logs**
-- **start-render**: Log generazione video
-- **render-status**: Log controllo stato
-
-### **Metriche Importanti**
-- Durata generazione video
-- Tasso di successo
-- Errori comuni
-- Utilizzo memoria/CPU
-
-## 🚨 Troubleshooting
-
-### **Errori Comuni**
-- **Timeout**: Aumenta timeout Lambda (max 15 min)
-- **Memoria**: Aumenta memoria Lambda (min 1024 MB)
-- **S3 Permissions**: Verifica IAM policies
-- **Bundle Size**: Ottimizza app-bundle.zip
-
-### **Debug**
-```bash
-# Controlla log CloudWatch
-aws logs tail /aws/lambda/start-render
-
-# Test locale con SAM
-sam local invoke start-render -e event.json
-```
-
-## 📊 Performance
-
-### **Ottimizzazioni**
-- **Cold Start**: Bundle minimo
-- **Memory**: 2048 MB per video HD
-- **Timeout**: 10 minuti per video complessi
-- **Concurrency**: Limite per account
-
-### **Costi Stimati**
-- **Lambda**: $0.0000166667 per 100ms
-- **S3**: $0.023 per GB
-- **Data Transfer**: $0.09 per GB
+- **CloudWatch Metrics**: Durata, errori, throttling
+- **CloudWatch Logs**: Log dettagliati di ogni esecuzione
+- **X-Ray**: Tracciamento delle chiamate tra servizi
 
 ## 🔒 Sicurezza
 
-### **Best Practices**
-- **CORS**: Configurato per dominio specifico
-- **Input Validation**: Sanitizzazione parametri
-- **S3 Bucket**: Privato con accesso controllato
-- **API Gateway**: Rate limiting abilitato
+- **IAM**: Utilizza il principio del minimo privilegio
+- **VPC**: Configura le funzioni in una VPC privata se necessario
+- **Encryption**: Abilita la crittografia in transito e a riposo
+- **Logging**: Abilita CloudTrail per audit
 
-### **Autenticazione**
-- **API Keys**: Per accesso controllato
-- **JWT**: Per utenti autenticati
-- **IAM**: Per servizi AWS
+## 📝 Note di Sviluppo
 
-## 📚 Risorse
-
-- [AWS Lambda Documentation](https://docs.aws.amazon.com/lambda/)
-- [Remotion Lambda Documentation](https://www.remotion.dev/docs/lambda)
-- [API Gateway Documentation](https://docs.aws.amazon.com/apigateway/)
-- [S3 Documentation](https://docs.aws.amazon.com/s3/)
+- Le funzioni sono ottimizzate per Node.js 18+
+- Utilizza il caching di Remotion per build più veloci
+- Supporta sia JSON che form-encoded nei body delle richieste
+- Gestisce automaticamente i bucket S3 per il rendering

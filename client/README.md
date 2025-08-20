@@ -118,6 +118,18 @@ export const APP_CONFIG = {
 4. **Output**: File salvato su S3
 5. **Anteprima**: URL S3 pubblico
 
+### **Deploy su Remotion Lambda**
+```bash
+# Crea un nuovo sito Remotion Lambda
+npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app
+
+# Questo comando:
+# - Crea un nuovo sito su Remotion Lambda
+# - Usa la composizione principale in src/remotion/index.tsx
+# - Assegna il nome "my-goal-video-app" al sito
+# - Restituisce l'URL del sito creato
+```
+
 ## 🛠️ Tecnologie
 
 - **React 18** + TypeScript
@@ -175,13 +187,6 @@ pkill -f "node server.js"
 # Pulisci cache
 rm -rf node_modules package-lock.json
 npm install
-```
-
-## 📦 Build Produzione
-
-```bash
-npm run build
-# Genera cartella build/ ottimizzata
 ```
 
 ## 🔍 Debug

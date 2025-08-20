@@ -20,12 +20,17 @@ export interface GoalVideoRequest {
   textShadow?: string;
 }
 
+export interface FormationPlayer {
+  name: string;
+  image: string;
+}
+
 export interface FormationVideoRequest {
-  goalkeeper: string;
-  defenders: string[];
-  midfielders: string[];
-  attackingMidfielders: string[];
-  forwards: string[];
+  goalkeeper: FormationPlayer;
+  defenders: (FormationPlayer | null)[];
+  midfielders: (FormationPlayer | null)[];
+  attackingMidfielders: (FormationPlayer | null)[];
+  forwards: (FormationPlayer | null)[];
 }
 
 export interface FinalResultVideoRequest {

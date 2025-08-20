@@ -49,8 +49,6 @@ export const players: Player[] = [
     name: 'Davide Scalmana',
     image: getPlayerImage('Davide Scalmana'),
   },
-  
-  // Nuovi giocatori
   {
     id: 'saif_ardhaoui',
     name: 'Saif Ardhaoui',
@@ -85,11 +83,6 @@ export const players: Player[] = [
     id: 'lorenzo_gobbi',
     name: 'Lorenzo Gobbi',
     image: getPlayerImage('Lorenzo Gobbi'),
-  },
-  {
-    id: 'davide_goffi',
-    name: 'Davide Goffi',
-    image: getPlayerImage('Davide Goffi'),
   },
   {
     id: 'antonio_inglese',

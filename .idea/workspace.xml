@@ -6,9 +6,23 @@
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/client/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/hooks/useVideoGeneration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useVideoGeneration.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/players.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/players.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/app-bundle.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/render-status/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/render-status/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/start-render/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/start-render/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,9 +58,11 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "npm.build:lambda.executor": "Run",
+    "npm.build:lambda:check.executor": "Run",
     "npm.clean-start.executor": "Run",
     "npm.dev (1).executor": "Run",
     "npm.dev.executor": "Run",
+    "npm.kill-ports # Ferma tutti i processi.executor": "Run",
     "npm.kill-ports.executor": "Run",
     "npm.render:local.executor": "Run",
     "npm.server.executor": "Run",
@@ -87,12 +103,23 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="clean-start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="build:lambda:check" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/client/package.json" />
       <command value="run" />
       <scripts>
-        <script value="clean-start" />
+        <script value="build:lambda:check" />
       </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="kill-ports # Ferma tutti i processi" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/client/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="kill-ports" />
+      </scripts>
+      <arguments value="  # Ferma tutti i processi" />
       <node-interpreter value="project" />
       <envs />
       <method v="2" />
@@ -117,30 +144,20 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="start:full" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/client/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="start:full" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
     <list>
+      <item itemvalue="npm.build:lambda:check" />
+      <item itemvalue="npm.kill-ports # Ferma tutti i processi" />
       <item itemvalue="npm.build:lambda" />
-      <item itemvalue="npm.clean-start" />
       <item itemvalue="npm.kill-ports" />
       <item itemvalue="npm.start" />
-      <item itemvalue="npm.start:full" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="npm.start" />
-        <item itemvalue="npm.kill-ports" />
-        <item itemvalue="npm.start:full" />
-        <item itemvalue="npm.clean-start" />
+        <item itemvalue="npm.kill-ports # Ferma tutti i processi" />
+        <item itemvalue="npm.build:lambda:check" />
         <item itemvalue="npm.build:lambda" />
+        <item itemvalue="npm.kill-ports" />
       </list>
     </recent_temporary>
   </component>
@@ -162,7 +179,8 @@
       <workItem from="1754909140990" duration="11000" />
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
-      <workItem from="1755098950112" duration="30857000" />
+      <workItem from="1755098950112" duration="36994000" />
+      <workItem from="1755626078287" duration="6834000" />
     </task>
     <servers />
   </component>

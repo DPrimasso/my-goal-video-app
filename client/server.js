@@ -150,63 +150,28 @@ app.post('/api/formation-render', async (req, res) => {
         return localUrl;
       }
       
-      // Default case
-      console.log(`Default case: ${assetPath}`);
-      return assetPath;
+      // For other assets, assume they're local
+      const localUrl = `${baseUrl}/${assetPath}`;
+      console.log(`Other asset: ${assetPath} -> ${localUrl}`);
+      return localUrl;
     };
 
-    // Helper function to get a safe player image URL
-    const getSafePlayerImage = (playerId) => {
-      if (!playerId) return `${baseUrl}/players/default_player.png`;
-      
-      const player = players.find(p => p.id === playerId);
-      if (!player || !player.image) return `${baseUrl}/players/default_player.png`;
-      
-      // Check if the image path is valid
-      if (player.image.startsWith('players/') || player.image.startsWith('/players/')) {
-        return `${baseUrl}/${player.image}`;
-      }
-      
-      // If it's an S3 URL, use it as is
-      if (player.image.startsWith('http://') || player.image.startsWith('https://')) {
-        return player.image;
-      }
-      
-      // Fallback to default
-      return `${baseUrl}/players/default_player.png`;
-    };
-
-    // Get player names for the filename
-    const playersModule = require('./players');
-    
-    // Check if we have the players array
-    const players = playersModule.players || playersModule;
-    
-    const getPlayerName = (playerId) => {
-      if (!Array.isArray(players)) {
-        console.error('Players is not an array:', players);
-        return 'Unknown Player';
-      }
-      if (!playerId) {
+    // Helper function to get goalkeeper name for display
+    const getGoalkeeperName = (goalkeeper) => {
+      if (!goalkeeper || !goalkeeper.name) {
         return 'Default Player';
       }
-      const player = players.find(p => p.id === playerId);
-      return player ? player.name : 'Unknown Player';
+      return goalkeeper.name;
     };
 
-    const getFormationPlayer = (playerId) => {
-      if (!playerId) {
-        // Return null when no player is selected for this position
-        return null;
-      }
-      const player = players.find(p => p.id === playerId);
-      if (!player) {
-        // Return null when player ID is not found
-        return null;
+    // Helper function to process FormationPlayer objects
+    const processFormationPlayer = (player) => {
+      if (!player || !player.name || !player.image) {
+        return null; // Return null instead of undefined to maintain array structure
       }
       
       // Use getSafePlayerImage to handle missing or invalid images
-      const safeImageUrl = getSafePlayerImage(playerId);
+      const safeImageUrl = getAssetUrl(player.image);
       const imagePath = safeImageUrl.replace(baseUrl + '/', ''); // Remove baseUrl for the component
       
       return {
@@ -215,18 +180,18 @@ app.post('/api/formation-render', async (req, res) => {
       };
     };
 
-    const goalkeeperName = getPlayerName(goalkeeper);
+    const goalkeeperName = getGoalkeeperName(goalkeeper);
     
     const inputProps = {
-      goalkeeper: getFormationPlayer(goalkeeper),
-      defenders: defenders.map(getFormationPlayer),
-      midfielders: midfielders.map(getFormationPlayer),
-      attackingMidfielders: attackingMidfielders.map(getFormationPlayer),
-      forwards: forwards.map(getFormationPlayer),
+      goalkeeper: processFormationPlayer(goalkeeper),
+      defenders: defenders.map(processFormationPlayer),
+      midfielders: midfielders.map(processFormationPlayer),
+      attackingMidfielders: attackingMidfielders.map(processFormationPlayer),
+      forwards: forwards.map(processFormationPlayer),
       goalkeeperName,
       baseUrl,
     };
-    
+
     // Get compositions
     const comps = await getCompositions(bundled, { inputProps });
     const comp = comps.find(c => c.id === 'FormationComp');

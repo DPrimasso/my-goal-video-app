@@ -6,32 +6,58 @@ import { useFormationVideoGeneration } from '../hooks/useFormationVideoGeneratio
 import { isDevelopment } from '../config/environment';
 import './Formazione.css';
 
+function getPlayerIdFromName(playerName: string): any {
+    const player = players.find(p => getSurname(p.name) === playerName);
+    return player ? player.id : '';
+}
+
+function getRandomPlayerId(): string {
+    const randomIndex = Math.floor(Math.random() * players.length);
+    return players[randomIndex]?.id || '';
+}
+
+// Funzione per convertire un ID giocatore in un oggetto FormationPlayer
+function getFormationPlayer(playerId: string) {
+  if (!playerId || playerId.trim() === '') {
+    return null;
+  }
+  const player = players.find(p => p.id === playerId);
+  if (!player) {
+    return null;
+  }
+  
+  return {
+    name: player.name,
+    image: player.image
+  };
+}
+
 const Formazione: React.FC = () => {
-  const [goalkeeper, setGoalkeeper] = useState(players[1]?.id || '');
+  const [goalkeeper, setGoalkeeper] = useState(getRandomPlayerId() || '');
   const [defenders, setDefenders] = useState<string[]>([
-    players[1]?.id || '',
-    players[2]?.id || '',
+    getRandomPlayerId() || '',
+    getRandomPlayerId() || '',
     '',
-    players[0]?.id || '',
-    players[1]?.id || '',
+    getRandomPlayerId() || '',
+    getRandomPlayerId() || '',
   ]);
   const [midfielders, setMidfielders] = useState<string[]>([
     '',
-    players[2]?.id || '',
-    players[0]?.id || '',
-    players[1]?.id || '',
+    getRandomPlayerId() || '',
+    getRandomPlayerId() || '',
+    getRandomPlayerId() || '',
     '',
   ]);
   const [attackingMidfielders, setAttackingMidfielders] = useState<string[]>([
     '',
-    players[1]?.id || '',
+    getRandomPlayerId() || '',
     '',
   ]);
   const [forwards, setForwards] = useState<string[]>([
     '', // Esterno sx
-    players[0]?.id || '', // Attaccante sx
+    getRandomPlayerId() || '', // Attaccante sx
     '', // Attaccante cr
-    players[1]?.id || '', // Attaccante dx
+    getRandomPlayerId() || '', // Attaccante dx
     '', // Esterno dx
   ]);
 
@@ -79,12 +105,24 @@ const Formazione: React.FC = () => {
       return;
     }
 
+    // Converti gli ID in oggetti FormationPlayer e mantieni la struttura delle posizioni
+    const goalkeeperPlayer = getFormationPlayer(goalkeeper);
+    if (!goalkeeperPlayer) {
+      alert('Errore: portiere non valido');
+      return;
+    }
+    
+    const defendersPlayers = defenders.map(getFormationPlayer);
+    const midfieldersPlayers = midfielders.map(getFormationPlayer);
+    const attackingMidfieldersPlayers = attackingMidfielders.map(getFormationPlayer);
+    const forwardsPlayers = forwards.map(getFormationPlayer);
+
     const payload = {
-      goalkeeper, 
-      defenders, 
-      midfielders, 
-      attackingMidfielders, 
-      forwards
+      goalkeeper: goalkeeperPlayer, 
+      defenders: defendersPlayers, 
+      midfielders: midfieldersPlayers, 
+      attackingMidfielders: attackingMidfieldersPlayers, 
+      forwards: forwardsPlayers
     };
 
     try {
