@@ -32,7 +32,7 @@ app.post('/api/render', async (req, res) => {
       playerName,
       minuteGoal: String(minuteGoal),
       goalClip: goalClip || 'clips/goal.mp4', // Use staticFile path directly
-      overlayImage: overlayImage || 'logo_casalpoglio.png', // Use staticFile path directly
+      overlayImage: overlayImage || 'casalpoglio.png', // Use staticFile path directly
       s3PlayerUrl: s3PlayerUrl || '', // Keep S3 URL if provided
       partialScore: partialScore || '',
       textColor: 'white',

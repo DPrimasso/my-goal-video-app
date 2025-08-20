@@ -232,15 +232,17 @@ app.post('/api/formation-render', async (req, res) => {
 app.post('/api/final-result-render', async (req, res) => {
   console.log('🎯 Received final result request body:', JSON.stringify(req.body, null, 2));
   
-  const { homeTeam, awayTeam, score, casalpoglioScorers } = req.body || {};
+  // Data is now pre-formatted from the frontend
+  const { teamA, teamB, scoreA, scoreB, scorers, casalpoglioIsHome, casalpoglioIsAway, teamALogoPath, teamBLogoPath } = req.body || {};
   
   console.log('🎯 Parsed request data:');
-  console.log('  homeTeam:', homeTeam);
-  console.log('  awayTeam:', awayTeam);
-  console.log('  score:', score);
-  console.log('  casalpoglioScorers:', casalpoglioScorers);
+  console.log('  teamA:', teamA);
+  console.log('  teamB:', teamB);
+  console.log('  scoreA:', scoreA);
+  console.log('  scoreB:', scoreB);
+  console.log('  scorers:', scorers);
   
-  if (!homeTeam || !awayTeam || !score) {
+  if (!teamA || !teamB || scoreA === undefined || scoreB === undefined) {
     console.log('❌ Missing required data');
     return res.status(400).json({ error: 'Missing match data' });
   }
@@ -254,123 +256,19 @@ app.post('/api/final-result-render', async (req, res) => {
       entryPoint: entry,
     });
 
-    // Handle asset paths correctly - local assets vs S3 URLs
-    const baseUrl = 'http://localhost:4000';
-    
-    // Helper function to determine if a path is a local asset or S3 URL
-    const getAssetUrl = (assetPath) => {
-      if (!assetPath) return '';
-      
-      // If it's already a full URL (S3), use it as is
-      if (assetPath.startsWith('http://') || assetPath.startsWith('https://')) {
-        console.log(`S3 URL detected: ${assetPath}`);
-        return assetPath;
-      }
-      
-      // If it's a local asset, prepend localhost:4000
-      if (assetPath.startsWith('players/') || assetPath.startsWith('/players/') || assetPath.startsWith('clips/') || assetPath.startsWith('logo')) {
-        const localUrl = `${baseUrl}/${assetPath}`;
-        console.log(`Local asset: ${assetPath} -> ${localUrl}`);
-        return localUrl;
-      }
-      
-      // Default case
-      console.log(`Default case: ${assetPath}`);
-      return assetPath;
-    };
+    // Data is already formatted from the frontend, no asset URL handling needed
 
-    // Helper function to get a safe player image URL
-    const getSafePlayerImage = (playerId) => {
-      if (!playerId) return `${baseUrl}/players/default_player.png`;
-      
-      const player = players.find(p => p.id === playerId);
-      if (!player || !player.image) return `${baseUrl}/players/default_player.png`;
-      
-      // Check if the image path is valid
-      if (player.image.startsWith('players/') || player.image.startsWith('/players/')) {
-        return `${baseUrl}/${player.image}`;
-      }
-      
-      // If it's an S3 URL, use it as is
-      if (player.image.startsWith('http://') || player.image.startsWith('https://')) {
-        return player.image;
-      }
-      
-      // Fallback to default
-      return `${baseUrl}/players/default_player.png`;
-    };
-
-    // Get player names for the filename
-    const playersModule = require('./players');
-    
-    // Check if we have the players array
-    const players = playersModule.players || playersModule;
-    
-    const getPlayerName = (playerId) => {
-      if (!Array.isArray(players)) {
-        console.error('Players is not an array (final result):', players);
-        return 'Unknown Player';
-      }
-      if (!playerId) {
-        return 'Default Player';
-      }
-      const player = players.find(p => p.id === playerId);
-      return player ? player.name : 'Unknown Player';
-    };
-
-    // Map team IDs to team info with proper logos
-    const getTeamInfo = (teamId, isHomeTeam) => {
-      const teamNames = {
-        'casalpoglio': 'Casalpoglio',
-        'amatori_club': 'Amatori Club',
-        'team_3': 'Team 3',
-        'team_4': 'Team 4'
-      };
-      
-      // UNIFIED ASSET PATTERN: Use the same pattern as other videos
-      // For local development, use local paths that will be resolved by resolveAsset
-      const teamLogos = {
-        'casalpoglio': 'logo_casalpoglio.png',
-        'amatori_club': 'logo_amatori_club.png',
-        'team_3': 'logo192.png',
-        'team_4': 'logo192.png'
-      };
-      
-      return {
-        name: teamNames[teamId] || teamId,
-        logo: teamLogos[teamId] || 'logo192.png'
-      };
-    };
-
-    // Determine which team is which based on home/away
-    const homeTeamInfo = getTeamInfo(homeTeam, true);
-    const awayTeamInfo = getTeamInfo(awayTeam, false);
-    
-    // Determine which team is Casalpoglio and get their scorers
-    const isCasalpoglioHome = homeTeam === 'casalpoglio';
-    const isCasalpoglioAway = awayTeam === 'casalpoglio';
-    
-    // Get scorer names for Casalpoglio
-    const casalpoglioScorerNames = casalpoglioScorers
-      .map(scorerId => {
-        if (!scorerId) return null;
-        return getPlayerName(scorerId);
-      })
-      .filter(name => name !== null && name !== 'Default Player' && name !== 'Unknown Player');
-    
-    // Create input props with proper team positioning
+    // Data is already formatted from the frontend, just use it directly
     const inputProps = {
-      teamA: homeTeamInfo,  // Team A is always home team
-      teamB: awayTeamInfo,  // Team B is always away team
-      scoreA: score.home,   // Score A is home score
-      scoreB: score.away,   // Score B is away score
-      scorers: casalpoglioScorerNames,
-      baseUrl,
-      // Add flags to help the video component position scorers correctly
-      casalpoglioIsHome: isCasalpoglioHome,
-      casalpoglioIsAway: isCasalpoglioAway,
-      // UNIFIED ASSET PATTERN: Don't pass logo paths - let resolveAsset handle them
-      // teamALogoPath and teamBLogoPath will be undefined, so resolveAsset(team.logo) will be used
+      teamA,
+      teamB,
+      scoreA,
+      scoreB,
+      scorers,
+      casalpoglioIsHome,
+      casalpoglioIsAway,
+      teamALogoPath,
+      teamBLogoPath,
     };
     
     // Debug logging for input props
@@ -382,6 +280,8 @@ app.post('/api/final-result-render', async (req, res) => {
     console.log('  scorers:', inputProps.scorers);
     console.log('  casalpoglioIsHome:', inputProps.casalpoglioIsHome);
     console.log('  casalpoglioIsAway:', inputProps.casalpoglioIsAway);
+    console.log('  teamALogoPath:', inputProps.teamALogoPath);
+    console.log('  teamBLogoPath:', inputProps.teamBLogoPath);
     
     // Get compositions
     const comps = await getCompositions(bundled, { inputProps });
@@ -391,9 +291,9 @@ app.post('/api/final-result-render', async (req, res) => {
     }
 
     // Prepare output filename
-    const homeTeamName = homeTeamInfo.name.replace(/\s+/g, '_');
-    const awayTeamName = awayTeamInfo.name.replace(/\s+/g, '_');
-    const matchResult = `${score.home}-${score.away}`;
+    const homeTeamName = teamA.name.replace(/\s+/g, '_');
+    const awayTeamName = teamB.name.replace(/\s+/g, '_');
+    const matchResult = `${scoreA}-${scoreB}`;
     const outputFilename = `${Date.now()}-${homeTeamName}_vs_${awayTeamName}_${matchResult}.mp4`;
     const outputPath = path.join(VIDEOS_DIR, outputFilename);
 

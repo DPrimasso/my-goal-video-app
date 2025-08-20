@@ -8,9 +8,13 @@ import {
   useVideoConfig,
   interpolate,
   staticFile,
+  delayRender,
+  continueRender,
 } from 'remotion';
 import {resolveAsset} from './resolveAsset';
+import {videoService} from '../services/videoService';
 import './FinalResultVideo.css';
+
 
 export interface TeamInfo {
   name: string;
@@ -25,8 +29,8 @@ export interface FinalResultVideoProps extends Record<string, unknown> {
   scorers: string[];
   casalpoglioIsHome?: boolean;
   casalpoglioIsAway?: boolean;
-  teamALogoPath?: string; // S3 URL for team A logo
-  teamBLogoPath?: string; // S3 URL for team B logo
+  teamALogoPath?: string; // URL completo per il logo della squadra A
+  teamBLogoPath?: string; // URL completo per il logo della squadra B
 }
 
 export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
@@ -40,6 +44,61 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
   teamALogoPath,
   teamBLogoPath,
 }) => {
+  // Handle image loading with extended timeout for large logos
+  const [imagesLoaded, setImagesLoaded] = React.useState(false);
+  const handle = React.useRef<number | null>(null);
+  
+  React.useEffect(() => {
+    // Set a longer timeout for image loading (60 seconds instead of default 28)
+    handle.current = delayRender('Loading team logos', {
+      timeoutInMilliseconds: 60000 // 60 seconds timeout
+    });
+    
+    // Let Remotion handle the image loading naturally
+    // We'll call continueRender when images are actually loaded
+    const checkImagesLoaded = () => {
+      // Check if both images are loaded by trying to access them
+      const teamAImg = new Image();
+      const teamBImg = new Image();
+      let loadedCount = 0;
+      
+      const onLoad = () => {
+        loadedCount++;
+        if (loadedCount === 2) {
+          setImagesLoaded(true);
+          if (handle.current !== null) {
+            continueRender(handle.current);
+          }
+        }
+      };
+      
+      const onError = () => {
+        // Even if there's an error, continue rendering to avoid infinite wait
+        if (handle.current !== null) {
+          continueRender(handle.current);
+        }
+      };
+      
+      teamAImg.onload = onLoad;
+      teamAImg.onerror = onError;
+      teamBImg.onload = onLoad;
+      teamBImg.onerror = onError;
+      
+      // Use staticFile paths
+      teamAImg.src = teamALogoPath ? staticFile(teamALogoPath) : staticFile('logo192.png');
+      teamBImg.src = teamBLogoPath ? staticFile(teamBLogoPath) : staticFile('logo192.png');
+    };
+    
+    // Small delay to let staticFile resolve, then check loading
+    const timer = setTimeout(checkImagesLoaded, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      if (handle.current !== null) {
+        continueRender(handle.current);
+      }
+    };
+  }, [teamALogoPath, teamBLogoPath]);
 
 
   const frame = useCurrentFrame();
@@ -68,26 +127,16 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
     interpolate(scoreSpring, [0, 1], [0, scoreB])
   );
 
-  // FIXED ASSET RESOLUTION: Use staticFile directly for Lambda compatibility
-  // This ensures assets are properly bundled and accessible in Lambda
-  const teamALogo = teamALogoPath || staticFile(teamA.logo);
-  const teamBLogo = teamBLogoPath || staticFile(teamB.logo);
-
-  // Force specific logo paths for known teams to ensure they load
-  const getTeamLogo = (teamName: string, defaultLogo: string) => {
-    if (teamName === 'Amatori Club') {
-      return staticFile('logo_amatori_club.png');
-    }
-    if (teamName === 'Casalpoglio') {
-      return staticFile('logo_casalpoglio.png');
-    }
-    return defaultLogo;
-  };
-
-  const finalTeamALogo = getTeamLogo(teamA.name, teamALogo);
-  const finalTeamBLogo = getTeamLogo(teamB.name, teamBLogo);
-
-
+  // Use staticFile directly for team logos, same approach as MyGoalVideo
+  const teamALogoUrl = teamALogoPath ? staticFile(teamALogoPath) : staticFile('logo192.png');
+  const teamBLogoUrl = teamBLogoPath ? staticFile(teamBLogoPath) : staticFile('logo192.png');
+  
+  // Debug logging for image paths
+  console.log('🔍 FinalResultVideo - Image paths:');
+  console.log('  teamALogoPath:', teamALogoPath);
+  console.log('  teamBLogoPath:', teamBLogoPath);
+  console.log('  teamALogoUrl:', teamALogoUrl);
+  console.log('  teamBLogoUrl:', teamBLogoUrl);
 
   return (
     <AbsoluteFill>
@@ -97,12 +146,12 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
       />
       <AbsoluteFill className="result-root">
         <div className="teams-row">
-          <div className="team-block">
-            <Img
-              src={finalTeamALogo}
-              className="team-logo"
-              style={{transform: `translateX(${translateA}px)`}}
-            />
+                      <div className="team-block">
+              <Img
+                src={teamALogoUrl}
+                className="team-logo"
+                style={{transform: `translateX(${translateA}px)`}}
+              />
             <div
               className="team-name"
               style={{transform: `translateX(${translateA}px)`}}
@@ -110,12 +159,12 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
               {teamA.name}
             </div>
           </div>
-          <div className="team-block">
-            <Img
-              src={finalTeamBLogo}
-              className="team-logo"
-              style={{transform: `translateX(${translateB}px)`}}
-            />
+                      <div className="team-block">
+              <Img
+                src={teamBLogoUrl}
+                className="team-logo"
+                style={{transform: `translateX(${translateB}px)`}}
+              />
             <div
               className="team-name"
               style={{transform: `translateX(${translateB}px)`}}

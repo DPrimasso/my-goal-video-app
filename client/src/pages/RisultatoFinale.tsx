@@ -111,6 +111,8 @@ const RisultatoFinale: React.FC = () => {
       casalpoglioScorers,
     };
 
+    console.log('🎯 RisultatoFinale - Payload being sent:', JSON.stringify(payload, null, 2));
+
     try {
       await generateVideo(payload);
     } catch (err) {
@@ -210,7 +212,7 @@ const RisultatoFinale: React.FC = () => {
                         onChange={(value) => handleScorerChange(index, 'minute', value)}
                         type="number"
                         min={1}
-                        max={90}
+                        max={150}
                         required
                       />
                     </div>

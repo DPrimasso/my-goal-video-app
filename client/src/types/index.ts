@@ -43,6 +43,24 @@ export interface FinalResultVideoRequest {
   casalpoglioScorers: Scorer[];
 }
 
+export interface FinalResultVideoFormattedProps {
+  teamA: {
+    name: string;
+    logo: string;
+  };
+  teamB: {
+    name: string;
+    logo: string;
+  };
+  scoreA: number;
+  scoreB: number;
+  scorers: string[];
+  casalpoglioIsHome: boolean;
+  casalpoglioIsAway: boolean;
+  teamALogoPath: string;
+  teamBLogoPath: string;
+}
+
 
 export interface VideoGenerationStatus {
   overallProgress?: number;

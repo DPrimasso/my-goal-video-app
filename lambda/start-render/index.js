@@ -42,100 +42,8 @@ exports.handler = async (event) => {
     
     console.log('🎯 Lambda received inputProps:', JSON.stringify(inputProps, null, 2));
     
-    // Convert FinalResultComp data format if needed
-    if (compositionId === 'FinalResultComp' && inputProps.homeTeam && inputProps.awayTeam) {
-      console.log('🔄 Converting FinalResultComp data format...');
-      
-      // Helper function to get team info
-      const getTeamInfo = (teamId) => {
-        const teamNames = {
-          'casalpoglio': 'Casalpoglio',
-          'amatori_club': 'Amatori Club',
-          'team_3': 'Team 3',
-          'team_4': 'Team 4'
-        };
-        
-        const teamLogos = {
-          'casalpoglio': 'logo_casalpoglio.png',
-          'amatori_club': 'logo_amatori_club.png',
-          'team_3': 'logo192.png',
-          'team_4': 'logo192.png'
-        };
-        
-        return {
-          name: teamNames[teamId] || teamId,
-          logo: teamLogos[teamId] || 'logo192.png'
-        };
-      };
-      
-      // Helper function to get player surname by ID
-      const getPlayerSurname = (playerId) => {
-        // Complete player mapping from players.ts with surnames only
-        const playerSurnames = {
-          'davide_fava': 'Fava',
-          'lorenzo_campagnari': 'Campagnari',
-          'davide_scalmana': 'Scalmana',
-          'saif_ardhaoui': 'Ardhaoui',
-          'nicolo_castellini': 'Castellini',
-          'andrea_contesini': 'Contesini',
-          'davide_di_roberto': 'Di Roberto',
-          'francesco_gabusi': 'Gabusi',
-          'massimiliano_gandellini': 'Gandellini',
-          'lorenzo_gobbi': 'Gobbi',
-          'antonio_inglese': 'Inglese',
-          'vase_jakimovski': 'Jakimovski',
-          'filippo_lodetti': 'Lodetti',
-          'braian_marchi': 'Marchi',
-          'vincenzo_marino': 'Marino',
-          'rosario_nastasi': 'Nastasi',
-          'david_perosi': 'Perosi',
-          'michael_pezzi': 'Pezzi',
-          'lorenzo_piccinelli': 'Piccinelli',
-          'matteo_pinelli': 'Pinelli',
-          'sebastiano_pretto': 'Pretto',
-          'daniele_primasso': 'Primasso',
-          'cristian_ramponi': 'Ramponi',
-          'fabio_rampulla': 'Rampulla',
-          'daniele_rossetto': 'Rossetto',
-          'andrea_serpellini': 'Serpellini',
-          'davide_sipolo': 'Sipolo',
-          'marco_turini': 'Turini',
-          'alberto_viola': 'Viola',
-        };
-        return playerSurnames[playerId] || playerId;
-      };
-      
-      // Convert the data format
-      const homeTeamInfo = getTeamInfo(inputProps.homeTeam);
-      const awayTeamInfo = getTeamInfo(inputProps.awayTeam);
-      
-
-      
-      const isCasalpoglioHome = inputProps.homeTeam === 'casalpoglio';
-      const isCasalpoglioAway = inputProps.awayTeam === 'casalpoglio';
-      
-      // Get scorer names with minutes for Casalpoglio
-      const casalpoglioScorerNames = (inputProps.casalpoglioScorers || [])
-        .map(scorer => {
-          const surname = getPlayerSurname(scorer.playerId);
-          const minute = scorer.minute;
-          return `${surname} ${minute}'`;
-        })
-        .filter(name => name && name !== 'Unknown Player');
-      
-      // Create the converted props
-      mergedProps = {
-        teamA: homeTeamInfo,  // Team A is always home team
-        teamB: awayTeamInfo,  // Team B is always away team
-        scoreA: inputProps.score?.home || 0,   // Score A is home score
-        scoreB: inputProps.score?.away || 0,   // Score B is away score
-        scorers: casalpoglioScorerNames,
-        casalpoglioIsHome: isCasalpoglioHome,
-        casalpoglioIsAway: isCasalpoglioAway,
-      };
-      
-
-    }
+    // Note: FinalResultComp data is now formatted in the frontend before sending to Lambda
+    // No conversion needed here anymore
 
     const toS3Url = (val) => `https://${ASSET_BUCKET}.s3.${REGION}.amazonaws.com/${String(val).replace(/^\/+/, '')}`;
 
@@ -156,9 +64,6 @@ exports.handler = async (event) => {
         }
       }
 
-      // UNIFIED ASSET PATTERN: Team logos are now handled by resolveAsset() in the component
-      // No need to convert teamALogoPath and teamBLogoPath to S3 URLs anymore
-      // The component will use resolveAsset(team.logo) which works in both local and Lambda environments
     }
 
 

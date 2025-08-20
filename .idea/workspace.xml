@@ -5,20 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/client/public/teams/casalpoglio.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/public/teams/logo192.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/lambda-bundle.zip" beforeDir="false" afterPath="$PROJECT_DIR$/client/lambda-bundle.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/public/logo_amatori_club.png" beforeDir="false" afterPath="$PROJECT_DIR$/client/public/teams/amatori_club.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/server-lambda.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server-lambda.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/useFinalResultVideoGeneration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useFinalResultVideoGeneration.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/resolveAsset.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/resolveAsset.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/localVideoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/localVideoService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/teams.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/teams.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/app-bundle.zip" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lambda/start-render/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/start-render/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -48,7 +47,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/dprimo17/Desktop/Personal/code/my-goal-video-app/client/public",
+    "last_opened_file_path": "/Users/dprimo17/Desktop/Personal/code/my-goal-video-app/client/public/teams",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -78,9 +77,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/public/teams" />
       <recent name="$PROJECT_DIR$/client/public" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/public/teams" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -178,7 +179,7 @@
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
       <workItem from="1755098950112" duration="36994000" />
-      <workItem from="1755626078287" duration="18261000" />
+      <workItem from="1755626078287" duration="22889000" />
     </task>
     <servers />
   </component>

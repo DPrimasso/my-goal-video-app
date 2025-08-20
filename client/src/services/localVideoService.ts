@@ -1,4 +1,4 @@
-import { GoalVideoRequest, FormationVideoRequest, FinalResultVideoRequest } from '../types';
+import { GoalVideoRequest, FormationVideoRequest, FinalResultVideoRequest, FinalResultVideoFormattedProps } from '../types';
 import { APP_CONFIG } from '../config/environment';
 import { isDevelopment } from '../config/environment';
 
@@ -77,7 +77,7 @@ class LocalVideoService {
     }
   }
 
-  async generateFinalResultVideo(request: FinalResultVideoRequest): Promise<string> {
+  async generateFinalResultVideo(request: FinalResultVideoFormattedProps): Promise<string> {
     try {
       if (isDevelopment()) {
         console.log('Starting local final result video generation with Express server...');
@@ -239,7 +239,7 @@ class LocalVideoService {
     }
   }
 
-  private async startFinalResultRenderProcess(renderId: string, request: FinalResultVideoRequest): Promise<void> {
+  private async startFinalResultRenderProcess(renderId: string, request: FinalResultVideoFormattedProps): Promise<void> {
     try {
       // Update progress to 10%
       this.updateProgress(renderId, 0.1);
@@ -254,12 +254,7 @@ class LocalVideoService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          homeTeam: request.homeTeam,
-          awayTeam: request.awayTeam,
-          score: request.score,
-          casalpoglioScorers: request.casalpoglioScorers,
-        }),
+        body: JSON.stringify(request),
       });
 
       if (!response.ok) {
