@@ -7,6 +7,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
   interpolate,
+  staticFile,
 } from 'remotion';
 import {resolveAsset} from './resolveAsset';
 import './FinalResultVideo.css';
@@ -24,6 +25,8 @@ export interface FinalResultVideoProps extends Record<string, unknown> {
   scorers: string[];
   casalpoglioIsHome?: boolean;
   casalpoglioIsAway?: boolean;
+  teamALogoPath?: string; // S3 URL for team A logo
+  teamBLogoPath?: string; // S3 URL for team B logo
 }
 
 export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
@@ -34,7 +37,11 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
   scorers,
   casalpoglioIsHome = false,
   casalpoglioIsAway = false,
+  teamALogoPath,
+  teamBLogoPath,
 }) => {
+
+
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const delay = fps * 2; // 1 second delay
@@ -61,17 +68,38 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
     interpolate(scoreSpring, [0, 1], [0, scoreB])
   );
 
+  // FIXED ASSET RESOLUTION: Use staticFile directly for Lambda compatibility
+  // This ensures assets are properly bundled and accessible in Lambda
+  const teamALogo = teamALogoPath || staticFile(teamA.logo);
+  const teamBLogo = teamBLogoPath || staticFile(teamB.logo);
+
+  // Force specific logo paths for known teams to ensure they load
+  const getTeamLogo = (teamName: string, defaultLogo: string) => {
+    if (teamName === 'Amatori Club') {
+      return staticFile('logo_amatori_club.png');
+    }
+    if (teamName === 'Casalpoglio') {
+      return staticFile('logo_casalpoglio.png');
+    }
+    return defaultLogo;
+  };
+
+  const finalTeamALogo = getTeamLogo(teamA.name, teamALogo);
+  const finalTeamBLogo = getTeamLogo(teamB.name, teamBLogo);
+
+
+
   return (
     <AbsoluteFill>
       <Video
-        src={resolveAsset('final_score.mp4')}
+        src={staticFile('final_score.mp4')}
         className="background-video"
       />
       <AbsoluteFill className="result-root">
         <div className="teams-row">
           <div className="team-block">
             <Img
-              src={resolveAsset(teamA.logo)}
+              src={finalTeamALogo}
               className="team-logo"
               style={{transform: `translateX(${translateA}px)`}}
             />
@@ -84,7 +112,7 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
           </div>
           <div className="team-block">
             <Img
-              src={resolveAsset(teamB.logo)}
+              src={finalTeamBLogo}
               className="team-logo"
               style={{transform: `translateX(${translateB}px)`}}
             />
@@ -104,7 +132,7 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
             {/* Show scorers for Casalpoglio if they are the home team */}
             {casalpoglioIsHome && scorers.length > 0 && (
               <div className="scorers-list scorers-list-position-1">
-                {scorers.map((s, i) => {
+                {scorers.map((s: string, i: number) => {
                   const sSpring = spring({
                     ...springOpts,
                     frame: Math.max(0, frame - delay - playerDelay - i * 15),
@@ -134,7 +162,7 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
             {/* Show scorers for Casalpoglio if they are the away team */}
             {casalpoglioIsAway && scorers.length > 0 && (
               <div className="scorers-list scorers-list-position-2">
-                {scorers.map((s, i) => {
+                {scorers.map((s: string, i: number) => {
                   const sSpring = spring({
                     ...springOpts,
                     frame: Math.max(0, frame - delay - playerDelay - i * 15),

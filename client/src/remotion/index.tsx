@@ -36,14 +36,6 @@ const RemotionRoot: React.FC = () => {
       .map((p) => (p ? mapFormationPlayer(p) : null)),
   };
 
-  const resultDefaults: FinalResultVideoProps = {
-    teamA: {name: 'Casalpoglio', logo: 'logo_casalpoglio.png'},
-    teamB: {name: 'Avversari', logo: 'logo192.png'},
-    scoreA: 0,
-    scoreB: 0,
-    scorers: ['Giocatore 1', 'Giocatore 2'],
-  };
-
   return (
     <>
         <Composition<any, MyGoalVideoProps>
@@ -64,14 +56,22 @@ const RemotionRoot: React.FC = () => {
             height={1920}
             defaultProps={formationDefaults}
         />
-        <Composition<any, FinalResultVideoProps>
+                <Composition<any, FinalResultVideoProps>
             id="FinalResultComp"
             component={FinalResultVideo}
             durationInFrames={300}
             fps={30}
             width={1080}
             height={1920}
-            defaultProps={resultDefaults}
+            defaultProps={{
+              teamA: {name: '', logo: ''},
+              teamB: {name: '', logo: ''},
+              scoreA: 0,
+              scoreB: 0,
+              scorers: [],
+              casalpoglioIsHome: false,
+              casalpoglioIsAway: false,
+            }}
         />
         <Composition
             id="PingComp"

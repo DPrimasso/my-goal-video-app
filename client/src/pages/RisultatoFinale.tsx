@@ -4,6 +4,7 @@ import { Button, Input, Select } from '../components/ui';
 import { players, getSurname } from '../players';
 import { useFinalResultVideoGeneration } from '../hooks/useFinalResultVideoGeneration';
 import { isDevelopment } from '../config/environment';
+import { Scorer } from '../types';
 import './RisultatoFinale.css';
 
 interface TeamScore {
@@ -15,7 +16,7 @@ const RisultatoFinale: React.FC = () => {
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
   const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
-  const [casalpoglioScorers, setCasalpoglioScorers] = useState<string[]>([]);
+  const [casalpoglioScorers, setCasalpoglioScorers] = useState<Scorer[]>([]);
 
   const { loading, progress, generatedUrl, error, generateVideo, reset } = useFinalResultVideoGeneration();
 
@@ -49,9 +50,14 @@ const RisultatoFinale: React.FC = () => {
     }));
   };
 
-  const handleScorerChange = (index: number, value: string) => {
+  const handleScorerChange = (index: number, field: 'playerId' | 'minute', value: string) => {
     const newScorers = [...casalpoglioScorers];
-    newScorers[index] = value;
+    if (field === 'playerId') {
+      newScorers[index] = { ...newScorers[index], playerId: value };
+    } else if (field === 'minute') {
+      const minuteValue = parseInt(value) || 0;
+      newScorers[index] = { ...newScorers[index], minute: minuteValue };
+    }
     setCasalpoglioScorers(newScorers);
   };
 
@@ -67,7 +73,7 @@ const RisultatoFinale: React.FC = () => {
       // Aggiungi nuovi slot per i gol
       const newScorers = [...casalpoglioScorers];
       for (let i = casalpoglioScorers.length; i < goals; i++) {
-        newScorers.push('');
+        newScorers.push({ playerId: '', minute: 0 });
       }
       setCasalpoglioScorers(newScorers);
     } else if (goals < casalpoglioScorers.length) {
@@ -93,8 +99,8 @@ const RisultatoFinale: React.FC = () => {
     }
 
     const casalpoglioGoals = getCasalpoglioGoals();
-    if (casalpoglioGoals > 0 && casalpoglioScorers.some(s => !s)) {
-      alert('Inserisci tutti i marcatori del Casalpoglio');
+    if (casalpoglioGoals > 0 && casalpoglioScorers.some(s => !s.playerId || s.minute <= 0)) {
+      alert('Inserisci tutti i marcatori del Casalpoglio e i minuti dei gol');
       return;
     }
 
@@ -187,16 +193,27 @@ const RisultatoFinale: React.FC = () => {
                     <label className="scorer-label">
                       Gol {index + 1}:
                     </label>
-                    <Select
-                      label=""
-                      value={scorer}
-                      onChange={(value) => handleScorerChange(index, value)}
-                      options={players.map(p => ({
-                        value: p.id,
-                        label: getSurname(p.name)
-                      }))}
-                      required
-                    />
+                    <div className="scorer-fields">
+                      <Select
+                        label=""
+                        value={scorer.playerId}
+                        onChange={(value) => handleScorerChange(index, 'playerId', value)}
+                        options={players.map(p => ({
+                          value: p.id,
+                          label: getSurname(p.name)
+                        }))}
+                        required
+                      />
+                      <Input
+                        label="Minuto"
+                        value={scorer.minute.toString()}
+                        onChange={(value) => handleScorerChange(index, 'minute', value)}
+                        type="number"
+                        min={1}
+                        max={90}
+                        required
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

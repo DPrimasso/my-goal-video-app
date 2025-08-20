@@ -6,10 +6,20 @@
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/lambda-bundle.zip" beforeDir="false" afterPath="$PROJECT_DIR$/client/lambda-bundle.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/hooks/useFinalResultVideoGeneration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useFinalResultVideoGeneration.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/MyGoalVideo.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/resolveAsset.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/resolveAsset.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/app-bundle.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lambda/start-render/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/start-render/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +57,7 @@
     "npm.build:lambda.executor": "Run",
     "npm.build:lambda:check.executor": "Run",
     "npm.clean-start.executor": "Run",
+    "npm.deploy:lambda.executor": "Run",
     "npm.dev (1).executor": "Run",
     "npm.dev.executor": "Run",
     "npm.kill-ports # Ferma tutti i processi.executor": "Run",
@@ -100,6 +111,16 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="deploy:lambda" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/client/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="deploy:lambda" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <configuration name="kill-ports # Ferma tutti i processi" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/client/package.json" />
       <command value="run" />
@@ -107,16 +128,6 @@
         <script value="kill-ports" />
       </scripts>
       <arguments value="  # Ferma tutti i processi" />
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="kill-ports" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/client/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="kill-ports" />
-      </scripts>
       <node-interpreter value="project" />
       <envs />
       <method v="2" />
@@ -133,18 +144,18 @@
     </configuration>
     <list>
       <item itemvalue="npm.build:lambda:check" />
+      <item itemvalue="npm.deploy:lambda" />
       <item itemvalue="npm.kill-ports # Ferma tutti i processi" />
       <item itemvalue="npm.build:lambda" />
-      <item itemvalue="npm.kill-ports" />
       <item itemvalue="npm.start" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="npm.start" />
+        <item itemvalue="npm.deploy:lambda" />
         <item itemvalue="npm.kill-ports # Ferma tutti i processi" />
         <item itemvalue="npm.build:lambda:check" />
         <item itemvalue="npm.build:lambda" />
-        <item itemvalue="npm.kill-ports" />
       </list>
     </recent_temporary>
   </component>
@@ -167,7 +178,7 @@
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
       <workItem from="1755098950112" duration="36994000" />
-      <workItem from="1755626078287" duration="8111000" />
+      <workItem from="1755626078287" duration="18261000" />
     </task>
     <servers />
   </component>

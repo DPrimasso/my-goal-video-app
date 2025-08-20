@@ -122,6 +122,21 @@
   min-width: 80px;
 }
 
+.scorer-fields {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  align-items: flex-end;
+}
+
+.scorer-fields .select-group {
+  flex: 2;
+}
+
+.scorer-fields .input-group {
+  flex: 1;
+}
+
 .scorer-input .input-group {
   flex: 1;
 }
@@ -263,6 +278,18 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+  
+  .scorer-fields {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  
+  .scorer-fields .select-group,
+  .scorer-fields .input-group {
+    flex: none;
+    width: 100%;
   }
   
   .scorer-label {

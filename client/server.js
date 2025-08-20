@@ -230,9 +230,18 @@ app.post('/api/formation-render', async (req, res) => {
 
 // API endpoint for final result video generation
 app.post('/api/final-result-render', async (req, res) => {
+  console.log('🎯 Received final result request body:', JSON.stringify(req.body, null, 2));
+  
   const { homeTeam, awayTeam, score, casalpoglioScorers } = req.body || {};
   
+  console.log('🎯 Parsed request data:');
+  console.log('  homeTeam:', homeTeam);
+  console.log('  awayTeam:', awayTeam);
+  console.log('  score:', score);
+  console.log('  casalpoglioScorers:', casalpoglioScorers);
+  
   if (!homeTeam || !awayTeam || !score) {
+    console.log('❌ Missing required data');
     return res.status(400).json({ error: 'Missing match data' });
   }
 
@@ -318,6 +327,8 @@ app.post('/api/final-result-render', async (req, res) => {
         'team_4': 'Team 4'
       };
       
+      // UNIFIED ASSET PATTERN: Use the same pattern as other videos
+      // For local development, use local paths that will be resolved by resolveAsset
       const teamLogos = {
         'casalpoglio': 'logo_casalpoglio.png',
         'amatori_club': 'logo_amatori_club.png',
@@ -358,7 +369,19 @@ app.post('/api/final-result-render', async (req, res) => {
       // Add flags to help the video component position scorers correctly
       casalpoglioIsHome: isCasalpoglioHome,
       casalpoglioIsAway: isCasalpoglioAway,
+      // UNIFIED ASSET PATTERN: Don't pass logo paths - let resolveAsset handle them
+      // teamALogoPath and teamBLogoPath will be undefined, so resolveAsset(team.logo) will be used
     };
+    
+    // Debug logging for input props
+    console.log('🎯 Final Result Video Input Props:');
+    console.log('  teamA:', JSON.stringify(inputProps.teamA, null, 2));
+    console.log('  teamB:', JSON.stringify(inputProps.teamB, null, 2));
+    console.log('  scoreA:', inputProps.scoreA);
+    console.log('  scoreB:', inputProps.scoreB);
+    console.log('  scorers:', inputProps.scorers);
+    console.log('  casalpoglioIsHome:', inputProps.casalpoglioIsHome);
+    console.log('  casalpoglioIsAway:', inputProps.casalpoglioIsAway);
     
     // Get compositions
     const comps = await getCompositions(bundled, { inputProps });

@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Img, Sequence, useCurrentFrame, useVideoConfig, spring, interpolate} from 'remotion';
+import {AbsoluteFill, Img, Sequence, useCurrentFrame, useVideoConfig, spring, interpolate, staticFile} from 'remotion';
 import {resolveAsset} from './resolveAsset';
 import './FormationVideo.css';
 
@@ -37,7 +37,7 @@ const PlayerVisual: React.FC<{player: FormationPlayer; x: number; y: number; ima
       }}
     >
       <Img 
-        src={resolveAsset(player.image)} 
+        src={staticFile(player.image)} 
         className="player-image" 
         style={{
           transform: `scale(${imageScale})`,
@@ -258,7 +258,7 @@ export const FormationVideo: React.FC<FormationVideoProps> = ({
 
   return (
     <AbsoluteFill>
-      <Img src={resolveAsset('campo_da_calcio.png')} className="field-image" />
+      <Img src={staticFile('campo_da_calcio.png')} className="field-image" />
       <BlurOverlay blurIntensity={blurIntensity} />
       {sequences}
     </AbsoluteFill>

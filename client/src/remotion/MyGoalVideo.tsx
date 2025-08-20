@@ -48,7 +48,7 @@ export const MyGoalVideo: React.FC<MyGoalVideoProps> = ({
     const overlaySrc = s3PlayerUrl
       ? s3PlayerUrl
       : overlayImage
-        ? (isAbsoluteUrl(overlayImage) ? overlayImage : resolveAsset(overlayImage))
+        ? (isAbsoluteUrl(overlayImage) ? overlayImage : staticFile(overlayImage))
         : undefined;
 
     // Extract surname (second part of the name)

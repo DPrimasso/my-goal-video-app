@@ -1,6 +1,6 @@
 # My Goal Video App - Lambda Functions
 
-Questo repository contiene le AWS Lambda functions per il rendering video utilizzando Remotion 4.0.333.
+Questo repository contiene le AWS Lambda functions per il rendering video utilizzando Remotion.
 
 ## 🚀 Funzionalità
 
@@ -75,42 +75,33 @@ Controlla lo stato di un rendering in corso.
    npm install
    ```
 
-2. **Build del bundle:**
+2. **Creazione del bundle per AWS Lambda:**
    ```bash
-   cd ../client
-   npm run build:lambda
+   zip -r app-bundle.zip package.json node_modules start-render render-status
    ```
 
 3. **Deploy su AWS Lambda:**
-   - Carica il file `app-bundle.zip` come layer per la funzione Lambda
+   
+   **Opzione A: Via AWS CLI (Raccomandato)**
+   ```bash
+   # Aggiorna la function start-render
+   aws lambda update-function-code --function-name start-render --zip-file fileb://app-bundle.zip --region eu-west-1 --profile DPrimo17
+   
+   # Aggiorna la function render-status
+   aws lambda update-function-code --function-name render-status --zip-file fileb://app-bundle.zip --region eu-west-1 --profile DPrimo17
+   ```
+   
+   **Opzione B: Via AWS Console**
+   - Vai su [AWS Lambda Console](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions)
+   - Seleziona la function → Code → Upload from → .zip file
+   - Carica il file `app-bundle.zip`
+   - Ripeti per entrambe le functions (start-render e render-status)
+   
+   **Post-Deploy:**
    - Configura le variabili d'ambiente
    - Imposta i timeout appropriati (raccomandato: 15 minuti)
 
-## 🆕 Novità in Remotion 4.0.333
-
-- **Migliore gestione degli errori** con stack trace dettagliati
-- **Headers HTTP standardizzati** per tutte le risposte
-- **Logging migliorato** per debugging
-- **Supporto per parametri avanzati** di rendering
-- **Gestione automatica dei bucket** S3
-- **Validazione dei parametri** migliorata
-
 ## 🐛 Troubleshooting
-
-### Version mismatch
-Se vedi errori di version mismatch:
-```bash
-cd client
-npm run build:lambda:check
-```
-
-### Clean build
-Per un build pulito:
-```bash
-cd client
-npm run build:lambda:clean
-npm run build:lambda
-```
 
 ### Logs
 Controlla i CloudWatch logs per:

@@ -19,6 +19,9 @@ export const useFinalResultVideoGeneration = (): UseFinalResultVideoGenerationRe
   const [error, setError] = useState<string | null>(null);
 
   const generateVideo = useCallback(async (request: FinalResultVideoRequest) => {
+
+    console.log('Generating video', request);
+
     setLoading(true);
     setProgress(0);
     setGeneratedUrl(null);

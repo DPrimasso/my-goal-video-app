@@ -40,7 +40,7 @@ export interface FinalResultVideoRequest {
     home: number;
     away: number;
   };
-  casalpoglioScorers: string[];
+  casalpoglioScorers: Scorer[];
 }
 
 
@@ -66,4 +66,9 @@ export interface AppConfig {
   renderStatusUrl: string;
   pollIntervalMs: number;
   maxPollAttempts: number;
+}
+
+export interface Scorer {
+  playerId: string;
+  minute: number;
 }
