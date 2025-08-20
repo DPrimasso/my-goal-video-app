@@ -5,20 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/client/public/teams/casalpoglio.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/client/public/teams/logo192.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/public/logo_amatori_club.png" beforeDir="false" afterPath="$PROJECT_DIR$/client/public/teams/amatori_club.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/server-lambda.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server-lambda.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/RisultatoFinale.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/services/localVideoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/localVideoService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/teams.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/teams.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/start-render/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/start-render/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/layout/Header.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/layout/Header.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/layout/PageTemplate.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/layout/PageTemplate.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/Input.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/Input.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -179,7 +169,7 @@
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
       <workItem from="1755098950112" duration="36994000" />
-      <workItem from="1755626078287" duration="22889000" />
+      <workItem from="1755626078287" duration="26358000" />
     </task>
     <servers />
   </component>

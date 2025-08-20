@@ -34,7 +34,7 @@
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.8);
   color: var(--color-text-secondary);
-  font-size: 1rem;
+  font-size: 1.25rem;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
   width: 100%;
@@ -96,11 +96,11 @@
 @media (max-width: 768px) {
   .input {
     padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
   
   .input__label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
   
   .input__error {
@@ -111,11 +111,11 @@
 @media (max-width: 480px) {
   .input {
     padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
   
   .input__label {
-    font-size: 0.625rem;
+    font-size: 0.875rem;
   }
   
   .input__error {
