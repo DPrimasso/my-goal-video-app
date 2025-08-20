@@ -22,6 +22,8 @@ export interface FinalResultVideoProps extends Record<string, unknown> {
   scoreA: number;
   scoreB: number;
   scorers: string[];
+  casalpoglioIsHome?: boolean;
+  casalpoglioIsAway?: boolean;
 }
 
 export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
@@ -30,6 +32,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
   scoreA,
   scoreB,
   scorers,
+  casalpoglioIsHome = false,
+  casalpoglioIsAway = false,
 }) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
@@ -97,7 +101,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
             <div className="score-number score-number-1" style={{opacity: scoreSpring}}>
               {currentA}
             </div>
-            {teamA.name === 'Casalpoglio' && (
+            {/* Show scorers for Casalpoglio if they are the home team */}
+            {casalpoglioIsHome && scorers.length > 0 && (
               <div className="scorers-list scorers-list-position-1">
                 {scorers.map((s, i) => {
                   const sSpring = spring({
@@ -126,7 +131,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
             <div className="score-number score-number-2" style={{opacity: scoreSpring}}>
               {currentB}
             </div>
-            {teamB.name === 'Casalpoglio' && (
+            {/* Show scorers for Casalpoglio if they are the away team */}
+            {casalpoglioIsAway && scorers.length > 0 && (
               <div className="scorers-list scorers-list-position-2">
                 {scorers.map((s, i) => {
                   const sSpring = spring({

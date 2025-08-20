@@ -55,11 +55,18 @@ npm run server
 
 ### **Comandi Utili**
 ```bash
+# Sviluppo
 npm run dev          # Avvia tutto (React + Server)
 npm run start:full   # Alias per npm run dev
 npm run clean-start  # Ferma tutto e riavvia
 npm run kill-ports   # Ferma tutti i processi
 npm run check-ports  # Controlla porte in uso
+
+# Remotion
+npm run studio       # Apri Remotion Studio per preview
+npm run deploy:lambda      # Deploy su AWS Lambda
+npm run deploy:lambda:check # Lista siti Lambda esistenti
+npm run deploy:lambda:clean # Rimuovi sito Lambda
 ```
 
 ## 🎯 Funzionalità Frontend
@@ -78,8 +85,13 @@ npm run check-ports  # Controlla porte in uso
 - Generazione video formazione
 
 ### **Pagina Risultato Finale**
-- Visualizzazione punteggio finale
-- Generazione video risultato
+- Selezione squadre casa/trasferta
+- Inserimento punteggio finale
+- Selezione marcatori Casalpoglio
+- Generazione video risultato con:
+  - Nomi e loghi squadre corretti
+  - Posizionamento casa/trasferta appropriato
+  - Marcatori nella posizione corretta
 
 ## 🔧 Configurazione
 
@@ -119,16 +131,46 @@ export const APP_CONFIG = {
 5. **Anteprima**: URL S3 pubblico
 
 ### **Deploy su Remotion Lambda**
-```bash
-# Crea un nuovo sito Remotion Lambda
-npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app
 
-# Questo comando:
-# - Crea un nuovo sito su Remotion Lambda
-# - Usa la composizione principale in src/remotion/index.tsx
-# - Assegna il nome "my-goal-video-app" al sito
-# - Restituisce l'URL del sito creato
+#### **Nuovo Deployment**
+```bash
+# Metodo raccomandato: usa npm script
+npm run deploy:lambda
+
+# Oppure comando diretto
+npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app
 ```
+
+#### **Gestione Deployment**
+```bash
+# Controlla siti esistenti
+npm run deploy:lambda:check
+# oppure: npx remotion lambda sites ls
+
+# Rimuovi sito esistente (se necessario)
+npm run deploy:lambda:clean
+# oppure: npx remotion lambda sites rm my-goal-video-app
+```
+
+#### **Processo di Deployment**
+Il comando `npm run deploy:lambda`:
+1. **Bundle**: Crea automaticamente il bundle del codice
+2. **Upload**: Carica su S3 (19+ file con tutte le modifiche)
+3. **Deploy**: Crea/aggiorna il sito Lambda
+4. **URL**: Restituisce l'URL del sito per le funzioni Lambda
+
+#### **Quando Rifare il Deploy**
+⚠️ **IMPORTANTE**: Rifai il deploy ogni volta che modifichi:
+- Componenti Remotion (`src/remotion/`)
+- Logica di generazione video
+- Props dei componenti video
+- Asset utilizzati nei video
+
+#### **Note sul Deployment**
+- ✅ **Non serve più** `npm run build` o creare bundle manualmente
+- ✅ **Automatico**: Il comando gestisce tutto il processo
+- ✅ **Sovrascrittura**: Riutilizza lo stesso nome sito per aggiornamenti
+- ✅ **Veloce**: Deploy incrementale, carica solo le modifiche
 
 ## 🛠️ Tecnologie
 

@@ -309,41 +309,55 @@ app.post('/api/final-result-render', async (req, res) => {
       return player ? player.name : 'Unknown Player';
     };
 
-    // Get scorer names
-    const scorerNames = casalpoglioScorers
-      .map(scorerId => {
-        if (!scorerId) return null; // Return null for empty scorer slots
-        return getPlayerName(scorerId);
-      })
-      .filter(name => name !== null && name !== 'Default Player' && name !== 'Unknown Player');
-    
-    // Map team names to display names
-    const getTeamDisplayName = (teamId) => {
+    // Map team IDs to team info with proper logos
+    const getTeamInfo = (teamId, isHomeTeam) => {
       const teamNames = {
         'casalpoglio': 'Casalpoglio',
         'amatori_club': 'Amatori Club',
         'team_3': 'Team 3',
         'team_4': 'Team 4'
       };
-      return teamNames[teamId] || teamId;
+      
+      const teamLogos = {
+        'casalpoglio': 'logo_casalpoglio.png',
+        'amatori_club': 'logo_amatori_club.png',
+        'team_3': 'logo192.png',
+        'team_4': 'logo192.png'
+      };
+      
+      return {
+        name: teamNames[teamId] || teamId,
+        logo: teamLogos[teamId] || 'logo192.png'
+      };
     };
 
-    // Map team IDs to team info
-    const teamA = homeTeam === 'casalpoglio' ? 
-      { name: 'Casalpoglio', logo: 'logo_casalpoglio.png' } :
-      { name: getTeamDisplayName(homeTeam), logo: 'logo192.png' };
+    // Determine which team is which based on home/away
+    const homeTeamInfo = getTeamInfo(homeTeam, true);
+    const awayTeamInfo = getTeamInfo(awayTeam, false);
     
-    const teamB = awayTeam === 'casalpoglio' ? 
-      { name: 'Casalpoglio', logo: 'logo_casalpoglio.png' } :
-      { name: getTeamDisplayName(awayTeam), logo: 'logo192.png' };
+    // Determine which team is Casalpoglio and get their scorers
+    const isCasalpoglioHome = homeTeam === 'casalpoglio';
+    const isCasalpoglioAway = awayTeam === 'casalpoglio';
     
+    // Get scorer names for Casalpoglio
+    const casalpoglioScorerNames = casalpoglioScorers
+      .map(scorerId => {
+        if (!scorerId) return null;
+        return getPlayerName(scorerId);
+      })
+      .filter(name => name !== null && name !== 'Default Player' && name !== 'Unknown Player');
+    
+    // Create input props with proper team positioning
     const inputProps = {
-      teamA,
-      teamB,
-      scoreA: score.home,
-      scoreB: score.away,
-      scorers: scorerNames,
+      teamA: homeTeamInfo,  // Team A is always home team
+      teamB: awayTeamInfo,  // Team B is always away team
+      scoreA: score.home,   // Score A is home score
+      scoreB: score.away,   // Score B is away score
+      scorers: casalpoglioScorerNames,
       baseUrl,
+      // Add flags to help the video component position scorers correctly
+      casalpoglioIsHome: isCasalpoglioHome,
+      casalpoglioIsAway: isCasalpoglioAway,
     };
     
     // Get compositions
@@ -354,8 +368,10 @@ app.post('/api/final-result-render', async (req, res) => {
     }
 
     // Prepare output filename
+    const homeTeamName = homeTeamInfo.name.replace(/\s+/g, '_');
+    const awayTeamName = awayTeamInfo.name.replace(/\s+/g, '_');
     const matchResult = `${score.home}-${score.away}`;
-    const outputFilename = `${Date.now()}-${homeTeam}_vs_${awayTeam}_${matchResult}.mp4`;
+    const outputFilename = `${Date.now()}-${homeTeamName}_vs_${awayTeamName}_${matchResult}.mp4`;
     const outputPath = path.join(VIDEOS_DIR, outputFilename);
 
     console.log('Rendering final result video...');

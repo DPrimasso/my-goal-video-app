@@ -6,23 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="2f279c26-3107-4fc8-a195-e649cd8929b2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/client/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/useVideoGeneration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useVideoGeneration.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/players.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/players.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/services/videoService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/videoService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/app-bundle.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/render-status/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/render-status/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lambda/start-render/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/lambda/start-render/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/FinalResultVideo.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,7 +167,7 @@
       <workItem from="1754909159448" duration="13187000" />
       <workItem from="1755050242764" duration="7529000" />
       <workItem from="1755098950112" duration="36994000" />
-      <workItem from="1755626078287" duration="6834000" />
+      <workItem from="1755626078287" duration="8111000" />
     </task>
     <servers />
   </component>

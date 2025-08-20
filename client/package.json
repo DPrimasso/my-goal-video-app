@@ -42,9 +42,9 @@
     "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
     "clean-start": "npm run kill-ports && npm run dev",
     "studio": "npx @remotion/studio src/remotion/index.tsx",
-    "build:lambda": "npx remotion versions --log=verbose && remotion bundle src/remotion/index.tsx --out-dir lambda-bundle && cd lambda-bundle && zip -r ../lambda-bundle.zip . -x '*.mp4' '*.png' '*.jpg' '*.ai' '*.svg' 'public/generated/*' '*.map' 'public/players/*' 'public/clips/*' && echo 'Lambda bundle updated successfully!'",
-    "build:lambda:check": "npx remotion versions --log=verbose",
-    "build:lambda:clean": "rm -rf lambda-bundle lambda-bundle.zip && echo 'Lambda build artifacts cleaned'"
+    "deploy:lambda": "npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app",
+    "deploy:lambda:check": "npx remotion lambda sites ls",
+    "deploy:lambda:clean": "npx remotion lambda sites rm my-goal-video-app"
   },
   "eslintConfig": {
     "extends": [
