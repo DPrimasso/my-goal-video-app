@@ -113,7 +113,7 @@ const Formazione: React.FC = () => {
       if (isProduction()) {
         // In produzione: genera l'IMMAGINE lineup via Lambda lineup-image
         const validPlayersForRequest = lineupPlayers.filter(p => p.playerId);
-        const lineupImageUrl = process.env.REACT_APP_LINEUP_IMAGE_URL || 'https://bzb5bhqkihcqslfopzahnxafua0inyar.lambda-url.eu-west-1.on.aws/';
+        const lineupImageUrl = process.env.REACT_APP_LINEUP_IMAGE_URL || 'https://4nmg24nu7tkv6mo6ikistuh2la0dbxtl.lambda-url.eu-west-1.on.aws/';
         const response = await fetch(lineupImageUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
