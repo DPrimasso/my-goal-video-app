@@ -2,6 +2,7 @@ import React from 'react';
 import {Composition, registerRoot} from 'remotion';
 import {MyGoalVideo, MyGoalVideoProps} from './MyGoalVideo';
 import {FinalResultVideo, FinalResultVideoProps} from './FinalResultVideo';
+import {FormationVideo} from '../archived/FormationVideo';
 import {Ping} from './Ping';
 
 const RemotionRoot: React.FC = () => {
@@ -42,6 +43,21 @@ const RemotionRoot: React.FC = () => {
               scorers: [],
               casalpoglioIsHome: false,
               casalpoglioIsAway: false,
+            }}
+        />
+        <Composition
+            id="FormationComp"
+            component={FormationVideo}
+            durationInFrames={300}
+            fps={30}
+            width={1080}
+            height={1920}
+            defaultProps={{
+              goalkeeper: {name: '', image: 'players/default_player.png'},
+              defenders: [],
+              midfielders: [],
+              attackingMidfielders: [],
+              forwards: [],
             }}
         />
         <Composition

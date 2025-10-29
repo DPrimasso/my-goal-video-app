@@ -6,17 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2e766283-137a-444c-afa0-87eba095b53e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/client/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/useFormationVideoGeneration.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/Formazione.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Formazione.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Formazione.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/remotion/FormationVideo.tsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/remotion/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/remotion/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/types/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,9 +21,9 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="34jhh7sgwTZPxjJZsdYD75TDYm4" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -46,6 +36,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
+    "go.import.settings.migrated": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/daniele.primasso/OneDrive - TRANSFILMS SRL/Desktop/lavoro/personal/my-goal-video-app",
     "node.js.detected.package.eslint": "true",
@@ -84,6 +75,10 @@
       <envs />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="npm.start:full" />
+      <item itemvalue="npm.start" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="npm.start:full" />
@@ -112,5 +107,8 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="LAST_COMMIT_MESSAGE" value="" />
   </component>
 </project>
