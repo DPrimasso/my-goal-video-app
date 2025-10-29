@@ -6,7 +6,9 @@
   "scripts": {
   },
   "dependencies": {
-    "@remotion/lambda": "4.0.333"
+    "@remotion/lambda": "4.0.333",
+    "chrome-aws-lambda": "10.1.0",
+    "puppeteer-core": "10.4.0"
   },
   "devDependencies": {},
   "engines": {

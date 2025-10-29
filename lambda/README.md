@@ -128,3 +128,23 @@ Controlla i CloudWatch logs per:
 - Utilizza il caching di Remotion per build più veloci
 - Supporta sia JSON che form-encoded nei body delle richieste
 - Gestisce automaticamente i bucket S3 per il rendering
+
+## 🖼️ Lineup image via start-render (azione `lineup-image`)
+
+La funzione `start-render` ora supporta anche la generazione di un'immagine PNG della lineup inviando `action: "lineup-image"` e il payload `players` (11) + `opponentTeam`.
+
+Request esempio:
+
+```json
+{
+  "action": "lineup-image",
+  "players": [{"playerId":"...","playerName":"...","number":10,"isCaptain":false}, ... 11],
+  "opponentTeam": "ASD Le Grazie"
+}
+```
+
+Risposta: `image/png` (body base64 con `isBase64Encoded: true`).
+
+Nota: la funzione usa gli asset in `s3://${ASSET_BUCKET}/lineup/*` (font, bg, loghi). Assicurati che i file siano presenti nel bucket `ASSET_BUCKET`.
+
+> Se l'aggiornamento dello zip supera il limite di 70MB, crea una Lambda separata solo per l'immagine con dipendenze ridotte (`chrome-aws-lambda`, `puppeteer-core`) e abilita una Function URL.

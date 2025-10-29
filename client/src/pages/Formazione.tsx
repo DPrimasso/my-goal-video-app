@@ -5,7 +5,6 @@ import { Input } from '../components/ui';
 import { players, getSurname } from '../players';
 import { LineupPlayer, LineupRequest } from '../types';
 import './Formazione.css';
-import { videoService } from '../services/videoService';
 import { isProduction } from '../config/environment';
 
 // Mapping numeri di default per giocatori (basato sul demo)
@@ -45,7 +44,6 @@ const Formazione: React.FC = () => {
   const [captainIndex, setCaptainIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handlePlayerChange = (index: number, playerId: string) => {
@@ -110,46 +108,26 @@ const Formazione: React.FC = () => {
     setLoading(true);
     setError(null);
     setGeneratedImageUrl(null);
-    setGeneratedVideoUrl(null);
 
     try {
       if (isProduction()) {
-        // In produzione: genera il VIDEO lineup via Lambda (FormationComp)
-        // Mappatura semplice 1-4-4-2 in base all'ordine selezionato
-        const selected = lineupPlayers.filter(p => p.playerId);
-        const toFormationPlayer = (p: LineupPlayer | null) => p ? ({ name: p.playerName, image: `players/${p.playerId || 'default_player'}.png` }) : null;
-
-        const goalkeeper = toFormationPlayer(selected[0] || null)!;
-        const defenders = [1,2,3,4].map(i => toFormationPlayer(selected[i] || null));
-        const midfielders = [5,6,7,8].map(i => toFormationPlayer(selected[i] || null));
-        const forwards = [9,10].map(i => toFormationPlayer(selected[i] || null));
-        const attackingMidfielders: (ReturnType<typeof toFormationPlayer>)[] = [];
-
-        const { bucketName, renderId } = await videoService.startFormationVideoGeneration({
-          goalkeeper,
-          defenders: defenders as any,
-          midfielders: midfielders as any,
-          attackingMidfielders: attackingMidfielders as any,
-          forwards: forwards as any,
-        } as any);
-
-        // Polling stato fino a completamento
-        let attempts = 0;
-        const maxAttempts = 300;
-        const intervalMs = 2000;
-        while (attempts < maxAttempts) {
-          const status = await videoService.getVideoGenerationStatus(bucketName, renderId);
-          if (status?.overallProgress && status.overallProgress >= 1) {
-            const url = videoService.buildVideoUrl(status, bucketName);
-            if (url) setGeneratedVideoUrl(url);
-            break;
-          }
-          await new Promise(r => setTimeout(r, intervalMs));
-          attempts++;
+        // In produzione: genera l'IMMAGINE lineup via Lambda lineup-image
+        const validPlayersForRequest = lineupPlayers.filter(p => p.playerId);
+        const lineupImageUrl = process.env.REACT_APP_LINEUP_IMAGE_URL || 'https://bzb5bhqkihcqslfopzahnxafua0inyar.lambda-url.eu-west-1.on.aws/';
+        const response = await fetch(lineupImageUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            players: validPlayersForRequest,
+            opponentTeam: opponentTeam.trim(),
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
-        if (attempts >= maxAttempts) {
-          throw new Error('Timeout generazione video');
-        }
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setGeneratedImageUrl(imageUrl);
       } else {
         // In sviluppo locale: genera IMMAGINE via server locale
         const request: LineupRequest = {
@@ -184,7 +162,6 @@ const Formazione: React.FC = () => {
 
   const reset = () => {
     setGeneratedImageUrl(null);
-    setGeneratedVideoUrl(null);
     setError(null);
   };
 
@@ -290,27 +267,7 @@ const Formazione: React.FC = () => {
         )}
         
         <div className="preview-section">
-          {generatedVideoUrl ? (
-            <div className="image-preview">
-              <video src={generatedVideoUrl} controls className="lineup-image" />
-              <div className="image-actions">
-                <Button 
-                  onClick={() => window.open(generatedVideoUrl!, '_blank', 'noopener,noreferrer')}
-                  variant="secondary"
-                  size="medium"
-                >
-                  Apri Video in Nuova Scheda
-                </Button>
-                <a
-                  className="download-link"
-                  href={generatedVideoUrl}
-                  download={`lineup_${Date.now()}.mp4`}
-                >
-                  Scarica video
-                </a>
-              </div>
-            </div>
-          ) : generatedImageUrl ? (
+          {generatedImageUrl ? (
             <div className="image-preview">
               <img src={generatedImageUrl} alt="Lineup" className="lineup-image" />
               <div className="image-actions">
