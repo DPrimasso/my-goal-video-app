@@ -1,0 +1,31 @@
+.field-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.player-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  text-shadow: 0 0 10px black;
+  font-size: 40px;
+}
+
+.player-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  transform-origin: center;
+}
+
+.player-name {
+  text-align: center;
+  white-space: pre-line;
+  font-size: 2.5rem; /* Cambia questo valore per la dimensione del testo */
+  transform-origin: center;
+  /* margin-top ora viene calcolato dinamicamente nel componente */
+}

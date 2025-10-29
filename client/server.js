@@ -4,6 +4,7 @@ const fs = require('fs');
 const { bundle } = require('@remotion/bundler');
 const { getCompositions, renderMedia } = require('@remotion/renderer');
 const cors = require('cors');
+const puppeteer = require('puppeteer');
 
 // Create videos directory
 const VIDEOS_DIR = path.join(__dirname, 'public', 'generated');
@@ -322,6 +323,279 @@ app.post('/api/final-result-render', async (req, res) => {
   }
 });
 
+// API endpoint for lineup image generation
+app.post('/api/lineup-generate', async (req, res) => {
+  const { players, opponentTeam } = req.body || {};
+  
+  if (!players || !Array.isArray(players) || players.length !== 11) {
+    return res.status(400).json({ error: 'Missing or invalid players data. Expected exactly 11 players.' });
+  }
+
+  if (!opponentTeam || !opponentTeam.trim()) {
+    return res.status(400).json({ error: 'Missing opponent team name' });
+  }
+
+  try {
+    console.log('Starting lineup image generation...');
+    
+    const baseUrl = 'http://localhost:4000';
+    
+    // Build HTML template
+    const playerRows = players.map(player => {
+      const captainIcon = player.isCaptain 
+        ? `<img class="cap" src="${baseUrl}/lineup/cap.png" />` 
+        : '';
+      return `
+        <div class="row">
+          <div class="num">${player.number}</div>
+          <div class="name">${player.playerName.toUpperCase()} ${captainIcon}</div>
+        </div>
+      `;
+    }).join('');
+
+    const htmlTemplate = `
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Starting XI</title>
+  <style>
+    @font-face {
+      font-family: 'Tusker';
+      src: url('${baseUrl}/lineup/TuskerGrotesk-3500Medium.woff2') format('woff2'),
+           url('${baseUrl}/lineup/TuskerGrotesk-3500Medium.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+      ascent-override: 110%;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html,body{
+      color:white;
+      font-weight:500;
+      font-family: 'Tusker', sans-serif;
+      width: 1080px;
+      height: 2000px;
+      margin:0;
+      padding:0;
+      background-color: black;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .card{
+      width: 1080px;
+      height:2000px;
+      overflow:visible;
+      padding:80px 40px;
+      padding-bottom: 160px;
+      background-image: url('${baseUrl}/lineup/bg.jpg');
+      background-size:cover;
+      background-repeat: no-repeat;
+      background-position:center;
+      position:absolute;
+      top: 0;
+      left: 0;
+      display:flex;
+      gap:10px;
+      flex-direction:column;
+      margin:0;
+      box-sizing: border-box;
+    }
+    .bgimg{
+      position: absolute;
+      inset:0;
+      width: 100%;
+      height:100%;
+      opacity: .2;
+    }
+    .bgimg img{
+      width: 100%;
+      height:100%;
+      object-position: center;
+      object-fit: cover;
+    }
+    .card .element{
+      position: relative;
+      z-index:50;
+      border-radius: 10px;
+      background-color: rgba(0, 0, 0, .8);
+      padding: 80px;
+    }
+    .card .element h1{
+      font-size:180px;
+      margin:0;
+      line-height:1;
+    }
+    .card .element p{
+      font-size:60px;
+      display:block;
+      text-transform: uppercase;
+      margin:0;
+      margin-top:24px;
+      line-height:1;
+    }
+    .card .element.flexmore {
+      flex:1;
+    }
+    .card .grid{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      position: relative;
+      z-index:50;
+    }
+    .card .grid .sponsor{
+      grid-column: span 1 / span 1;
+      aspect-ratio: 2/1;
+      border-radius: 10px;
+      background-color: rgba(0, 0, 0, .8);
+      display: flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+    .card .grid .sponsor img{
+      width: 60%;
+    }
+    .card .list{
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      gap:10px;
+      justify-content:space-between;
+      height:100%;
+    }
+    .card .list .row{
+      display: grid;
+      line-height:1;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      font-size:80px;
+    }
+    .num{
+      grid-column: span 1 / span 1;
+      color: #DD0000;
+    }
+    .name{
+      grid-column: span 7 / span 7;
+      display: flex;
+      align-items:center;
+      gap:16px;
+    }
+    .name img.cap{
+      aspect-ratio: 1;
+      width: 54px;
+    }
+    .logoimg{
+      position: absolute;
+      bottom:30px;
+      right:40px;
+      max-width: 45%;
+      height: auto;
+      opacity: .1;
+      overflow:hidden
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="bgimg">
+      <img src="${baseUrl}/lineup/group.png" />
+    </div>
+    <div class="element">
+      <h1>STARTING XI</h1>
+      <p>Vs ${opponentTeam.toUpperCase()}</p>
+    </div>
+    <div class="element flexmore">
+      <div class="list">
+        ${playerRows}
+      </div>
+      <div class="logoimg">
+        <img src="${baseUrl}/lineup/logo.png" />
+      </div>
+    </div>
+    <div class="grid">
+      <div class="sponsor"><img src="${baseUrl}/lineup/vega.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/loooma.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/mm.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/onlight.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/sens.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/neotec.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/rubes-w.png" /></div>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    // Launch Puppeteer
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    
+    const page = await browser.newPage();
+    
+    // Set viewport to match the card dimensions + extra space at bottom
+    await page.setViewport({
+      width: 1080,
+      height: 2000,
+      deviceScaleFactor: 1,
+    });
+
+    // Set content
+    await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
+
+    // Wait for fonts and images to load
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Ensure body and html start at 0,0 with no offsets
+    await page.evaluate(() => {
+      document.documentElement.style.margin = '0';
+      document.documentElement.style.padding = '0';
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+      const card = document.querySelector('.card');
+      if (card) {
+        const rect = card.getBoundingClientRect();
+        // If card is not at top, adjust
+        if (rect.top > 0) {
+          card.style.marginTop = `-${rect.top}px`;
+        }
+      }
+    });
+
+    // Capture screenshot (1080x2000 with extra space at bottom)
+    const screenshot = await page.screenshot({
+      type: 'png',
+      clip: {
+        x: 0,
+        y: 0,
+        width: 1080,
+        height: 2000,
+      },
+    });
+
+    await browser.close();
+
+    // Send image as response
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'inline; filename="lineup.png"');
+    res.send(screenshot);
+
+    console.log('Lineup image generated successfully');
+  } catch (err) {
+    console.error('Error generating lineup image:', err);
+    res.status(500).json({ error: 'Failed to generate lineup image', details: err.message });
+  }
+});
+
 // API endpoint for render status (for polling)
 app.get('/api/render-status/:renderId', (req, res) => {
   const { renderId } = req.params;
@@ -344,7 +618,8 @@ app.listen(PORT, () => {
   console.log(`🔗 React app should be running on: http://localhost:3000`);
   console.log(`📋 Available API endpoints:`);
   console.log(`   • POST http://localhost:${PORT}/api/render (Goal video)`);
-  console.log(`   • POST http://localhost:${PORT}/api/formation-render (Formation video)`);
+  console.log(`   • POST http://localhost:${PORT}/api/formation-render (Formation video - archived)`);
   console.log(`   • POST http://localhost:${PORT}/api/final-result-render (Final result video)`);
+  console.log(`   • POST http://localhost:${PORT}/api/lineup-generate (Lineup image)`);
   console.log(`   • GET  http://localhost:${PORT}/api/render-status/:renderId (Render status)`);
 });

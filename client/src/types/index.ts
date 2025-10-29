@@ -90,3 +90,15 @@ export interface Scorer {
   playerId: string;
   minute: number;
 }
+
+export interface LineupPlayer {
+  playerId: string;
+  playerName: string;
+  number: number;
+  isCaptain: boolean;
+}
+
+export interface LineupRequest {
+  players: LineupPlayer[];
+  opponentTeam: string;
+}

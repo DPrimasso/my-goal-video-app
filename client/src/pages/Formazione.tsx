@@ -1,236 +1,232 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button } from '../components/ui';
+import { Input } from '../components/ui';
 import { players, getSurname } from '../players';
-import { useFormationVideoGeneration } from '../hooks/useFormationVideoGeneration';
-import { isDevelopment } from '../config/environment';
+import { LineupPlayer, LineupRequest } from '../types';
 import './Formazione.css';
 
-function getPlayerIdFromName(playerName: string): any {
-    const player = players.find(p => getSurname(p.name) === playerName);
-    return player ? player.id : '';
+// Mapping numeri di default per giocatori (basato sul demo)
+const DEFAULT_PLAYER_NUMBERS: Record<string, number> = {
+  'davide_sipolo': 1,
+  'andrea_contesini': 19,
+  'daniele_primasso': 5,
+  'alberto_viola': 3,
+  'matteo_pinelli': 22,
+  'davide_di_roberto': 10,
+  'filippo_lodetti': 4,
+  'lorenzo_gobbi': 8,
+  'marco_turini': 9,
+  'lorenzo_piccinelli': 11,
+  'cristian_ramponi': 15,
+};
+
+function getDefaultNumber(playerId: string, index: number): number {
+  return DEFAULT_PLAYER_NUMBERS[playerId] || (index + 1);
 }
 
-function getRandomPlayerId(): string {
-    const randomIndex = Math.floor(Math.random() * players.length);
-    return players[randomIndex]?.id || '';
-}
-
-// Funzione per convertire un ID giocatore in un oggetto FormationPlayer
-function getFormationPlayer(playerId: string) {
-  if (!playerId || playerId.trim() === '') {
-    return null;
-  }
+function getPlayerName(playerId: string): string {
   const player = players.find(p => p.id === playerId);
-  if (!player) {
-    return null;
-  }
-  
-  return {
-    name: player.name,
-    image: player.image
-  };
+  return player ? getSurname(player.name) : '';
 }
 
 const Formazione: React.FC = () => {
-  const [goalkeeper, setGoalkeeper] = useState(getRandomPlayerId() || '');
-  const [defenders, setDefenders] = useState<string[]>([
-    getRandomPlayerId() || '',
-    getRandomPlayerId() || '',
-    '',
-    getRandomPlayerId() || '',
-    getRandomPlayerId() || '',
-  ]);
-  const [midfielders, setMidfielders] = useState<string[]>([
-    '',
-    getRandomPlayerId() || '',
-    getRandomPlayerId() || '',
-    getRandomPlayerId() || '',
-    '',
-  ]);
-  const [attackingMidfielders, setAttackingMidfielders] = useState<string[]>([
-    '',
-    getRandomPlayerId() || '',
-    '',
-  ]);
-  const [forwards, setForwards] = useState<string[]>([
-    '', // Esterno sx
-    getRandomPlayerId() || '', // Attaccante sx
-    '', // Attaccante cr
-    getRandomPlayerId() || '', // Attaccante dx
-    '', // Esterno dx
-  ]);
+  const [lineupPlayers, setLineupPlayers] = useState<LineupPlayer[]>(
+    Array.from({ length: 11 }, (_, index) => ({
+      playerId: '',
+      playerName: '',
+      number: index + 1,
+      isCaptain: false,
+    }))
+  );
+  const [opponentTeam, setOpponentTeam] = useState('');
+  const [captainIndex, setCaptainIndex] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const { loading, progress, generatedUrl, error, generateVideo, reset } = useFormationVideoGeneration();
+  const handlePlayerChange = (index: number, playerId: string) => {
+    const newPlayers = [...lineupPlayers];
+    const player = players.find(p => p.id === playerId);
+    
+    if (player) {
+      newPlayers[index] = {
+        playerId,
+        playerName: getSurname(player.name),
+        number: getDefaultNumber(playerId, index),
+        isCaptain: index === captainIndex,
+      };
+    } else {
+      newPlayers[index] = {
+        playerId: '',
+        playerName: '',
+        number: index + 1,
+        isCaptain: false,
+      };
+      if (captainIndex === index) {
+        setCaptainIndex(null);
+      }
+    }
+    
+    setLineupPlayers(newPlayers);
+  };
 
-  // Error boundary for the component
-  React.useEffect(() => {
-    const handleError = (error: ErrorEvent) => {
-      console.error('🚨 Formazione component error:', error);
+  const handleNumberChange = (index: number, number: number) => {
+    const newPlayers = [...lineupPlayers];
+    newPlayers[index] = {
+      ...newPlayers[index],
+      number: Math.max(1, Math.min(99, number || 1)),
     };
+    setLineupPlayers(newPlayers);
+  };
 
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
-
-  // Debug logging for re-renders
-  if (generatedUrl && isDevelopment()) {
-    console.log('🎯 Formation video ready for preview:', generatedUrl);
-  }
-
-  const handleArrayChange = (
-      setter: React.Dispatch<React.SetStateAction<string[]>>,
-      arr: string[],
-      index: number
-  ) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const copy = [...arr];
-    copy[index] = e.target.value;
-    setter(copy);
+  const handleCaptainChange = (index: number) => {
+    const newCaptainIndex = captainIndex === index ? null : index;
+    setCaptainIndex(newCaptainIndex);
+    
+    const newPlayers = lineupPlayers.map((p, i) => ({
+      ...p,
+      isCaptain: i === newCaptainIndex,
+    }));
+    setLineupPlayers(newPlayers);
   };
 
   const generate = async () => {
-    if (!goalkeeper) {
-      alert('Seleziona il portiere');
-      return;
-    }
-    const totalPlayers = [
-      goalkeeper,
-      ...defenders,
-      ...midfielders,
-      ...attackingMidfielders,
-      ...forwards,
-    ].filter(Boolean).length;
-    if (totalPlayers !== 11) {
-      alert('Seleziona 11 giocatori');
+    const validPlayers = lineupPlayers.filter(p => p.playerId);
+    
+    if (validPlayers.length !== 11) {
+      alert('Seleziona esattamente 11 giocatori');
       return;
     }
 
-    // Converti gli ID in oggetti FormationPlayer e mantieni la struttura delle posizioni
-    const goalkeeperPlayer = getFormationPlayer(goalkeeper);
-    if (!goalkeeperPlayer) {
-      alert('Errore: portiere non valido');
+    if (!opponentTeam.trim()) {
+      alert('Inserisci il nome della squadra avversaria');
       return;
     }
     
-    const defendersPlayers = defenders.map(getFormationPlayer);
-    const midfieldersPlayers = midfielders.map(getFormationPlayer);
-    const attackingMidfieldersPlayers = attackingMidfielders.map(getFormationPlayer);
-    const forwardsPlayers = forwards.map(getFormationPlayer);
-
-    const payload = {
-      goalkeeper: goalkeeperPlayer, 
-      defenders: defendersPlayers, 
-      midfielders: midfieldersPlayers, 
-      attackingMidfielders: attackingMidfieldersPlayers, 
-      forwards: forwardsPlayers
-    };
+    setLoading(true);
+    setError(null);
+    setGeneratedImageUrl(null);
 
     try {
-      await generateVideo(payload);
-    } catch (err) {
-      console.error('Error in formation video generation:', err);
+      const request: LineupRequest = {
+        players: lineupPlayers.filter(p => p.playerId),
+        opponentTeam: opponentTeam.trim(),
+      };
+
+      const response = await fetch('http://localhost:4000/api/lineup-generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Errore nella generazione dell\'immagine');
+      }
+
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImageUrl(imageUrl);
+    } catch (err: any) {
+      console.error('Error generating lineup image:', err);
+      setError(err.message || 'Errore durante la generazione dell\'immagine');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderSelect = (value: string, onChange: any) => (
-      <select className="player-select" value={value} onChange={onChange}>
-        <option value="">--</option>
+  const reset = () => {
+    setGeneratedImageUrl(null);
+    setError(null);
+  };
+
+  return (
+    <PageTemplate
+      title="Starting XI"
+      description="Crea la formazione titolare con i tuoi giocatori"
+      icon="📋"
+    >
+      <div className="lineup-container">
+        <div className="lineup-form">
+          <div className="lineup-section">
+            <h3>Squadra Avversaria</h3>
+            <Input
+              type="text"
+              value={opponentTeam}
+              onChange={(value) => setOpponentTeam(value)}
+              placeholder="Es: ASD Le Grazie"
+              className="opponent-input"
+            />
+          </div>
+
+          <div className="lineup-section">
+            <h3>Giocatori (11)</h3>
+            <div className="lineup-players-list">
+              {lineupPlayers.map((player, index) => (
+                <div key={index} className="lineup-player-row">
+                  <select
+                    className="lineup-player-select"
+                    value={player.playerId}
+                    onChange={(e) => handlePlayerChange(index, e.target.value)}
+                  >
+                    <option value="">-- Seleziona giocatore --</option>
         {players.map((p) => (
             <option key={p.id} value={p.id}>
               {getSurname(p.name)}
             </option>
         ))}
       </select>
-  );
-
-  return (
-    <PageTemplate
-      title="Formazione Titolare"
-      description="Seleziona 11 giocatori nelle loro posizioni"
-      icon="🏟️"
-    >
-      <div className="formation-container">
-        <div className="formation-field-container">
-          <div
-              className="field"
-              style={{backgroundImage: `url(${process.env.PUBLIC_URL}/campo_da_calcio.png)`}}
-          >
-            <div className="position" style={{top: '80%', left: '50%'}}>
-              {renderSelect(goalkeeper, (e: any) => setGoalkeeper(e.target.value))}
-            </div>
-            {defenders.map((d, i) => (
-                <div
-                    key={`def-${i}`}
-                    className="position"
-                    style={{top: '65%', left: ['10%','30%','50%','70%','90%'][i]}}
-                >
-                  {renderSelect(d, handleArrayChange(setDefenders, defenders, i))}
+                  
+                  <Input
+                    type="number"
+                    min={1}
+                    max={99}
+                    value={player.number.toString()}
+                    onChange={(value) => handleNumberChange(index, parseInt(value) || 1)}
+                    className="lineup-number-input"
+                    placeholder="Numero"
+                  />
+                  
+                  <label className="lineup-captain-label">
+                    <input
+                      type="checkbox"
+                      checked={player.isCaptain}
+                      onChange={() => handleCaptainChange(index)}
+                      disabled={!player.playerId}
+                    />
+                    <span>Capitano</span>
+                  </label>
                 </div>
             ))}
-            {midfielders.map((m, i) => (
-                <div
-                    key={`mid-${i}`}
-                    className="position"
-                    style={{top: '50%', left: ['10%','30%','50%','70%','90%'][i]}}
-                >
-                  {renderSelect(m, handleArrayChange(setMidfielders, midfielders, i))}
                 </div>
-            ))}
-            {attackingMidfielders.map((t, i) => (
-                <div
-                    key={`treq-${i}`}
-                    className="position"
-                    style={{top: '35%', left: ['30%','50%','70%'][i]}}
-                >
-                  {renderSelect(t, handleArrayChange(setAttackingMidfielders, attackingMidfielders, i))}
-                </div>
-            ))}
-            {forwards.map((f, i) => (
-                <div
-                    key={`fwd-${i}`}
-                    className="position"
-                    style={{top: '20%', left: ['10%','30%','50%','70%','90%'][i]}}
-                >
-                  {renderSelect(f, handleArrayChange(setForwards, forwards, i))}
-                </div>
-            ))}
           </div>
           
-          <div className="formation-actions">
+          <div className="lineup-actions">
             <Button 
               onClick={generate} 
               disabled={loading}
               loading={loading}
               size="large"
-              className="formation-generate-btn"
+              className="lineup-generate-btn"
             >
-              {loading ? 'Generazione...' : 'Genera Video'}
+              {loading ? 'Generazione...' : 'Genera Immagine'}
             </Button>
             
-            {generatedUrl && (
+            {generatedImageUrl && (
               <Button 
                 onClick={reset}
                 variant="secondary"
                 size="medium"
-                className="formation-reset-btn"
+                className="lineup-reset-btn"
               >
-                Genera Nuovo Video
+                Genera Nuova Immagine
               </Button>
             )}
           </div>
         </div>
-        
-        {loading && (
-          <div className="progress-section">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-            <p className="progress-text">Generazione in corso... {progress}%</p>
-          </div>
-        )}
 
         {error && (
           <div className="error-section">
@@ -249,27 +245,31 @@ const Formazione: React.FC = () => {
         )}
         
         <div className="preview-section">
-          {generatedUrl ? (
-              <div className="video-preview">
-                <video className="video-player" src={generatedUrl} controls />
-                <div className="video-actions">
+          {generatedImageUrl ? (
+            <div className="image-preview">
+              <img src={generatedImageUrl} alt="Lineup" className="lineup-image" />
+              <div className="image-actions">
                   <Button 
-                    onClick={() => window.open(generatedUrl, '_blank', 'noopener,noreferrer')}
+                  onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
                     variant="secondary"
                     size="medium"
                   >
                     Apri in Nuova Scheda
                   </Button>
-                  <a className="download-link" href={generatedUrl} download>
-                    Scarica video
+                <a
+                  className="download-link"
+                  href={generatedImageUrl}
+                  download={`lineup_${Date.now()}.png`}
+                >
+                  Scarica immagine
                   </a>
                 </div>
               </div>
           ) : (
               <div className="preview-placeholder">
-                <div className="placeholder-icon">🎥</div>
-                <h3>Anteprima Video</h3>
-                <p>Organizza la formazione e genera il tuo video personalizzato</p>
+              <div className="placeholder-icon">🖼️</div>
+              <h3>Anteprima Lineup</h3>
+              <p>Seleziona i giocatori e genera la tua formazione</p>
               </div>
           )}
         </div>

@@ -1,3 +1,3 @@
 export { useVideoGeneration } from './useVideoGeneration';
-export { useFormationVideoGeneration } from './useFormationVideoGeneration';
+// useFormationVideoGeneration has been archived - lineup now generates images instead of videos
 export { useFinalResultVideoGeneration } from './useFinalResultVideoGeneration';
