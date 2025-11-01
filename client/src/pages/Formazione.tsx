@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button } from '../components/ui';
 import { Input } from '../components/ui';
@@ -31,6 +31,31 @@ function getPlayerName(playerId: string): string {
   return player ? getSurname(player.name) : '';
 }
 
+// Helper functions per gestire i cookie
+function setCookie(name: string, value: string, days: number = 365) {
+  const date = new Date();
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+}
+
+function getCookie(name: string): string | null {
+  const nameEQ = `${name}=`;
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+interface SavedFormation {
+  lineupPlayers: LineupPlayer[];
+  opponentTeam: string;
+  captainIndex: number | null;
+}
+
 const Formazione: React.FC = () => {
   const [lineupPlayers, setLineupPlayers] = useState<LineupPlayer[]>(
     Array.from({ length: 11 }, (_, index) => ({
@@ -45,6 +70,38 @@ const Formazione: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Carica la formazione salvata dai cookie all'avvio
+  useEffect(() => {
+    const savedFormation = getCookie('savedFormation');
+    if (savedFormation) {
+      try {
+        const parsed: SavedFormation = JSON.parse(decodeURIComponent(savedFormation));
+        if (parsed.lineupPlayers && Array.isArray(parsed.lineupPlayers)) {
+          setLineupPlayers(parsed.lineupPlayers);
+        }
+        if (parsed.opponentTeam) {
+          setOpponentTeam(parsed.opponentTeam);
+        }
+        if (parsed.captainIndex !== undefined) {
+          setCaptainIndex(parsed.captainIndex);
+        }
+      } catch (err) {
+        console.error('Errore nel caricamento della formazione salvata:', err);
+      }
+    }
+  }, []);
+
+  // Salva la formazione nei cookie quando cambia
+  useEffect(() => {
+    const formationData: SavedFormation = {
+      lineupPlayers,
+      opponentTeam,
+      captainIndex,
+    };
+    const encodedData = encodeURIComponent(JSON.stringify(formationData));
+    setCookie('savedFormation', encodedData, 365);
+  }, [lineupPlayers, opponentTeam, captainIndex]);
 
   const handlePlayerChange = (index: number, playerId: string) => {
     const newPlayers = [...lineupPlayers];
@@ -125,7 +182,19 @@ const Formazione: React.FC = () => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-        const blob = await response.blob();
+        // La Lambda restituisce JSON con base64, lo decodifichiamo
+        const data = await response.json();
+        if (!data.success || !data.image) {
+          throw new Error('Invalid response from Lambda');
+        }
+        // Convertiamo base64 in blob
+        const byteCharacters = atob(data.image);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: data.contentType || 'image/png' });
         const imageUrl = URL.createObjectURL(blob);
         setGeneratedImageUrl(imageUrl);
       } else {
