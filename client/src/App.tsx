@@ -4,7 +4,7 @@ import { pages } from './pages';
 import './App.css';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('goal');
+  const [currentPage, setCurrentPage] = useState('formazione');
 
   const handlePageChange = (pageId: string) => {
     setCurrentPage(pageId);

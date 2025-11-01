@@ -8,8 +8,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
   const navigationItems = [
-    { id: 'goal', label: 'Goal', icon: '⚽' },
     { id: 'formazione', label: 'Formazione', icon: '🏟️' },
+    { id: 'goal', label: 'Goal', icon: '⚽' },
     { id: 'risultato-finale', label: 'Risultato Finale', icon: '🏆' },
   ];
 

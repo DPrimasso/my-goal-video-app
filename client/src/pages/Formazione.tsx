@@ -223,136 +223,164 @@ const Formazione: React.FC = () => {
     setError(null);
   };
 
+  const filledPlayersCount = lineupPlayers.filter(p => p.playerId).length;
+
   return (
     <PageTemplate
       title="Starting XI"
-      description="Crea la formazione titolare con i tuoi giocatori"
       icon="📋"
     >
       <div className="lineup-container">
-        <div className="lineup-form">
-          <div className="lineup-section">
-            <h3>Squadra Avversaria</h3>
-            <Input
-              type="text"
-              value={opponentTeam}
-              onChange={(value) => setOpponentTeam(value)}
-              placeholder="Es: ASD Le Grazie"
-              className="opponent-input"
-            />
-          </div>
+        {/* Squadra Avversaria */}
+        <div className="opponent-section">
+          <label className="opponent-label">
+            <span className="label-icon">⚽</span>
+            <span>Squadra Avversaria</span>
+          </label>
+          <input
+            type="text"
+            className="opponent-input-mobile"
+            value={opponentTeam}
+            onChange={(e) => setOpponentTeam(e.target.value)}
+            placeholder="Squadra Avversaria"
+          />
+        </div>
 
-          <div className="lineup-section">
-            <h3>Giocatori (11)</h3>
-            <div className="lineup-players-list">
-              {lineupPlayers.map((player, index) => (
-                <div key={index} className="lineup-player-row">
-                  <select
-                    className="lineup-player-select"
-                    value={player.playerId}
-                    onChange={(e) => handlePlayerChange(index, e.target.value)}
-                  >
-                    <option value="">-- Seleziona giocatore --</option>
-        {players.map((p) => (
-            <option key={p.id} value={p.id}>
-              {getSurname(p.name)}
-            </option>
-        ))}
-      </select>
-                  
-                  <Input
-                    type="number"
-                    min={1}
-                    max={99}
-                    value={player.number.toString()}
-                    onChange={(value) => handleNumberChange(index, parseInt(value) || 1)}
-                    className="lineup-number-input"
-                    placeholder="Numero"
-                  />
-                  
-                  <label className="lineup-captain-label">
-                    <input
-                      type="checkbox"
-                      checked={player.isCaptain}
-                      onChange={() => handleCaptainChange(index)}
-                      disabled={!player.playerId}
-                    />
-                    <span>Capitano</span>
-                  </label>
-                </div>
-            ))}
-                </div>
-          </div>
+        {/* Lista Giocatori */}
+        <div className="players-section">
+          <h3 className="section-title">
+            <span>👥</span> Giocatori
+          </h3>
           
-          <div className="lineup-actions">
-            <Button 
-              onClick={generate} 
-              disabled={loading}
-              loading={loading}
-              size="large"
-              className="lineup-generate-btn"
-            >
-              {loading ? 'Generazione...' : 'Genera Immagine'}
-            </Button>
-            
-            {generatedImageUrl && (
-              <Button 
-                onClick={reset}
-                variant="secondary"
-                size="medium"
-                className="lineup-reset-btn"
+          <div className="players-list">
+            {lineupPlayers.map((player, index) => (
+              <div 
+                key={index} 
+                className={`player-row ${player.playerId ? 'player-row-filled' : ''} ${player.isCaptain ? 'player-row-captain' : ''}`}
               >
-                Genera Nuova Immagine
-              </Button>
-            )}
+                <span className="player-number">#{index + 1}</span>
+                
+                <select
+                  className="player-select-compact"
+                  value={player.playerId}
+                  onChange={(e) => handlePlayerChange(index, e.target.value)}
+                >
+                  <option value="">Giocatore...</option>
+                  {players.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {getSurname(p.name)}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  className="number-input-compact"
+                  value={player.number}
+                  onChange={(e) => handleNumberChange(index, parseInt(e.target.value) || 1)}
+                  placeholder="N°"
+                />
+
+                <button
+                  className={`captain-btn ${player.isCaptain ? 'captain-btn-active' : ''}`}
+                  onClick={() => handleCaptainChange(index)}
+                  disabled={!player.playerId}
+                  title={player.isCaptain ? 'Capitano' : 'Imposta capitano'}
+                >
+                  <span className="captain-c">C</span>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
+        {/* Contatore e Azioni */}
+        <div className="lineup-actions-mobile">
+          {/* Contatore giocatori */}
+          <div className="lineup-counter-bottom">
+            <span className="counter-value">{filledPlayersCount}</span>
+            <span className="counter-label">/ 11 giocatori</span>
+          </div>
+
+          <Button 
+            onClick={generate} 
+            disabled={loading || filledPlayersCount !== 11 || !opponentTeam.trim()}
+            loading={loading}
+            size="large"
+            className="generate-btn-mobile"
+          >
+            {loading ? '⏳ Generazione...' : '✨ Genera Formazione'}
+          </Button>
+          
+          {filledPlayersCount !== 11 && (
+            <p className="helper-text">
+              Seleziona tutti gli 11 giocatori per continuare
+            </p>
+          )}
+          
+          {filledPlayersCount === 11 && !opponentTeam.trim() && (
+            <p className="helper-text">
+              Inserisci il nome della squadra avversaria
+            </p>
+          )}
+        </div>
+
+        {/* Errore */}
         {error && (
-          <div className="error-section">
-            <div className="error-message">
+          <div className="error-section-mobile">
+            <div className="error-content">
               <span className="error-icon">⚠️</span>
               <span className="error-text">{error}</span>
             </div>
             <Button 
               onClick={reset}
               variant="secondary"
-              size="small"
+              size="medium"
+              className="retry-btn"
             >
               Riprova
             </Button>
           </div>
         )}
         
-        <div className="preview-section">
-          {generatedImageUrl ? (
-            <div className="image-preview">
-              <img src={generatedImageUrl} alt="Lineup" className="lineup-image" />
-              <div className="image-actions">
-                  <Button 
-                  onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
-                    variant="secondary"
-                    size="medium"
-                  >
-                    Apri in Nuova Scheda
-                  </Button>
-                <a
-                  className="download-link"
-                  href={generatedImageUrl}
-                  download={`lineup_${Date.now()}.png`}
-                >
-                  Scarica immagine
-                  </a>
-                </div>
-              </div>
-          ) : (
-              <div className="preview-placeholder">
-              <div className="placeholder-icon">🖼️</div>
-              <h3>Anteprima Lineup</h3>
-              <p>Seleziona i giocatori e genera la tua formazione</p>
-              </div>
-          )}
-        </div>
+        {/* Anteprima */}
+        {generatedImageUrl && (
+          <div className="preview-section-mobile">
+            <h3 className="preview-title">
+              <span>🎉</span> Formazione Generata
+            </h3>
+            <div className="image-container-mobile">
+              <img src={generatedImageUrl} alt="Lineup" className="lineup-image-mobile" />
+            </div>
+            <div className="preview-actions-mobile">
+              <Button 
+                onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
+                variant="secondary"
+                size="large"
+                className="action-btn-mobile"
+              >
+                📱 Apri
+              </Button>
+              <a
+                className="download-btn-mobile"
+                href={generatedImageUrl}
+                download={`lineup_${Date.now()}.png`}
+              >
+                💾 Scarica
+              </a>
+              <Button 
+                onClick={reset}
+                variant="secondary"
+                size="large"
+                className="action-btn-mobile"
+              >
+                🔄 Nuova Formazione
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </PageTemplate>
   );
