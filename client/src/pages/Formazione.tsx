@@ -182,15 +182,8 @@ const Formazione: React.FC = () => {
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-        // La Lambda restituisce JSON con base64, lo decodifichiamo
-        const data = await response.json();
-        if (!data.success || !data.image) {
-          throw new Error('Invalid response from Lambda');
-        }
-        // Convertiamo base64 in blob usando fetch data URL (più robusto di atob)
-        const dataUrl = `data:${data.contentType || 'image/png'};base64,${data.image}`;
-        const blobResponse = await fetch(dataUrl);
-        const blob = await blobResponse.blob();
+        // La Lambda restituisce direttamente l'immagine binaria
+        const blob = await response.blob();
         const imageUrl = URL.createObjectURL(blob);
         setGeneratedImageUrl(imageUrl);
       } else {

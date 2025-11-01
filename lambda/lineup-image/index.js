@@ -1,7 +1,31 @@
-const chromium = require('chrome-aws-lambda');
+const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
 
+const getCorsHeaders = (event) => {
+  // Lambda Function URLs puts headers in event.headers (case-insensitive lookup)
+  const headers = event.headers || {};
+  const origin = headers.origin || headers.Origin || headers.ORIGIN || 
+                 event.requestContext?.http?.headers?.origin ||
+                 event.requestContext?.http?.headers?.Origin ||
+                 '*';
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+  };
+};
+
 exports.handler = async (event) => {
+  // Handle preflight OPTIONS request
+  const requestMethod = event.requestContext?.http?.method || event.requestContext?.httpMethod || event.httpMethod || (typeof event === 'string' ? 'GET' : 'POST');
+  if (requestMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: getCorsHeaders(event),
+      body: '',
+    };
+  }
+
   try {
     const isApiGwV2 = !!event?.requestContext?.http;
     const bodyStr = isApiGwV2 ? event.body : (event.body || '');
@@ -9,16 +33,16 @@ exports.handler = async (event) => {
     const { players, opponentTeam } = payload || {};
 
     if (!players || !Array.isArray(players) || players.length !== 11) {
-      return responseJson(400, { error: 'Missing or invalid players data. Expected exactly 11 players.' });
+      return responseJson(400, { error: 'Missing or invalid players data. Expected exactly 11 players.' }, event);
     }
     if (!opponentTeam || !String(opponentTeam).trim()) {
-      return responseJson(400, { error: 'Missing opponent team name' });
+      return responseJson(400, { error: 'Missing opponent team name' }, event);
     }
 
     const region = process.env.AWS_REGION || 'eu-west-1';
     const assetBucket = process.env.ASSET_BUCKET;
     if (!assetBucket) {
-      return responseJson(500, { error: 'ASSET_BUCKET env var is required' });
+      return responseJson(500, { error: 'ASSET_BUCKET env var is required' }, event);
     }
 
     const lineupBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/lineup`;
@@ -81,12 +105,12 @@ exports.handler = async (event) => {
   </body>
   </html>`;
 
-    const executablePath = await chromium.executablePath;
+    const executablePath = await chromium.executablePath();
     const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1080, height: 2000, deviceScaleFactor: 1 },
       executablePath,
-      headless: chromium.headless,
+      headless: true,
     });
     const page = await browser.newPage();
     await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
@@ -94,33 +118,32 @@ exports.handler = async (event) => {
     const png = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1080, height: 2000 } });
     await browser.close();
 
-    return responsePng(png);
+    return responsePng(png, event);
   } catch (e) {
     console.error('lineup-image error:', e);
-    return responseJson(500, { error: String(e?.message || e) });
+    return responseJson(500, { error: String(e?.message || e) }, event);
   }
 };
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS',
-};
-
-function responseJson(statusCode, obj) {
+function responseJson(statusCode, obj, event) {
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(event) },
     body: JSON.stringify(obj),
   };
 }
 
-function responsePng(buffer) {
+function responsePng(buffer, event) {
+  // AWS Lambda Function URLs supporta risposte binarie con isBase64Encoded: true
+  const base64Image = Buffer.from(buffer).toString('base64');
   return {
     statusCode: 200,
-    headers: { 'Content-Type': 'image/png', ...corsHeaders },
-    isBase64Encoded: true,
-    body: buffer.toString('base64'),
+    headers: { 
+      'Content-Type': 'image/png',
+      ...getCorsHeaders(event)
+    },
+    body: base64Image,
+    isBase64Encoded: true
   };
 }
 
