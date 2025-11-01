@@ -187,14 +187,10 @@ const Formazione: React.FC = () => {
         if (!data.success || !data.image) {
           throw new Error('Invalid response from Lambda');
         }
-        // Convertiamo base64 in blob
-        const byteCharacters = atob(data.image);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: data.contentType || 'image/png' });
+        // Convertiamo base64 in blob usando fetch data URL (più robusto di atob)
+        const dataUrl = `data:${data.contentType || 'image/png'};base64,${data.image}`;
+        const blobResponse = await fetch(dataUrl);
+        const blob = await blobResponse.blob();
         const imageUrl = URL.createObjectURL(blob);
         setGeneratedImageUrl(imageUrl);
       } else {
