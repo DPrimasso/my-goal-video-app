@@ -6,6 +6,7 @@ import { players, getSurname } from '../players';
 import { LineupPlayer, LineupRequest } from '../types';
 import './Formazione.css';
 import { isProduction } from '../config/environment';
+import { videoService } from '../services/videoService';
 
 // Mapping numeri di default per giocatori (basato sul demo)
 const DEFAULT_PLAYER_NUMBERS: Record<string, number> = {
@@ -44,6 +45,7 @@ const Formazione: React.FC = () => {
   const [captainIndex, setCaptainIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handlePlayerChange = (index: number, playerId: string) => {
@@ -108,26 +110,40 @@ const Formazione: React.FC = () => {
     setLoading(true);
     setError(null);
     setGeneratedImageUrl(null);
+    setGeneratedVideoUrl(null);
 
     try {
       if (isProduction()) {
-        // In produzione: genera l'IMMAGINE lineup via Lambda lineup-image
-        const validPlayersForRequest = lineupPlayers.filter(p => p.playerId);
-        const lineupImageUrl = process.env.REACT_APP_LINEUP_IMAGE_URL || 'https://4nmg24nu7tkv6mo6ikistuh2la0dbxtl.lambda-url.eu-west-1.on.aws/';
-        const response = await fetch(lineupImageUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            players: validPlayersForRequest,
-            opponentTeam: opponentTeam.trim(),
-          }),
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        // In produzione: genera VIDEO lineup via Remotion Lambda (FormationComp)
+        const selected = lineupPlayers.filter(p => p.playerId);
+        const toFormationPlayer = (p: LineupPlayer | null) => p ? { name: p.playerName, image: `players/${p.playerId || 'default_player'}.png` } : null;
+
+        const goalkeeper = toFormationPlayer(selected[0] || null)!;
+        const defenders = [1,2,3,4].map(i => toFormationPlayer(selected[i] || null));
+        const midfielders = [5,6,7,8].map(i => toFormationPlayer(selected[i] || null));
+        const forwards = [9,10].map(i => toFormationPlayer(selected[i] || null));
+
+        const { bucketName, renderId } = await videoService.startFormationVideoGeneration({
+          goalkeeper,
+          defenders: defenders as any,
+          midfielders: midfielders as any,
+          attackingMidfielders: [] as any,
+          forwards: forwards as any,
+        } as any);
+
+        // Polling stato
+        let attempts = 0;
+        while (attempts < 300) {
+          const status = await videoService.getVideoGenerationStatus(bucketName, renderId);
+          if (status?.overallProgress && status.overallProgress >= 1) {
+            const url = videoService.buildVideoUrl(status, bucketName);
+            if (url) setGeneratedVideoUrl(url);
+            break;
+          }
+          await new Promise(r => setTimeout(r, 2000));
+          attempts++;
         }
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGeneratedImageUrl(imageUrl);
+        if (attempts >= 300) throw new Error('Timeout generazione video');
       } else {
         // In sviluppo locale: genera IMMAGINE via server locale
         const request: LineupRequest = {
@@ -162,6 +178,7 @@ const Formazione: React.FC = () => {
 
   const reset = () => {
     setGeneratedImageUrl(null);
+    setGeneratedVideoUrl(null);
     setError(null);
   };
 
@@ -267,7 +284,27 @@ const Formazione: React.FC = () => {
         )}
         
         <div className="preview-section">
-          {generatedImageUrl ? (
+          {generatedVideoUrl ? (
+            <div className="image-preview">
+              <video src={generatedVideoUrl} controls className="lineup-image" style={{ width: '100%', maxWidth: '600px' }} />
+              <div className="image-actions">
+                <Button 
+                  onClick={() => window.open(generatedVideoUrl!, '_blank', 'noopener,noreferrer')}
+                  variant="secondary"
+                  size="medium"
+                >
+                  Apri Video in Nuova Scheda
+                </Button>
+                <a
+                  className="download-link"
+                  href={generatedVideoUrl}
+                  download={`lineup_${Date.now()}.mp4`}
+                >
+                  Scarica video
+                </a>
+              </div>
+            </div>
+          ) : generatedImageUrl ? (
             <div className="image-preview">
               <img src={generatedImageUrl} alt="Lineup" className="lineup-image" />
               <div className="image-actions">
