@@ -1,0 +1,129 @@
+:root{
+  --bg1:#1b0b3a;
+  --bg2:#7a0014;
+  --panel:#0f0b2a;
+  --accent:#e12121;
+  --white: #ffffff;
+  --muted: rgb(255,255,255);
+}
+@font-face {
+  font-family: 'Tusker';
+  src: url('TuskerGrotesk-3500Medium.woff2') format('woff2'),
+      url('TuskerGrotesk-3500Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 110%;
+}
+@font-face {
+  font-family: 'Founders';
+  src: url('FoundersGrotesk-Regular.woff2') format('woff2'),
+      url('FoundersGrotesk-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 110%;
+}
+
+
+html,body{
+  color:white;
+  font-weight:500;
+  font-family: 'Tusker';
+  width: 100vw;
+  margin:0;
+  background-color: black;
+  display: flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.card{
+  width: 1080px;
+  height:1920px;
+  overflow:hidden;
+  padding:80px 40px;
+  background-image: linear-gradient(to bottom, #00002d, #3b0649, #7e004f, #b8003a, #dd0000);
+  position:relative;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-direction:column;
+}
+.main-text{
+  width:100%;
+  svg{
+    width:100%;
+  }
+}
+
+.logoback{
+  position:absolute;
+  z-index:10;
+  top: 50%;
+  width:200%;
+  transform: rotate(-45deg) translateY(-75%);
+  transform-origin:center;
+  img{
+    width:100%;
+    opacity:.1;
+  }
+}
+.player{
+  position:absolute;
+  z-index:20;
+  bottom: -4px;
+  left:0;
+  width:100%;
+  height:80%;
+  img{
+    width:100%;
+    object-fit: contain;
+    objecy-position: bottom;
+  }
+}
+.card .grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  position: relative;
+  z-index:50;
+}
+.card .grid .result{
+  grid-column: span 2 / span 2;
+  font-family: 'Founders';
+  font-weight:400;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, .8);
+  display: flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:120px;
+  text-transform:uppercase;
+  padding:40px 24px;
+  line-height:1;
+  gap:12px;
+}
+.card .grid .result .squ{
+  font-family: 'Founders';
+  font-weight:400;
+  font-size:40px;
+  text-transform:uppercase;
+}
+.card .grid .gol{
+  padding:24px 24px;
+  grid-column: span 4 / span 4;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, .8);
+  display: flex;
+  font-family: 'Founders';
+  font-weight:400;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  font-size:64px;
+  text-transform:uppercase;
+  line-height:1;
+}

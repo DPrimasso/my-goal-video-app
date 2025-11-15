@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
-import { useVideoGeneration } from '../hooks/useVideoGeneration';
-import { videoService } from '../services/videoService';
 import { players, getSurname } from '../players';
-import { isDevelopment } from '../config/environment';
+import { isProduction } from '../config/environment';
+import { videoService } from '../services/videoService';
 import './Goal.css';
 
 interface TeamScore {
@@ -12,36 +11,83 @@ interface TeamScore {
   away: number;
 }
 
+// Helper functions per gestire i cookie
+function setCookie(name: string, value: string, days: number = 365) {
+  const date = new Date();
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+}
+
+function getCookie(name: string): string | null {
+  const nameEQ = `${name}=`;
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+interface SavedGoal {
+  playerId: string;
+  minuteGoal: string;
+  homeTeam: string;
+  awayTeam: string;
+  score: TeamScore;
+}
+
 const Goal: React.FC = () => {
   const [playerId, setPlayerId] = useState('');
   const [minuteGoal, setMinuteGoal] = useState('');
+  const [homeTeam, setHomeTeam] = useState('');
+  const [awayTeam, setAwayTeam] = useState('');
   const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [loading, setLoading] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const { loading, progress, generatedUrl, error, generateVideo, reset } = useVideoGeneration();
-
-  // Error boundary for the component
+  // Carica i dati salvati dai cookie all'avvio
   useEffect(() => {
-    const handleError = (error: ErrorEvent) => {
-      console.error('🚨 Goal component error:', error);
-    };
-
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
+    const savedGoal = getCookie('savedGoal');
+    if (savedGoal) {
+      try {
+        const parsed: SavedGoal = JSON.parse(decodeURIComponent(savedGoal));
+        if (parsed.playerId) {
+          setPlayerId(parsed.playerId);
+        }
+        if (parsed.minuteGoal) {
+          setMinuteGoal(parsed.minuteGoal);
+        }
+        if (parsed.homeTeam) {
+          setHomeTeam(parsed.homeTeam);
+        }
+        if (parsed.awayTeam) {
+          setAwayTeam(parsed.awayTeam);
+        }
+        if (parsed.score) {
+          setScore(parsed.score);
+        }
+      } catch (err) {
+        console.error('Errore nel caricamento dei dati salvati:', err);
+      }
+    }
   }, []);
 
-  // Debug logging for re-renders
-  if (generatedUrl && isDevelopment()) {
-    console.log('🎯 Video ready for preview:', generatedUrl);
-  }
-
-  // Monitor state changes
+  // Salva i dati nei cookie quando cambiano
   useEffect(() => {
-    // Log when URL is lost
-    if (generatedUrl === null && progress === 100 && isDevelopment()) {
-      console.log('🚨 URL was lost after completion!');
-    }
-  }, [generatedUrl, progress]);
+    const goalData: SavedGoal = {
+      playerId,
+      minuteGoal,
+      homeTeam,
+      awayTeam,
+      score,
+    };
+    const encodedData = encodeURIComponent(JSON.stringify(goalData));
+    setCookie('savedGoal', encodedData, 365);
+  }, [playerId, minuteGoal, homeTeam, awayTeam, score]);
 
   const handleScoreChange = (team: 'home' | 'away', value: string) => {
     const numValue = parseInt(value) || 0;
@@ -64,6 +110,14 @@ const Goal: React.FC = () => {
       newErrors.minuteGoal = 'Il minuto del gol deve essere un numero positivo';
     }
 
+    if (!homeTeam.trim()) {
+      newErrors.homeTeam = 'Inserisci il nome della squadra casa';
+    }
+
+    if (!awayTeam.trim()) {
+      newErrors.awayTeam = 'Inserisci il nome della squadra ospite';
+    }
+
     if (score.home < 0 || score.away < 0) {
       newErrors.score = 'Il punteggio non può essere negativo';
     }
@@ -76,49 +130,85 @@ const Goal: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const generate = async () => {
     if (!validateForm()) return;
 
     const selectedPlayer = players.find(p => p.id === playerId);
     if (!selectedPlayer) return;
 
-    const playerImageUrl = videoService.makeAssetUrl(selectedPlayer.image);
-    const partialScore = `${score.home}-${score.away}`;
-    
-    if (isDevelopment()) {
-      console.log('Generating video with partialScore:', partialScore);
-    }
+    setLoading(true);
+    setError(null);
+    setGeneratedImageUrl(null);
 
     try {
-      await generateVideo({
-        playerId,
-        playerName: selectedPlayer.name,
-        minuteGoal: Number(minuteGoal),
-        s3PlayerUrl: playerImageUrl,
-        overlayImage: playerImageUrl,
-        partialScore,
-      });
-    } catch (err) {
-      console.error('Error generating video:', err);
+      const playerImageUrl = videoService.makeAssetUrl(selectedPlayer.image);
+      const playerName = getSurname(selectedPlayer.name);
+
+      if (isProduction()) {
+        // In produzione: genera IMMAGINE goal via Lambda (da implementare se necessario)
+        // Per ora usiamo il server locale anche in produzione
+        const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL;
+        if (goalImageUrl) {
+          const response = await fetch(goalImageUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              minuteGoal: Number(minuteGoal),
+              playerName,
+              playerImageUrl,
+              homeTeam: homeTeam.trim(),
+              homeScore: score.home,
+              awayTeam: awayTeam.trim(),
+              awayScore: score.away,
+            }),
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const blob = await response.blob();
+          const imageUrl = URL.createObjectURL(blob);
+          setGeneratedImageUrl(imageUrl);
+        } else {
+          throw new Error('Goal image URL not configured for production');
+        }
+      } else {
+        // In sviluppo locale: genera IMMAGINE via server locale
+        const response = await fetch('http://localhost:4000/api/goal-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            minuteGoal: Number(minuteGoal),
+            playerName,
+            playerImageUrl,
+            homeTeam: homeTeam.trim(),
+            homeScore: score.home,
+            awayTeam: awayTeam.trim(),
+            awayScore: score.away,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Errore nella generazione dell\'immagine');
+        }
+
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setGeneratedImageUrl(imageUrl);
+      }
+    } catch (err: any) {
+      console.error('Error generating goal image:', err);
+      setError(err.message || 'Errore durante la generazione');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDownload = async () => {
-    if (!generatedUrl) return;
-
-    const namePart = playerId ? `player-${playerId}` : 'video';
-    const minutePart = minuteGoal ? `-min-${minuteGoal}` : '';
-    const filename = `goal-${namePart}${minutePart}.mp4`;
-
-    await videoService.downloadVideo(generatedUrl, filename);
-  };
-
-  const handleReset = () => {
-    setPlayerId('');
-    setMinuteGoal('');
-    setScore({ home: 0, away: 0 });
-    setErrors({});
-    reset();
+  const reset = () => {
+    setGeneratedImageUrl(null);
+    setError(null);
   };
 
   const playerOptions = players.map(player => ({
@@ -144,6 +234,26 @@ const Goal: React.FC = () => {
               options={playerOptions}
               required
               error={errors.playerId}
+            />
+
+            <Input
+              label="Squadra Casa"
+              value={homeTeam}
+              onChange={setHomeTeam}
+              type="text"
+              placeholder="es. Casalpoglio"
+              required
+              error={errors.homeTeam}
+            />
+
+            <Input
+              label="Squadra Ospite"
+              value={awayTeam}
+              onChange={setAwayTeam}
+              type="text"
+              placeholder="es. Squadra Avversaria"
+              required
+              error={errors.awayTeam}
             />
 
             <div className="score-section">
@@ -190,22 +300,22 @@ const Goal: React.FC = () => {
 
             <div className="form-actions">
               <Button
-                onClick={handleSubmit}
+                onClick={generate}
                 disabled={loading}
                 loading={loading}
                 size="large"
                 className="form-submit-btn"
               >
-                {loading ? `Generazione... ${progress}%` : 'Genera Video'}
+                {loading ? '⏳ Generazione...' : '✨ Genera Goal'}
               </Button>
 
-              {generatedUrl && (
+              {generatedImageUrl && (
                 <Button
-                  onClick={handleReset}
+                  onClick={reset}
                   variant="outline"
                   size="large"
                 >
-                  Nuovo Video
+                  Nuovo Goal
                 </Button>
               )}
             </div>
@@ -220,27 +330,31 @@ const Goal: React.FC = () => {
             </div>
           )}
 
-          {generatedUrl ? (
-            <div className="video-preview">
-              <video src={generatedUrl} controls className="video-player" />
-              <div className="video-actions">
-                <Button onClick={handleDownload} variant="primary" size="medium">
-                  Scarica Video
-                </Button>
+          {generatedImageUrl ? (
+            <div className="image-preview">
+              <img src={generatedImageUrl} alt="Goal" className="goal-image" />
+              <div className="image-actions">
                 <Button
-                  onClick={() => window.open(generatedUrl, '_blank', 'noopener,noreferrer')}
-                  variant="secondary"
+                  onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
+                  variant="primary"
                   size="medium"
                 >
-                  Apri in Nuova Scheda
+                  📱 Apri
                 </Button>
+                <a
+                  className="download-btn"
+                  href={generatedImageUrl}
+                  download={`goal_${Date.now()}.png`}
+                >
+                  💾 Scarica
+                </a>
               </div>
             </div>
           ) : (
             <div className="preview-placeholder">
-              <div className="placeholder-icon">🎥</div>
-              <h3>Anteprima Video</h3>
-              <p>Compila il form e genera il tuo video personalizzato</p>
+              <div className="placeholder-icon">⚽</div>
+              <h3>Anteprima Goal</h3>
+              <p>Compila il form e genera la tua immagine personalizzata</p>
             </div>
           )}
         </div>
