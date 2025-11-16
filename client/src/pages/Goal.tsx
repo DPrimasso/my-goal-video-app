@@ -146,7 +146,7 @@ const Goal: React.FC = () => {
 
       if (isProduction()) {
         // In produzione: genera IMMAGINE goal via Lambda
-        const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL || 'https://ibf3u6irycbqi2bnpykhh3yfly0rfrai.lambda-url.eu-west-1.on.aws/';
+        const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL || 'https://xgafdelrk5bwrvizodeoepwejm0ntuuz.lambda-url.eu-west-1.on.aws/';
         console.log('Goal Image URL:', goalImageUrl);
         console.log('REACT_APP_GOAL_IMAGE_URL from env:', process.env.REACT_APP_GOAL_IMAGE_URL);
         console.log('isProduction:', isProduction());
