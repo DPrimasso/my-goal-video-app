@@ -129,12 +129,35 @@ const Formazione: React.FC = () => {
     setLineupPlayers(newPlayers);
   };
 
-  const handleNumberChange = (index: number, number: number) => {
+  const handleNumberChange = (index: number, value: string) => {
     const newPlayers = [...lineupPlayers];
-    newPlayers[index] = {
-      ...newPlayers[index],
-      number: Math.max(1, Math.min(99, number || 1)),
-    };
+    // Permetti valori vuoti durante la digitazione
+    if (value === '') {
+      newPlayers[index] = {
+        ...newPlayers[index],
+        number: 0, // Usiamo 0 come valore temporaneo per campo vuoto
+      };
+    } else {
+      const numValue = parseInt(value, 10);
+      if (!isNaN(numValue)) {
+        newPlayers[index] = {
+          ...newPlayers[index],
+          number: Math.max(1, Math.min(99, numValue)),
+        };
+      }
+    }
+    setLineupPlayers(newPlayers);
+  };
+
+  const handleNumberBlur = (index: number) => {
+    const newPlayers = [...lineupPlayers];
+    // Se il campo è vuoto quando perde il focus, imposta il valore di default
+    if (newPlayers[index].number === 0 || isNaN(newPlayers[index].number)) {
+      newPlayers[index] = {
+        ...newPlayers[index],
+        number: getDefaultNumber(newPlayers[index].playerId || '', index),
+      };
+    }
     setLineupPlayers(newPlayers);
   };
 
@@ -278,8 +301,9 @@ const Formazione: React.FC = () => {
                   min={1}
                   max={99}
                   className="number-input-compact"
-                  value={player.number}
-                  onChange={(e) => handleNumberChange(index, parseInt(e.target.value) || 1)}
+                  value={player.number === 0 ? '' : player.number}
+                  onChange={(e) => handleNumberChange(index, e.target.value)}
+                  onBlur={() => handleNumberBlur(index)}
                   placeholder="N°"
                 />
 
