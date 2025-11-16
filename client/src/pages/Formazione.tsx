@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button } from '../components/ui';
 import { Input } from '../components/ui';
@@ -70,6 +70,7 @@ const Formazione: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // Carica la formazione salvata dai cookie all'avvio
   useEffect(() => {
@@ -102,6 +103,19 @@ const Formazione: React.FC = () => {
     const encodedData = encodeURIComponent(JSON.stringify(formationData));
     setCookie('savedFormation', encodedData, 365);
   }, [lineupPlayers, opponentTeam, captainIndex]);
+
+  // Scroll automatico all'immagine generata su mobile
+  useEffect(() => {
+    if (generatedImageUrl && previewRef.current) {
+      // Piccolo delay per assicurarsi che l'immagine sia renderizzata
+      setTimeout(() => {
+        previewRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
+    }
+  }, [generatedImageUrl]);
 
   const handlePlayerChange = (index: number, playerId: string) => {
     const newPlayers = [...lineupPlayers];
@@ -371,7 +385,7 @@ const Formazione: React.FC = () => {
         
         {/* Anteprima */}
         {generatedImageUrl && (
-          <div className="preview-section-mobile">
+          <div className="preview-section-mobile" ref={previewRef}>
             <h3 className="preview-title">
               <span>🎉</span> Formazione Generata
             </h3>
