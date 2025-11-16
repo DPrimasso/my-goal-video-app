@@ -4,25 +4,13 @@ export interface Player {
   image: string;
 }
 
-// Funzione per ottenere l'immagine del giocatore o l'immagine di default
+// Funzione per ottenere l'immagine del giocatore
 export const getPlayerImage = (playerName: string): string => {
   // Converti il nome in formato filename (lowercase, underscore)
   const filename = playerName.toLowerCase().replace(/\s+/g, '_');
-  const imagePath = `/players/${filename}.png`;
+  const imagePath = `/players/${filename}.webp`;
   
-  // Lista delle immagini disponibili
-  const availableImages = [
-    'davide_fava',
-    'lorenzo_campagnari', 
-    'davide_scalmana'
-  ];
-  
-  // Se l'immagine esiste, restituiscila, altrimenti usa quella di default
-  if (availableImages.includes(filename)) {
-    return imagePath;
-  }
-  
-  return `/players/default_player.png`;
+  return imagePath;
 };
 
 // Funzione per ottenere solo il cognome del giocatore

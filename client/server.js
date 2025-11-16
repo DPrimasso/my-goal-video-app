@@ -614,6 +614,7 @@ app.post('/api/goal-generate', async (req, res) => {
 
   try {
     console.log('Starting goal image generation...');
+    console.log('playerImageUrl received:', playerImageUrl);
     
     const baseUrl = 'http://localhost:4000';
     
@@ -623,6 +624,10 @@ app.post('/api/goal-generate', async (req, res) => {
       // If it starts with /, it's already a path, otherwise add /
       const imagePath = playerImageUrl.startsWith('/') ? playerImageUrl : '/' + playerImageUrl;
       absolutePlayerImageUrl = baseUrl + imagePath;
+      console.log('Converted imagePath:', imagePath);
+      console.log('Absolute URL:', absolutePlayerImageUrl);
+    } else {
+      console.log('Using original URL (already absolute):', absolutePlayerImageUrl);
     }
     
     // Build HTML template based on demo.html - exact structure with converted CSS
@@ -784,7 +789,7 @@ app.post('/api/goal-generate', async (req, res) => {
       </svg>
     </div>
     <div class="player">
-      <img src="${baseUrl}/gol/gol/cc.png" class=""/>
+      <img src="${absolutePlayerImageUrl || baseUrl + '/gol/gol/cc.png'}" class=""/>
     </div>
     
     <div class="grid">
