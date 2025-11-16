@@ -145,8 +145,7 @@ const Goal: React.FC = () => {
       const playerName = getSurname(selectedPlayer.name);
 
       if (isProduction()) {
-        // In produzione: genera IMMAGINE goal via Lambda (da implementare se necessario)
-        // Per ora usiamo il server locale anche in produzione
+        // In produzione: genera IMMAGINE goal via Lambda
         const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL;
         if (goalImageUrl) {
           const response = await fetch(goalImageUrl, {

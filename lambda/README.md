@@ -148,3 +148,51 @@ Risposta: `image/png` (body base64 con `isBase64Encoded: true`).
 Nota: la funzione usa gli asset in `s3://${ASSET_BUCKET}/lineup/*` (font, bg, loghi). Assicurati che i file siano presenti nel bucket `ASSET_BUCKET`.
 
 > Se l'aggiornamento dello zip supera il limite di 70MB, crea una Lambda separata solo per l'immagine con dipendenze ridotte (`chrome-aws-lambda`, `puppeteer-core`) e abilita una Function URL.
+
+## ⚽ Goal image Lambda (`goal-image`)
+
+Lambda function separata per generare immagini PNG del goal (1440x2560px).
+
+**Parametri di input:**
+- `minuteGoal`: Minuto del gol (numero)
+- `playerName`: Nome del giocatore (cognome)
+- `playerImageUrl`: URL o path relativo dell'immagine del giocatore (es. `/players/alberto_viola.webp`)
+- `homeTeam`: Nome squadra casa
+- `homeScore`: Punteggio squadra casa
+- `awayTeam`: Nome squadra ospite
+- `awayScore`: Punteggio squadra ospite
+
+**Request esempio:**
+```json
+{
+  "minuteGoal": 75,
+  "playerName": "Contesini",
+  "playerImageUrl": "/players/andrea_contesini.webp",
+  "homeTeam": "Casalpoglio",
+  "homeScore": 1,
+  "awayTeam": "Squadra Avversaria",
+  "awayScore": 3
+}
+```
+
+**Risposta:** `image/png` (body base64 con `isBase64Encoded: true`).
+
+**Asset richiesti in S3:**
+- `s3://${ASSET_BUCKET}/gol/gol/*` - Font, logo, template CSS
+  - `TuskerGrotesk-3500Medium.woff2` / `.woff`
+  - `FoundersGrotesk-Regular.woff2` / `.woff`
+  - `logo.png`
+  - `cc.png` (fallback per immagine giocatore)
+- `s3://${ASSET_BUCKET}/players/*` - Immagini giocatori in formato `.webp`
+
+**Deploy:**
+```bash
+cd lambda/goal-image
+./deploy.sh
+```
+
+**Configurazione Lambda:**
+- Variabile d'ambiente: `ASSET_BUCKET` (obbligatoria)
+- Timeout: almeno 30 secondi
+- Memoria: 1024 MB (raccomandato)
+- Abilita Function URL per accesso pubblico
