@@ -56,10 +56,17 @@ exports.handler = async (event) => {
     // Convert playerImageUrl to absolute URL if it's a relative path
     let absolutePlayerImageUrl = playerImageUrl;
     if (playerImageUrl && !playerImageUrl.startsWith('http://') && !playerImageUrl.startsWith('https://')) {
-      const imagePath = playerImageUrl.startsWith('/') ? playerImageUrl : '/' + playerImageUrl;
-      absolutePlayerImageUrl = playersBaseUrl + imagePath;
+      // Remove leading slash and /players/ prefix if present to avoid double /players/
+      let imagePath = playerImageUrl.startsWith('/') ? playerImageUrl.substring(1) : playerImageUrl;
+      if (imagePath.startsWith('players/')) {
+        imagePath = imagePath.substring('players/'.length);
+      }
+      absolutePlayerImageUrl = `${playersBaseUrl}/${imagePath}`;
+      console.log('Converted playerImageUrl:', playerImageUrl, '->', absolutePlayerImageUrl);
     } else if (!playerImageUrl) {
       absolutePlayerImageUrl = `${golBaseUrl}/cc.png`;
+    } else {
+      console.log('Using absolute URL:', absolutePlayerImageUrl);
     }
 
     const htmlTemplate = `<!doctype html>
