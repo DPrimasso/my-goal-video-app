@@ -146,30 +146,34 @@ const Goal: React.FC = () => {
 
       if (isProduction()) {
         // In produzione: genera IMMAGINE goal via Lambda
-        const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL;
-        if (goalImageUrl) {
-          const response = await fetch(goalImageUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              minuteGoal: Number(minuteGoal),
-              playerName,
-              playerImageUrl,
-              homeTeam: homeTeam.trim(),
-              homeScore: score.home,
-              awayTeam: awayTeam.trim(),
-              awayScore: score.away,
-            }),
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          const blob = await response.blob();
-          const imageUrl = URL.createObjectURL(blob);
-          setGeneratedImageUrl(imageUrl);
-        } else {
+        const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL || 'https://ibf3u6irycbqi2bnpykhh3yfly0rfrai.lambda-url.eu-west-1.on.aws/';
+        console.log('Goal Image URL:', goalImageUrl);
+        console.log('REACT_APP_GOAL_IMAGE_URL from env:', process.env.REACT_APP_GOAL_IMAGE_URL);
+        console.log('isProduction:', isProduction());
+        
+        if (!goalImageUrl || goalImageUrl.trim() === '') {
           throw new Error('Goal image URL not configured for production');
         }
+        
+        const response = await fetch(goalImageUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            minuteGoal: Number(minuteGoal),
+            playerName,
+            playerImageUrl,
+            homeTeam: homeTeam.trim(),
+            homeScore: score.home,
+            awayTeam: awayTeam.trim(),
+            awayScore: score.away,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setGeneratedImageUrl(imageUrl);
       } else {
         // In sviluppo locale: genera IMMAGINE via server locale
         const response = await fetch('http://localhost:4000/api/goal-generate', {
