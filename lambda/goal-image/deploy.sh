@@ -32,6 +32,6 @@ aws lambda update-function-code \
   --output text
 
 echo "✅ Done! Lambda function '${FUNCTION_NAME}' is being updated."
-echo "💡 Function URL: https://ibf3u6irycbqi2bnpykhh3yfly0rfrai.lambda-url.eu-west-1.on.aws/"
-echo "💡 Set REACT_APP_GOAL_IMAGE_URL in your frontend .env to the URL above"
+echo "💡 Get Function URL with: aws lambda get-function-url-config --function-name ${FUNCTION_NAME} --region ${REGION} --profile ${PROFILE} --query 'FunctionUrl' --output text"
+echo "💡 Set REACT_APP_GOAL_IMAGE_URL in your frontend .env and Render environment variables"
 
