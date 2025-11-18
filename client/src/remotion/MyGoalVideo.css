@@ -20,10 +20,14 @@
 
 .surname {
   margin-right: 40px;
+  letter-spacing: 2px !important;
+  font-kerning: none !important;
 }
 
 .minute {
   margin-left: 40px;
+  letter-spacing: 2px !important;
+  font-kerning: none !important;
 }
 
 .goal-minute {

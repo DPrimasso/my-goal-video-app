@@ -222,9 +222,12 @@ exports.handler = async (event) => {
       font-size:86px;
       text-transform:uppercase;
       line-height:1;
-      letter-spacing:-1px;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
+    }
+    .card .grid .gol span{
+      letter-spacing: 2px !important;
+      font-kerning: none !important;
     }
   </style>
 </head>
@@ -257,8 +260,8 @@ exports.handler = async (event) => {
         <span class="squ">${String(awayTeam).toUpperCase()}</span>
       </div>
       <div class="gol">
-        <span>${minuteGoal}'</span>
-        <span>${String(playerName).toUpperCase()}</span>
+        <span style="letter-spacing: 2px !important; font-kerning: none !important;">${minuteGoal}'</span>
+        <span style="letter-spacing: 2px !important; font-kerning: none !important;">${String(playerName).toUpperCase()}</span>
       </div>
     </div>
     
