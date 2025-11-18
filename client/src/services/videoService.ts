@@ -158,6 +158,7 @@ class VideoService {
         'davide_sipolo': 'Sipolo',
         'marco_turini': 'Turini',
         'marco_vaccari': 'Vaccari',
+        'nathan_gorgaini': 'Gorgaini',
         'alberto_viola': 'Viola',
       };
       return playerSurnames[playerId] || playerId;

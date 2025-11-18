@@ -183,6 +183,12 @@ const players = [
     position: 'midfielder'
   },
   {
+    id: 'nathan_gorgaini',
+    name: 'Nathan Gorgaini',
+    image: 'players/nathan_gorgaini.png',
+    position: 'midfielder'
+  },
+  {
     id: 'alberto_viola',
     name: 'Alberto Viola',
     image: 'players/alberto_viola.png',
