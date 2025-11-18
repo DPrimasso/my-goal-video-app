@@ -153,10 +153,10 @@ exports.handler = async (event) => {
     .player{
       position:absolute;
       z-index:20;
-      bottom:-4px;
+      bottom:335px;
       left:0;
       width:100%;
-      height:80%;
+      height:75%;
       display:flex;
       justify-content:center;
       align-items:flex-end;
@@ -165,7 +165,7 @@ exports.handler = async (event) => {
     .player img{
       height:100%;
       width:auto;
-      transform:scale(1.12);
+      transform:scale(1);
       transform-origin:center bottom;
       object-fit:contain;
       object-position:center bottom;
@@ -184,7 +184,7 @@ exports.handler = async (event) => {
     .card .grid .result{
       grid-column: span 2 / span 2;
       font-family: 'Founders';
-      font-weight:600;
+      font-weight:400;
       border-radius: 10px;
       background-color: rgba(0, 0, 0, .8);
       display: flex;
@@ -202,7 +202,7 @@ exports.handler = async (event) => {
     }
     .card .grid .result .squ{
       font-family: 'Founders';
-      font-weight:600;
+      font-weight:400;
       font-size:54px;
       text-transform:uppercase;
       letter-spacing:-1px;
