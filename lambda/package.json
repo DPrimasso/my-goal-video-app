@@ -1,0 +1,26 @@
+{
+  "name": "my-goal-video-app-lambda",
+  "version": "1.0.0",
+  "description": "Lambda functions for My Goal Video App using Remotion",
+  "main": "index.js",
+  "scripts": {
+  },
+  "dependencies": {
+    "@remotion/lambda": "4.0.333",
+    "chrome-aws-lambda": "10.1.0",
+    "puppeteer-core": "10.4.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "remotion",
+    "lambda",
+    "video",
+    "rendering",
+    "aws"
+  ],
+  "author": "My Goal Video App Team",
+  "license": "MIT"
+}
