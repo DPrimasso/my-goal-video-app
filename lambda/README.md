@@ -147,6 +147,26 @@ Risposta: `image/png` (body base64 con `isBase64Encoded: true`).
 
 Nota: la funzione usa gli asset in `s3://${ASSET_BUCKET}/lineup/*` (font, bg, loghi). Assicurati che i file siano presenti nel bucket `ASSET_BUCKET`.
 
+**⚠️ IMPORTANTE: Upload Asset su S3**
+
+Prima di usare la funzione, carica gli asset necessari su S3:
+
+```bash
+# Opzione 1: Carica solo gli asset lineup
+./scripts/upload-lineup-assets.sh
+
+# Opzione 2: Carica tutti gli asset (lineup, gol, players)
+./scripts/upload-all-assets.sh
+```
+
+Gli asset richiesti per la lineup sono:
+- `bg.jpg` - Immagine di sfondo (⚠️ CRITICO - senza questo l'immagine non avrà sfondo!)
+- `cap.png` - Icona capitano
+- `group.png` - Immagine gruppo
+- `logo.png` - Logo squadra
+- `TuskerGrotesk-3500Medium.woff2` / `.woff` - Font
+- Altri loghi sponsor (vega.png, loooma.png, mm.png, onlight.png, sens.png, neotec.png, rubes-w.png)
+
 > Se l'aggiornamento dello zip supera il limite di 70MB, crea una Lambda separata solo per l'immagine con dipendenze ridotte (`chrome-aws-lambda`, `puppeteer-core`) e abilita una Function URL.
 
 ## ⚽ Goal image Lambda (`goal-image`)
@@ -184,6 +204,15 @@ Lambda function separata per generare immagini PNG del goal (1440x2560px).
   - `logo.png`
   - `cc.png` (fallback per immagine giocatore)
 - `s3://${ASSET_BUCKET}/players/*` - Immagini giocatori in formato `.webp`
+
+**⚠️ IMPORTANTE: Upload Asset su S3**
+
+Prima di usare la funzione, carica gli asset necessari:
+
+```bash
+# Carica tutti gli asset (lineup, gol, players)
+./scripts/upload-all-assets.sh
+```
 
 **Deploy:**
 ```bash

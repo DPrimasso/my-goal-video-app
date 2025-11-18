@@ -51,6 +51,7 @@ exports.handler = async (event) => {
     }
 
     const golBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/gol/gol`;
+    const lineupBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/lineup`;
     const playersBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/players`;
 
     // Convert playerImageUrl to absolute URL if it's a relative path
@@ -131,6 +132,8 @@ exports.handler = async (event) => {
       display: flex;
       justify-content: center;
       align-items: center;
+      position:relative;
+      z-index:20;
     }
     .main-text svg{
       width:90%;
@@ -150,15 +153,23 @@ exports.handler = async (event) => {
     .player{
       position:absolute;
       z-index:20;
-      bottom: -4px;
+      bottom:335px;
       left:0;
       width:100%;
-      height:80%;
+      height:75%;
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      pointer-events:none;
     }
     .player img{
-      width:100%;
-      object-fit: contain;
-      object-position: bottom;
+      height:100%;
+      width:auto;
+      transform:scale(1);
+      transform-origin:center bottom;
+      object-fit:contain;
+      object-position:center bottom;
+      display:block;
     }
     .card .grid{
       display: grid;
@@ -185,12 +196,16 @@ exports.handler = async (event) => {
       padding:40px 24px;
       line-height:1;
       gap:12px;
+      letter-spacing:-2px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
     .card .grid .result .squ{
       font-family: 'Founders';
       font-weight:400;
       font-size:54px;
       text-transform:uppercase;
+      letter-spacing:-1px;
     }
     .card .grid .gol{
       padding:24px 24px;
@@ -199,7 +214,7 @@ exports.handler = async (event) => {
       background-color: rgba(0, 0, 0, .8);
       display: flex;
       font-family: 'Founders';
-      font-weight:400;
+      font-weight:600;
       flex-direction:row;
       align-items:center;
       justify-content:center;
@@ -207,6 +222,9 @@ exports.handler = async (event) => {
       font-size:86px;
       text-transform:uppercase;
       line-height:1;
+      letter-spacing:-1px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
   </style>
 </head>
@@ -231,12 +249,12 @@ exports.handler = async (event) => {
     
     <div class="grid">
       <div class="result">
-        <span class="squ">${String(homeTeam).toUpperCase()}</span>
         <span>${homeScore}</span>
+        <span class="squ">${String(homeTeam).toUpperCase()}</span>
       </div>
       <div class="result">
-        <span class="squ">${String(awayTeam).toUpperCase()}</span>
         <span>${awayScore}</span>
+        <span class="squ">${String(awayTeam).toUpperCase()}</span>
       </div>
       <div class="gol">
         <span>${minuteGoal}'</span>
@@ -257,10 +275,51 @@ exports.handler = async (event) => {
     });
     const page = await browser.newPage();
     await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
-    await new Promise((r) => setTimeout(r, 3000));
+    
+    // Attendi che i font siano caricati
     await page.evaluate(() => {
       return document.fonts.ready;
     });
+    
+    // Attesa aggiuntiva per assicurarsi che tutto sia renderizzato
+    await new Promise((r) => setTimeout(r, 2000));
+    
+    // Attesa finale per il rendering completo
+    await new Promise((r) => setTimeout(r, 2000));
+    
+    // Verifica finale che tutto sia renderizzato
+    await page.evaluate(() => {
+      return new Promise(resolve => {
+        // Aspetta che tutte le immagini siano completamente renderizzate
+        const images = document.querySelectorAll('img');
+        let loaded = 0;
+        const total = images.length;
+        
+        if (total === 0) {
+          resolve();
+          return;
+        }
+        
+        images.forEach(img => {
+          if (img.complete && img.naturalHeight > 0) {
+            loaded++;
+            if (loaded === total) resolve();
+          } else {
+            img.addEventListener('load', () => {
+              loaded++;
+              if (loaded === total) resolve();
+            }, { once: true });
+          }
+        });
+        
+        // Timeout di sicurezza
+        setTimeout(resolve, 3000);
+      });
+    });
+    
+    // Attesa aggiuntiva per il rendering finale
+    await new Promise((r) => setTimeout(r, 1000));
+    
     const png = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1440, height: 2560 } });
     await browser.close();
 
