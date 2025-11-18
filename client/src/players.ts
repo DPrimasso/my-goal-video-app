@@ -163,6 +163,11 @@ export const players: Player[] = [
     image: getPlayerImage('Marco Turini'),
   },
   {
+    id: 'marco_vaccari',
+    name: 'Marco Vaccari',
+    image: getPlayerImage('Marco Vaccari'),
+  },
+  {
     id: 'alberto_viola',
     name: 'Alberto Viola',
     image: getPlayerImage('Alberto Viola'),

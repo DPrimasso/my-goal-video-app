@@ -177,6 +177,12 @@ const players = [
     position: 'midfielder'
   },
   {
+    id: 'marco_vaccari',
+    name: 'Marco Vaccari',
+    image: 'players/marco_vaccari.png',
+    position: 'midfielder'
+  },
+  {
     id: 'alberto_viola',
     name: 'Alberto Viola',
     image: 'players/alberto_viola.png',
