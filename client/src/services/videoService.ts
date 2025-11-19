@@ -160,6 +160,7 @@ class VideoService {
         'marco_vaccari': 'Vaccari',
         'nathan_gorgaini': 'Gorgaini',
         'alberto_viola': 'Viola',
+        'autogol': 'Autogol',
       };
       return playerSurnames[playerId] || playerId;
     };

@@ -193,6 +193,12 @@ const players = [
     name: 'Alberto Viola',
     image: 'players/alberto_viola.png',
     position: 'defender'
+  },
+  {
+    id: 'autogol',
+    name: 'Autogol',
+    image: 'players/autogol.webp',
+    position: 'forward'
   }
 ];
 

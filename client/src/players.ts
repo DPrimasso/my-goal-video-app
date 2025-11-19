@@ -177,6 +177,11 @@ export const players: Player[] = [
     name: 'Alberto Viola',
     image: getPlayerImage('Alberto Viola'),
   },
+  {
+    id: 'autogol',
+    name: 'Autogol',
+    image: getPlayerImage('Autogol'),
+  },
 ];
 
 export default players;
