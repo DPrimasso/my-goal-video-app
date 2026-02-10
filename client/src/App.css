@@ -19,9 +19,9 @@
 }
 
 .main-content {
-  padding-top: 96px; /* Spazio per l'header fisso */
+  padding-top: 112px; /* Spazio per l'header fisso */
   padding-bottom: 0;
-  min-height: calc(100vh - 96px);
+  min-height: calc(100vh - 112px);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -38,7 +38,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: 104px;
+    padding-top: 128px;
     padding-bottom: 5rem; /* Spazio per la bottom nav mobile */
     min-height: calc(100vh - 104px);
   }
@@ -58,7 +58,7 @@
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: 96px;
+    padding-top: 120px;
     padding-bottom: 5rem; /* Spazio per la bottom nav mobile */
     min-height: calc(100vh - 96px);
   }
