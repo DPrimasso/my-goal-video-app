@@ -475,6 +475,8 @@ app.post('/api/lineup-generate', async (req, res) => {
       <div class="sponsor"><img src="${BASE_URL}/lineup/sens.png" /></div>
       <div class="sponsor"><img src="${BASE_URL}/lineup/neotec.png" /></div>
       <div class="sponsor"><img src="${BASE_URL}/lineup/rubes-w.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/eurotir.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/transfilm.png" /></div>
     </div>
   </div>
 </body>

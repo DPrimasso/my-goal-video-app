@@ -85,7 +85,7 @@ exports.handler = async (event) => {
   </style>
   </head>
   <body>
-  <div class=\"card\">
+    <div class=\"card\">
     <div class=\"bgimg\"><img src=\"${lineupBaseUrl}/group.png\" /></div>
     <div class=\"element\"><h1>STARTING XI</h1><p>Vs ${String(opponentTeam).toUpperCase()}</p></div>
     <div class=\"element flexmore\">
@@ -100,6 +100,8 @@ exports.handler = async (event) => {
       <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/sens.png\" /></div>
       <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/neotec.png\" /></div>
       <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/rubes-w.png\" /></div>
+      <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/eurotir.png\" /></div>
+      <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/transfilm.png\" /></div>
     </div>
   </div>
   </body>
