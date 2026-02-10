@@ -87,6 +87,34 @@ const RisultatoFinale: React.FC = () => {
     updateScorersArray();
   }, [score, homeTeam, awayTeam]);
 
+  const getTeamLabel = (value: string) =>
+    teamOptions.find((t) => t.value === value)?.label || value;
+
+  const buildMatchSummary = () => {
+    if (!homeTeam || !awayTeam) return '';
+    const homeLabel = getTeamLabel(homeTeam);
+    const awayLabel = getTeamLabel(awayTeam);
+    const base = `${homeLabel} ${score.home} - ${score.away} ${awayLabel}`;
+
+    const casalGoals = getCasalpoglioGoals();
+    if (casalGoals === 0 || casalpoglioScorers.length === 0) {
+      return base;
+    }
+
+    const scorersSummary = casalpoglioScorers
+      .map((s) => {
+        const player = players.find((p) => p.id === s.playerId);
+        const surname = player ? getSurname(player.name) : '';
+        if (!surname || !s.minute) return null;
+        return `${surname} (${s.minute}')`;
+      })
+      .filter(Boolean)
+      .join(', ');
+
+    if (!scorersSummary) return base;
+    return `${base} · Gol Casalpoglio: ${scorersSummary}`;
+  };
+
   const handleGenerateVideo = async () => {
     if (!homeTeam || !awayTeam) {
       alert('Seleziona entrambe le squadre');
@@ -129,7 +157,7 @@ const RisultatoFinale: React.FC = () => {
       icon="🏆"
     >
       <div className="result-container">
-        <div className="result-form-container">
+        <div className="card result-form-container">
           <div className="teams-section">
             <div className="team-input">
               <Select
@@ -219,6 +247,12 @@ const RisultatoFinale: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {homeTeam && awayTeam && (
+            <div className="match-summary">
+              {buildMatchSummary()}
             </div>
           )}
 

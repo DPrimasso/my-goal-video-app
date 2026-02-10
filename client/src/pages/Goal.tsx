@@ -155,7 +155,7 @@ const Goal: React.FC = () => {
       icon="⚽"
     >
       <div className="goal-container">
-        <div className="goal-form-container">
+        <div className="card goal-form-container">
           <div className="form-section">
             <Select
               label="Giocatore"
@@ -262,7 +262,14 @@ const Goal: React.FC = () => {
 
           {generatedImageUrl ? (
             <div className="image-preview">
-              <img src={generatedImageUrl} alt="Goal" className="goal-image" />
+              <div className="phone-frame">
+                <div className="phone-frame-inner">
+                  <img src={generatedImageUrl} alt="Goal" className="goal-image" />
+                </div>
+              </div>
+              <p className="preview-meta">
+                Formato 9:16 · Perfetto per Stories e Reels
+              </p>
               <div className="image-actions">
                 <Button
                   onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}

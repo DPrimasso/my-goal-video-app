@@ -15,6 +15,27 @@
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <style>
+      @font-face {
+        font-family: 'Tusker';
+        src: url('%PUBLIC_URL%/gol/gol/TuskerGrotesk-3500Medium.woff2') format('woff2'),
+             url('%PUBLIC_URL%/gol/gol/TuskerGrotesk-3500Medium.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+        ascent-override: 110%;
+      }
+
+      @font-face {
+        font-family: 'Founders';
+        src: url('%PUBLIC_URL%/gol/gol/FoundersGrotesk-Regular.woff2') format('woff2'),
+             url('%PUBLIC_URL%/gol/gol/FoundersGrotesk-Regular.woff') format('woff');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+        ascent-override: 110%;
+      }
+    </style>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.

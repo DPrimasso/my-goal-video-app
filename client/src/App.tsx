@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Header } from './components/layout';
+import { Header, BottomNav } from './components/layout';
 import { pages } from './pages';
 import './App.css';
 
@@ -33,6 +33,8 @@ function App() {
       <main className="main-content">
         {renderCurrentPage()}
       </main>
+
+      <BottomNav currentPage={currentPage} onPageChange={handlePageChange} />
     </div>
   );
 }

@@ -7,7 +7,7 @@
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(220, 38, 38, 0.2);
   z-index: 1000;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
 .header-content {
@@ -23,8 +23,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .brand-logo {

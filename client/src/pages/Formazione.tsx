@@ -269,7 +269,7 @@ const Formazione: React.FC = () => {
     >
       <div className="lineup-container">
         {/* Squadra Avversaria */}
-        <div className="opponent-section">
+        <div className="card opponent-section">
           <label className="opponent-label">
             <span className="label-icon">⚽</span>
             <span>Squadra Avversaria</span>
@@ -284,7 +284,7 @@ const Formazione: React.FC = () => {
         </div>
 
         {/* Lista Giocatori */}
-        <div className="players-section">
+        <div className="card players-section">
           <h3 className="section-title">
             <span>👥</span> Giocatori
           </h3>
@@ -335,7 +335,7 @@ const Formazione: React.FC = () => {
         </div>
 
         {/* Contatore e Azioni */}
-        <div className="lineup-actions-mobile">
+        <div className="card lineup-actions-mobile">
           {/* Contatore giocatori */}
           <div className="lineup-counter-bottom">
             <span className="counter-value">{filledPlayersCount}</span>
@@ -367,7 +367,7 @@ const Formazione: React.FC = () => {
 
         {/* Errore */}
         {error && (
-          <div className="error-section-mobile">
+          <div className="card error-section-mobile">
             <div className="error-content">
               <span className="error-icon">⚠️</span>
               <span className="error-text">{error}</span>
@@ -385,7 +385,7 @@ const Formazione: React.FC = () => {
         
         {/* Anteprima */}
         {generatedImageUrl && (
-          <div className="preview-section-mobile" ref={previewRef}>
+          <div className="card preview-section-mobile" ref={previewRef}>
             <h3 className="preview-title">
               <span>🎉</span> Formazione Generata
             </h3>

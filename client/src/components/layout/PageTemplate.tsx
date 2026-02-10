@@ -17,11 +17,13 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
   return (
     <div className="page-template">
       <div className="page-header">
-        <div className="page-icon">{icon}</div>
-        <h1 className="page-title">{title}</h1>
+        <div className="page-title-row">
+          <div className="page-icon">{icon}</div>
+          <h1 className="page-title">{title}</h1>
+        </div>
         {description && <p className="page-description">{description}</p>}
       </div>
-      
+
       <div className="page-content">
         {children}
       </div>
