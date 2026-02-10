@@ -1,6 +1,5 @@
 import React from 'react';
 import {AbsoluteFill, Video, Img, spring, useCurrentFrame, useVideoConfig, interpolate, staticFile} from 'remotion';
-import {resolveAsset} from './resolveAsset';
 import { isDevelopment } from '../config/environment';
 import './MyGoalVideo.css';
 

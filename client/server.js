@@ -5,6 +5,8 @@ const { bundle } = require('@remotion/bundler');
 const { getCompositions, renderMedia } = require('@remotion/renderer');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
+const { getAssetUrl, BASE_URL } = require('./assetUtils');
+const { validateGoalImagePayload, validateLineupPayload } = require('./serverValidation');
 
 // Create videos directory
 const VIDEOS_DIR = path.join(__dirname, 'public', 'generated');
@@ -39,38 +41,14 @@ app.post('/api/render', async (req, res) => {
       entryPoint: entry,
     });
 
-        // Prepare input props (exactly like the working server)
+    // Prepare input props (exactly like the working server)
     // Handle asset paths correctly - local assets vs S3 URLs
-    const baseUrl = 'http://localhost:4000';
-    
-    // Helper function to determine if a path is a local asset or S3 URL
-    const getAssetUrl = (assetPath) => {
-      if (!assetPath) return '';
-      
-      // If it's already a full URL (S3), use it as is
-      if (assetPath.startsWith('http://') || assetPath.startsWith('https://')) {
-        console.log(`S3 URL detected: ${assetPath}`);
-        return assetPath;
-      }
-      
-      // If it's a local asset, prepend localhost:4000
-      if (assetPath.startsWith('players/') || assetPath.startsWith('/players/') || assetPath.startsWith('clips/') || assetPath.startsWith('logo')) {
-        const localUrl = `${baseUrl}/${assetPath}`;
-        console.log(`Local asset: ${assetPath} -> ${localUrl}`);
-        return localUrl;
-      }
-      
-      // Default case
-      console.log(`Default case: ${assetPath}`);
-      return assetPath;
-    };
-    
     const inputProps = {
       playerName,
       minuteGoal: String(minuteGoal),
-      goalClip: getAssetUrl(goalClip) || `${baseUrl}/clips/goal.mp4`,
-      overlayImage: getAssetUrl(overlayImage) || `${baseUrl}/logo_casalpoglio.png`,
-      s3PlayerUrl: getAssetUrl(s3PlayerUrl) || `${baseUrl}/players/default_player.png`,
+      goalClip: getAssetUrl(goalClip) || `${BASE_URL}/clips/goal.mp4`,
+      overlayImage: getAssetUrl(overlayImage) || `${BASE_URL}/logo_casalpoglio.png`,
+      s3PlayerUrl: getAssetUrl(s3PlayerUrl) || `${BASE_URL}/players/default_player.png`,
       partialScore: partialScore || '',
       textColor: 'white',
       titleSize: 80,
@@ -100,7 +78,7 @@ app.post('/api/render', async (req, res) => {
       inputProps,
     });
 
-    const videoUrl = `http://localhost:4000/videos/${outputFilename}`;
+    const videoUrl = `${BASE_URL}/videos/${outputFilename}`;
     console.log(`Goal video rendered successfully: ${videoUrl}`);
     
     res.json({ 
@@ -131,32 +109,6 @@ app.post('/api/formation-render', async (req, res) => {
       entryPoint: entry,
     });
 
-    // Handle asset paths correctly - local assets vs S3 URLs
-    const baseUrl = 'http://localhost:4000';
-    
-    // Helper function to determine if a path is a local asset or S3 URL
-    const getAssetUrl = (assetPath) => {
-      if (!assetPath) return '';
-      
-      // If it's already a full URL (S3), use it as is
-      if (assetPath.startsWith('http://') || assetPath.startsWith('https://')) {
-        console.log(`S3 URL detected: ${assetPath}`);
-        return assetPath;
-      }
-      
-      // If it's a local asset, prepend localhost:4000
-      if (assetPath.startsWith('players/') || assetPath.startsWith('/players/') || assetPath.startsWith('clips/') || assetPath.startsWith('logo')) {
-        const localUrl = `${baseUrl}/${assetPath}`;
-        console.log(`Local asset: ${assetPath} -> ${localUrl}`);
-        return localUrl;
-      }
-      
-      // For other assets, assume they're local
-      const localUrl = `${baseUrl}/${assetPath}`;
-      console.log(`Other asset: ${assetPath} -> ${localUrl}`);
-      return localUrl;
-    };
-
     // Helper function to get goalkeeper name for display
     const getGoalkeeperName = (goalkeeper) => {
       if (!goalkeeper || !goalkeeper.name) {
@@ -173,7 +125,7 @@ app.post('/api/formation-render', async (req, res) => {
       
       // Use getSafePlayerImage to handle missing or invalid images
       const safeImageUrl = getAssetUrl(player.image);
-      const imagePath = safeImageUrl.replace(baseUrl + '/', ''); // Remove baseUrl for the component
+      const imagePath = safeImageUrl.replace(BASE_URL + '/', ''); // Remove baseUrl for the component
       
       return {
         name: player.name,
@@ -190,7 +142,7 @@ app.post('/api/formation-render', async (req, res) => {
       attackingMidfielders: attackingMidfielders.map(processFormationPlayer),
       forwards: forwards.map(processFormationPlayer),
       goalkeeperName,
-      baseUrl,
+      baseUrl: BASE_URL,
     };
 
     // Get compositions
@@ -215,7 +167,7 @@ app.post('/api/formation-render', async (req, res) => {
       inputProps,
     });
 
-    const videoUrl = `http://localhost:4000/videos/${outputFilename}`;
+    const videoUrl = `${BASE_URL}/videos/${outputFilename}`;
     console.log(`Formation video rendered successfully: ${videoUrl}`);
     
     res.json({ 
@@ -309,7 +261,7 @@ app.post('/api/final-result-render', async (req, res) => {
       inputProps,
     });
 
-    const videoUrl = `http://localhost:4000/videos/${outputFilename}`;
+    const videoUrl = `${BASE_URL}/videos/${outputFilename}`;
     console.log(`Final result video rendered successfully: ${videoUrl}`);
     
     res.json({ 
@@ -325,25 +277,20 @@ app.post('/api/final-result-render', async (req, res) => {
 
 // API endpoint for lineup image generation
 app.post('/api/lineup-generate', async (req, res) => {
-  const { players, opponentTeam } = req.body || {};
-  
-  if (!players || !Array.isArray(players) || players.length !== 11) {
-    return res.status(400).json({ error: 'Missing or invalid players data. Expected exactly 11 players.' });
+  const validation = validateLineupPayload(req.body);
+  if (!validation.ok) {
+    return res.status(400).json({ error: validation.error });
   }
 
-  if (!opponentTeam || !opponentTeam.trim()) {
-    return res.status(400).json({ error: 'Missing opponent team name' });
-  }
+  const { players, opponentTeam } = req.body;
 
   try {
     console.log('Starting lineup image generation...');
     
-    const baseUrl = 'http://localhost:4000';
-    
     // Build HTML template
     const playerRows = players.map(player => {
       const captainIcon = player.isCaptain 
-        ? `<img class="cap" src="${baseUrl}/lineup/cap.png" />` 
+        ? `<img class="cap" src="${BASE_URL}/lineup/cap.png" />` 
         : '';
       return `
         <div class="row">
@@ -363,8 +310,8 @@ app.post('/api/lineup-generate', async (req, res) => {
   <style>
     @font-face {
       font-family: 'Tusker';
-      src: url('${baseUrl}/lineup/TuskerGrotesk-3500Medium.woff2') format('woff2'),
-           url('${baseUrl}/lineup/TuskerGrotesk-3500Medium.woff') format('woff');
+      src: url('${BASE_URL}/lineup/TuskerGrotesk-3500Medium.woff2') format('woff2'),
+           url('${BASE_URL}/lineup/TuskerGrotesk-3500Medium.woff') format('woff');
       font-weight: 500;
       font-style: normal;
       font-display: swap;
@@ -395,7 +342,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       overflow:visible;
       padding:80px 40px;
       padding-bottom: 160px;
-      background-image: url('${baseUrl}/lineup/bg.jpg');
+      background-image: url('${BASE_URL}/lineup/bg.jpg');
       background-size:cover;
       background-repeat: no-repeat;
       background-position:center;
@@ -506,7 +453,7 @@ app.post('/api/lineup-generate', async (req, res) => {
 <body>
   <div class="card">
     <div class="bgimg">
-      <img src="${baseUrl}/lineup/group.png" />
+      <img src="${BASE_URL}/lineup/group.png" />
     </div>
     <div class="element">
       <h1>STARTING XI</h1>
@@ -517,17 +464,17 @@ app.post('/api/lineup-generate', async (req, res) => {
         ${playerRows}
       </div>
       <div class="logoimg">
-        <img src="${baseUrl}/lineup/logo.png" />
+        <img src="${BASE_URL}/lineup/logo.png" />
       </div>
     </div>
     <div class="grid">
-      <div class="sponsor"><img src="${baseUrl}/lineup/vega.png" /></div>
-      <div class="sponsor"><img src="${baseUrl}/lineup/loooma.png" /></div>
-      <div class="sponsor"><img src="${baseUrl}/lineup/mm.png" /></div>
-      <div class="sponsor"><img src="${baseUrl}/lineup/onlight.png" /></div>
-      <div class="sponsor"><img src="${baseUrl}/lineup/sens.png" /></div>
-      <div class="sponsor"><img src="${baseUrl}/lineup/neotec.png" /></div>
-      <div class="sponsor"><img src="${baseUrl}/lineup/rubes-w.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/vega.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/loooma.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/mm.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/onlight.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/sens.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/neotec.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/rubes-w.png" /></div>
     </div>
   </div>
 </body>
@@ -598,32 +545,23 @@ app.post('/api/lineup-generate', async (req, res) => {
 
 // API endpoint for goal image generation
 app.post('/api/goal-generate', async (req, res) => {
-  const { minuteGoal, playerName, playerImageUrl, homeTeam, homeScore, awayTeam, awayScore } = req.body || {};
-  
-  if (!minuteGoal || !playerName) {
-    return res.status(400).json({ error: 'Missing minuteGoal or playerName' });
+  const validation = validateGoalImagePayload(req.body);
+  if (!validation.ok) {
+    return res.status(400).json({ error: validation.error });
   }
 
-  if (!homeTeam || !awayTeam) {
-    return res.status(400).json({ error: 'Missing homeTeam or awayTeam' });
-  }
-
-  if (homeScore === undefined || awayScore === undefined) {
-    return res.status(400).json({ error: 'Missing homeScore or awayScore' });
-  }
+  const { minuteGoal, playerName, playerImageUrl, homeTeam, homeScore, awayTeam, awayScore } = req.body;
 
   try {
     console.log('Starting goal image generation...');
     console.log('playerImageUrl received:', playerImageUrl);
-    
-    const baseUrl = 'http://localhost:4000';
     
     // Convert playerImageUrl to absolute URL if it's a relative path
     let absolutePlayerImageUrl = playerImageUrl;
     if (playerImageUrl && !playerImageUrl.startsWith('http://') && !playerImageUrl.startsWith('https://')) {
       // If it starts with /, it's already a path, otherwise add /
       const imagePath = playerImageUrl.startsWith('/') ? playerImageUrl : '/' + playerImageUrl;
-      absolutePlayerImageUrl = baseUrl + imagePath;
+      absolutePlayerImageUrl = BASE_URL + imagePath;
       console.log('Converted imagePath:', imagePath);
       console.log('Absolute URL:', absolutePlayerImageUrl);
     } else {
@@ -649,8 +587,8 @@ app.post('/api/goal-generate', async (req, res) => {
     }
     @font-face {
       font-family: 'Tusker';
-      src: url('${baseUrl}/gol/gol/TuskerGrotesk-3500Medium.woff2') format('woff2'),
-           url('${baseUrl}/gol/gol/TuskerGrotesk-3500Medium.woff') format('woff');
+      src: url('${BASE_URL}/gol/gol/TuskerGrotesk-3500Medium.woff2') format('woff2'),
+           url('${BASE_URL}/gol/gol/TuskerGrotesk-3500Medium.woff') format('woff');
       font-weight: 500;
       font-style: normal;
       font-display: swap;
@@ -658,8 +596,8 @@ app.post('/api/goal-generate', async (req, res) => {
     }
     @font-face {
       font-family: 'Founders';
-      src: url('${baseUrl}/gol/gol/FoundersGrotesk-Regular.woff2') format('woff2'),
-           url('${baseUrl}/gol/gol/FoundersGrotesk-Regular.woff') format('woff');
+      src: url('${BASE_URL}/gol/gol/FoundersGrotesk-Regular.woff2') format('woff2'),
+           url('${BASE_URL}/gol/gol/FoundersGrotesk-Regular.woff') format('woff');
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -776,7 +714,7 @@ app.post('/api/goal-generate', async (req, res) => {
 <body>
   <div class="card">
     <div class="logoback">
-      <img src="${baseUrl}/gol/gol/logo.png" class=""/>
+      <img src="${BASE_URL}/gol/gol/logo.png" class=""/>
     </div>
     <div class="main-text">
       <svg viewBox="0 0 980 678" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -789,7 +727,7 @@ app.post('/api/goal-generate', async (req, res) => {
       </svg>
     </div>
     <div class="player">
-      <img src="${absolutePlayerImageUrl || baseUrl + '/gol/gol/cc.png'}" class=""/>
+      <img src="${absolutePlayerImageUrl || BASE_URL + '/gol/gol/cc.png'}" class=""/>
     </div>
     
     <div class="grid">

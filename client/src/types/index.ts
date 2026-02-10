@@ -102,3 +102,13 @@ export interface LineupRequest {
   players: LineupPlayer[];
   opponentTeam: string;
 }
+
+export interface GoalImagePayload {
+  minuteGoal: number;
+  playerName: string;
+  playerImageUrl: string;
+  homeTeam: string;
+  homeScore: number;
+  awayTeam: string;
+  awayScore: number;
+}

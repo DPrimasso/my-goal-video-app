@@ -1,99 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
 import { players, getSurname } from '../players';
 import { isProduction } from '../config/environment';
 import { videoService } from '../services/videoService';
+import { useGoalFormState } from '../hooks/useGoalFormState';
+import type { GoalImagePayload } from '../types';
 import './Goal.css';
 
-interface TeamScore {
-  home: number;
-  away: number;
-}
-
-// Helper functions per gestire i cookie
-function setCookie(name: string, value: string, days: number = 365) {
-  const date = new Date();
-  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-  const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${value};${expires};path=/`;
-}
-
-function getCookie(name: string): string | null {
-  const nameEQ = `${name}=`;
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-}
-
-interface SavedGoal {
-  playerId: string;
-  minuteGoal: string;
-  homeTeam: string;
-  awayTeam: string;
-  score: TeamScore;
+function buildGoalImagePayload(
+  playerName: string,
+  playerImageUrl: string,
+  minuteGoal: string,
+  homeTeam: string,
+  awayTeam: string,
+  score: { home: number; away: number }
+): GoalImagePayload {
+  return {
+    minuteGoal: Number(minuteGoal),
+    playerName,
+    playerImageUrl,
+    homeTeam: homeTeam.trim(),
+    homeScore: score.home,
+    awayTeam: awayTeam.trim(),
+    awayScore: score.away,
+  };
 }
 
 const Goal: React.FC = () => {
-  const [playerId, setPlayerId] = useState('');
-  const [minuteGoal, setMinuteGoal] = useState('');
-  const [homeTeam, setHomeTeam] = useState('');
-  const [awayTeam, setAwayTeam] = useState('');
-  const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
+  const { state, setState } = useGoalFormState();
+  const { playerId, minuteGoal, homeTeam, awayTeam, score } = state;
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Carica i dati salvati dai cookie all'avvio
-  useEffect(() => {
-    const savedGoal = getCookie('savedGoal');
-    if (savedGoal) {
-      try {
-        const parsed: SavedGoal = JSON.parse(decodeURIComponent(savedGoal));
-        if (parsed.playerId) {
-          setPlayerId(parsed.playerId);
-        }
-        if (parsed.minuteGoal) {
-          setMinuteGoal(parsed.minuteGoal);
-        }
-        if (parsed.homeTeam) {
-          setHomeTeam(parsed.homeTeam);
-        }
-        if (parsed.awayTeam) {
-          setAwayTeam(parsed.awayTeam);
-        }
-        if (parsed.score) {
-          setScore(parsed.score);
-        }
-      } catch (err) {
-        console.error('Errore nel caricamento dei dati salvati:', err);
-      }
-    }
-  }, []);
-
-  // Salva i dati nei cookie quando cambiano
-  useEffect(() => {
-    const goalData: SavedGoal = {
-      playerId,
-      minuteGoal,
-      homeTeam,
-      awayTeam,
-      score,
-    };
-    const encodedData = encodeURIComponent(JSON.stringify(goalData));
-    setCookie('savedGoal', encodedData, 365);
-  }, [playerId, minuteGoal, homeTeam, awayTeam, score]);
-
   const handleScoreChange = (team: 'home' | 'away', value: string) => {
     const numValue = parseInt(value) || 0;
-    setScore(prev => ({
+    setState(prev => ({
       ...prev,
-      [team]: numValue
+      score: { ...prev.score, [team]: numValue },
     }));
   };
 
@@ -143,64 +89,45 @@ const Goal: React.FC = () => {
     try {
       const playerImageUrl = videoService.makeAssetUrl(selectedPlayer.image);
       const playerName = getSurname(selectedPlayer.name);
+      const payload = buildGoalImagePayload(
+        playerName,
+        playerImageUrl,
+        minuteGoal,
+        homeTeam,
+        awayTeam,
+        score
+      );
 
+      let response: Response;
       if (isProduction()) {
-        // In produzione: genera IMMAGINE goal via Lambda
         const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL || 'https://xgafdelrk5bwrvizodeoepwejm0ntuuz.lambda-url.eu-west-1.on.aws/';
-        console.log('Goal Image URL:', goalImageUrl);
-        console.log('REACT_APP_GOAL_IMAGE_URL from env:', process.env.REACT_APP_GOAL_IMAGE_URL);
-        console.log('isProduction:', isProduction());
-        
         if (!goalImageUrl || goalImageUrl.trim() === '') {
           throw new Error('Goal image URL not configured for production');
         }
-        
-        const response = await fetch(goalImageUrl, {
+        response = await fetch(goalImageUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            minuteGoal: Number(minuteGoal),
-            playerName,
-            playerImageUrl,
-            homeTeam: homeTeam.trim(),
-            homeScore: score.home,
-            awayTeam: awayTeam.trim(),
-            awayScore: score.away,
-          }),
+          body: JSON.stringify(payload),
         });
-        if (!response.ok) {
+      } else {
+        response = await fetch('http://localhost:4000/api/goal-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (!response.ok) {
+        if (isProduction()) {
           throw new Error(`HTTP ${response.status}`);
         }
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGeneratedImageUrl(imageUrl);
-      } else {
-        // In sviluppo locale: genera IMMAGINE via server locale
-        const response = await fetch('http://localhost:4000/api/goal-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            minuteGoal: Number(minuteGoal),
-            playerName,
-            playerImageUrl,
-            homeTeam: homeTeam.trim(),
-            homeScore: score.home,
-            awayTeam: awayTeam.trim(),
-            awayScore: score.away,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Errore nella generazione dell\'immagine');
-        }
-
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGeneratedImageUrl(imageUrl);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Errore nella generazione dell\'immagine');
       }
+
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImageUrl(imageUrl);
     } catch (err: any) {
       console.error('Error generating goal image:', err);
       setError(err.message || 'Errore durante la generazione');
@@ -233,7 +160,7 @@ const Goal: React.FC = () => {
             <Select
               label="Giocatore"
               value={playerId}
-              onChange={setPlayerId}
+              onChange={(v) => setState(prev => ({ ...prev, playerId: v }))}
               options={playerOptions}
               required
               error={errors.playerId}
@@ -242,7 +169,7 @@ const Goal: React.FC = () => {
             <Input
               label="Squadra Casa"
               value={homeTeam}
-              onChange={setHomeTeam}
+              onChange={(v) => setState(prev => ({ ...prev, homeTeam: v }))}
               type="text"
               placeholder="es. Casalpoglio"
               required
@@ -252,7 +179,7 @@ const Goal: React.FC = () => {
             <Input
               label="Squadra Ospite"
               value={awayTeam}
-              onChange={setAwayTeam}
+              onChange={(v) => setState(prev => ({ ...prev, awayTeam: v }))}
               type="text"
               placeholder="es. Squadra Avversaria"
               required
@@ -293,7 +220,7 @@ const Goal: React.FC = () => {
             <Input
               label="Minuto del Gol"
               value={minuteGoal}
-              onChange={setMinuteGoal}
+              onChange={(v) => setState(prev => ({ ...prev, minuteGoal: v }))}
               type="number"
               min={0}
               placeholder="es. 78"

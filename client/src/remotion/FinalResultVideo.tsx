@@ -11,8 +11,6 @@ import {
   delayRender,
   continueRender,
 } from 'remotion';
-import {resolveAsset} from './resolveAsset';
-import {videoService} from '../services/videoService';
 import './FinalResultVideo.css';
 
 
@@ -127,16 +125,8 @@ export const FinalResultVideo: React.FC<FinalResultVideoProps> = ({
     interpolate(scoreSpring, [0, 1], [0, scoreB])
   );
 
-  // Use staticFile directly for team logos, same approach as MyGoalVideo
   const teamALogoUrl = teamALogoPath ? staticFile(teamALogoPath) : staticFile('logo192.png');
   const teamBLogoUrl = teamBLogoPath ? staticFile(teamBLogoPath) : staticFile('logo192.png');
-  
-  // Debug logging for image paths
-  console.log('🔍 FinalResultVideo - Image paths:');
-  console.log('  teamALogoPath:', teamALogoPath);
-  console.log('  teamBLogoPath:', teamBLogoPath);
-  console.log('  teamALogoUrl:', teamALogoUrl);
-  console.log('  teamBLogoUrl:', teamBLogoUrl);
 
   return (
     <AbsoluteFill>

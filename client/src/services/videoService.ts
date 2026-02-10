@@ -13,14 +13,12 @@ import { isDevelopment, isProduction } from '../config/environment';
 class VideoService {
   private config = APP_CONFIG;
 
+  private getRenderMode(): 'local' | 'lambda' {
+    return isDevelopment() ? 'local' : 'lambda';
+  }
+
   async startGoalVideoGeneration(request: GoalVideoRequest): Promise<VideoGenerationResponse> {
-
-    if (isDevelopment()) {
-      console.log("ISDEV:", isDevelopment());
-    }
-
-    // Check if we're in development mode
-    if (isDevelopment()) {
+    if (this.getRenderMode() === 'local') {
       // For local development, generate video locally
       const filename = await localVideoService.generateGoalVideo(request);
       
@@ -58,12 +56,7 @@ class VideoService {
   }
 
   async startFormationVideoGeneration(request: FormationVideoRequest): Promise<VideoGenerationResponse> {
-    if (isDevelopment()) {
-      console.log("ISDEV - Formation:", isDevelopment());
-    }
-
-    // Check if we're in development mode
-    if (isDevelopment()) {
+    if (this.getRenderMode() === 'local') {
       // For local development, generate video locally
       const filename = await localVideoService.generateFormationVideo(request);
       
@@ -200,15 +193,9 @@ class VideoService {
   }
 
   async startFinalResultVideoGeneration(request: FinalResultVideoRequest): Promise<VideoGenerationResponse> {
-    if (isDevelopment()) {
-      console.log("ISDEV - Final Result:", isDevelopment());
-    }
-
-    // Format the data for the composition
     const formattedProps = this.formatFinalResultData(request);
 
-    // Check if we're in development mode
-    if (isDevelopment()) {
+    if (this.getRenderMode() === 'local') {
       // For local development, generate video locally
       const filename = await localVideoService.generateFinalResultVideo(formattedProps);
       
