@@ -340,8 +340,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       width: 1080px;
       height:2000px;
       overflow:visible;
-      padding:80px 40px;
-      padding-bottom: 160px;
+      padding:55px 28px 60px;
       background-image: url('${BASE_URL}/lineup/bg.jpg');
       background-size:cover;
       background-repeat: no-repeat;
@@ -350,7 +349,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       top: 0;
       left: 0;
       display:flex;
-      gap:10px;
+      gap:6px;
       flex-direction:column;
       margin:0;
       box-sizing: border-box;
@@ -373,19 +372,19 @@ app.post('/api/lineup-generate', async (req, res) => {
       z-index:50;
       border-radius: 10px;
       background-color: rgba(0, 0, 0, .8);
-      padding: 80px;
+      padding: 45px;
     }
     .card .element h1{
-      font-size:180px;
+      font-size:160px;
       margin:0;
       line-height:1;
     }
     .card .element p{
-      font-size:60px;
+      font-size:54px;
       display:block;
       text-transform: uppercase;
       margin:0;
-      margin-top:24px;
+      margin-top:14px;
       line-height:1;
     }
     .card .element.flexmore {
@@ -394,7 +393,7 @@ app.post('/api/lineup-generate', async (req, res) => {
     .card .grid{
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
+      gap: 6px;
       position: relative;
       z-index:50;
     }
@@ -408,6 +407,10 @@ app.post('/api/lineup-generate', async (req, res) => {
       align-items:center;
       justify-content:center;
     }
+    .card .grid .sponsor:nth-child(9){
+      grid-column: 1 / 2;
+      grid-row: 3;
+    }
     .card .grid .sponsor img{
       width: 60%;
     }
@@ -415,7 +418,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       display: flex;
       width: 100%;
       flex-direction: column;
-      gap:10px;
+      gap:6px;
       justify-content:space-between;
       height:100%;
     }
@@ -423,7 +426,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       display: grid;
       line-height:1;
       grid-template-columns: repeat(10, minmax(0, 1fr));
-      font-size:80px;
+      font-size:72px;
     }
     .num{
       grid-column: span 1 / span 1;
@@ -441,12 +444,18 @@ app.post('/api/lineup-generate', async (req, res) => {
     }
     .logoimg{
       position: absolute;
-      bottom:30px;
-      right:40px;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
       max-width: 45%;
-      height: auto;
       opacity: .1;
-      overflow:hidden
+      overflow: hidden;
+      clip-path: inset(0 0 50% 0);
+    }
+    .logoimg img{
+      width: 100%;
+      height: auto;
+      display: block;
     }
   </style>
 </head>

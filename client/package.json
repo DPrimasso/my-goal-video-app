@@ -44,7 +44,7 @@
     "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
     "clean-start": "npm run kill-ports && npm run dev",
     "studio": "npx @remotion/studio src/remotion/index.tsx",
-    "deploy:lambda": "npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app",
+    "deploy:lambda": "AWS_PROFILE=daniele17 npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app",
     "deploy:lambda:check": "npx remotion lambda sites ls",
     "deploy:lambda:clean": "npx remotion lambda sites rm my-goal-video-app"
   },
