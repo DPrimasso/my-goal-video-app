@@ -1,0 +1,62 @@
+# Deploy lambda/final-result-image su AWS (stesso bucket/region del goal-image).
+# Prerequisito: la funzione `final-result-image` deve esistere già in Lambda (creala una volta, vedi lambda/final-result-image/SETUP.md).
+# Secrets repo: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (o usa OIDC).
+name: Deploy final-result-image Lambda
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lambda/final-result-image/**'
+      - '.github/workflows/deploy-final-result-image.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Build zip and upload to S3
+        env:
+          S3_BUCKET: casalpoglio-social-assets
+          S3_KEY: lambda-deployments/final-result-image-function.zip
+        run: |
+          set -e
+          cd lambda/final-result-image
+          npm ci --omit=dev
+          rm -f function.zip
+          zip -qr function.zip index.js package.json node_modules
+          aws s3 cp function.zip "s3://${S3_BUCKET}/${S3_KEY}"
+
+      - name: Update Lambda code
+        env:
+          S3_BUCKET: casalpoglio-social-assets
+          S3_KEY: lambda-deployments/final-result-image-function.zip
+        run: |
+          aws lambda update-function-code \
+            --function-name final-result-image \
+            --s3-bucket "${S3_BUCKET}" \
+            --s3-key "${S3_KEY}" \
+            --region eu-west-1 \
+            --query 'LastUpdateStatus' \
+            --output text
+
+      - name: Print Function URL (se configurata)
+        run: |
+          aws lambda get-function-url-config \
+            --function-name final-result-image \
+            --region eu-west-1 \
+            --query 'FunctionUrl' \
+            --output text 2>/dev/null || echo "(nessuna Function URL: creala dalla console AWS o vedi SETUP.md)"

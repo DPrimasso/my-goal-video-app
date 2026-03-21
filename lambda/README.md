@@ -225,3 +225,36 @@ cd lambda/goal-image
 - Timeout: almeno 30 secondi
 - Memoria: 1024 MB (raccomandato)
 - Abilita Function URL per accesso pubblico
+
+## 🏁 Final result image Lambda (`final-result-image`)
+
+Stesso linguaggio visivo dell'immagine goal: gradiente, watermark `gol/gol/logo.png` (Tusker), pannello centrale con nomi squadre, punteggio e lista marcatori (Founders).
+
+**Parametri di input:**
+- `homeTeam`, `awayTeam`: stringhe (nomi mostrati)
+- `homeScore`, `awayScore`: numeri
+- `scorerLines`: array di stringhe (es. `["ROSSI 23'", "BIANCHI 67'"]`)
+- `scorersUnder` (opzionale): `"home"` | `"away"` — colonna sotto cui mostrare il box MARCATORI (allineato a Casalpoglio). Se omesso, si deduce se il nome contiene `CASALPOGLIO` (casa vs ospite); altrimenti default `home`.
+
+**Request esempio:**
+```json
+{
+  "homeTeam": "CASALPOGLIO",
+  "awayTeam": "AMATORI CLUB",
+  "homeScore": 3,
+  "awayScore": 1,
+  "scorerLines": ["VERDI 12'", "NERI 55'", "BLU 78'"],
+  "scorersUnder": "home"
+}
+```
+
+**Deploy:**
+```bash
+cd lambda/final-result-image
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**Frontend:** imposta `REACT_APP_FINAL_RESULT_IMAGE_URL` con la Function URL (come per il goal).
+
+**Asset S3:** `gol/gol/` (font + `logo.png` watermark centrato) e `lineup/` per gli sponsor (stessi PNG della lineup).

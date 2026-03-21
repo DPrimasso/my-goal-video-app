@@ -40,6 +40,7 @@
     "start:full": "npm run dev",
     "start:react": "PORT=3000 react-scripts start",
     "start:server": "PORT_SERVER=4000 node server.js",
+    "test:final-result-image": "bash ../scripts/test-final-result-image.sh",
     "check-ports": "lsof -i :3000 && lsof -i :4000",
     "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
     "clean-start": "npm run kill-ports && npm run dev",

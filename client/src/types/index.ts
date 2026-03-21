@@ -112,3 +112,14 @@ export interface GoalImagePayload {
   awayTeam: string;
   awayScore: number;
 }
+
+/** Payload for 9:16 final score graphic (same visual style as goal image). */
+export interface FinalResultImagePayload {
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  scorerLines: string[];
+  /** Colonna sotto cui mostrare il box MARCATORI (allineato a Casalpoglio). */
+  scorersUnder: 'home' | 'away';
+}

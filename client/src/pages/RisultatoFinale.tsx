@@ -3,8 +3,9 @@ import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
 import { players, getSurname } from '../players';
 import { useFinalResultVideoGeneration } from '../hooks/useFinalResultVideoGeneration';
-import { isDevelopment } from '../config/environment';
-import { Scorer } from '../types';
+import { isDevelopment, isProduction } from '../config/environment';
+import type { FinalResultImagePayload, Scorer } from '../types';
+import '../components/ui/Input.css';
 import './RisultatoFinale.css';
 
 interface TeamScore {
@@ -12,13 +13,40 @@ interface TeamScore {
   away: number;
 }
 
+function buildFinalResultImagePayload(
+  homeLabel: string,
+  awayLabel: string,
+  score: TeamScore,
+  scorerLines: string[],
+  scorersUnder: 'home' | 'away'
+): FinalResultImagePayload {
+  return {
+    homeTeam: homeLabel.trim(),
+    awayTeam: awayLabel.trim(),
+    homeScore: score.home,
+    awayScore: score.away,
+    scorerLines,
+    scorersUnder,
+  };
+}
+
 const RisultatoFinale: React.FC = () => {
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
   const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
   const [casalpoglioScorers, setCasalpoglioScorers] = useState<Scorer[]>([]);
+  const [manualScorerLines, setManualScorerLines] = useState('');
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const { loading, progress, generatedUrl, error, generateVideo, reset } = useFinalResultVideoGeneration();
+
+  React.useEffect(() => {
+    return () => {
+      if (generatedImageUrl) URL.revokeObjectURL(generatedImageUrl);
+    };
+  }, [generatedImageUrl]);
 
   // Error boundary for the component
   React.useEffect(() => {
@@ -82,13 +110,36 @@ const RisultatoFinale: React.FC = () => {
     }
   };
 
-  // Aggiorna l'array dei marcatori quando cambia il punteggio
+  // Aggiorna l'array dei marcatori quando cambia il punteggio (sync slot count; non includere casalpoglioScorers)
   React.useEffect(() => {
     updateScorersArray();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only react to score/teams for slot sizing
   }, [score, homeTeam, awayTeam]);
 
   const getTeamLabel = (value: string) =>
     teamOptions.find((t) => t.value === value)?.label || value;
+
+  const buildScorerLinesForImage = (): string[] => {
+    const lines: string[] = [];
+
+    if (homeTeam === 'casalpoglio' || awayTeam === 'casalpoglio') {
+      casalpoglioScorers.forEach((s) => {
+        const player = players.find((p) => p.id === s.playerId);
+        const surname = player ? getSurname(player.name) : '';
+        if (surname && s.minute > 0) {
+          lines.push(`${surname} ${s.minute}'`);
+        }
+      });
+    }
+
+    manualScorerLines
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .forEach((l) => lines.push(l));
+
+    return lines;
+  };
 
   const buildMatchSummary = () => {
     if (!homeTeam || !awayTeam) return '';
@@ -148,12 +199,88 @@ const RisultatoFinale: React.FC = () => {
     }
   };
 
+  const handleGenerateImage = async () => {
+    if (!homeTeam || !awayTeam) {
+      alert('Seleziona entrambe le squadre');
+      return;
+    }
+    if (score.home < 0 || score.away < 0) {
+      alert('Il punteggio non può essere negativo');
+      return;
+    }
+
+    const casalpoglioGoals = getCasalpoglioGoals();
+    if (casalpoglioGoals > 0 && casalpoglioScorers.some((s) => !s.playerId || s.minute <= 0)) {
+      alert('Inserisci tutti i marcatori del Casalpoglio e i minuti dei gol');
+      return;
+    }
+
+    setImageLoading(true);
+    setImageError(null);
+    if (generatedImageUrl) {
+      URL.revokeObjectURL(generatedImageUrl);
+      setGeneratedImageUrl(null);
+    }
+
+    const homeLabel = getTeamLabel(homeTeam);
+    const awayLabel = getTeamLabel(awayTeam);
+    const scorerLines = buildScorerLinesForImage();
+    const scorersUnder: 'home' | 'away' =
+      homeTeam === 'casalpoglio' ? 'home' : awayTeam === 'casalpoglio' ? 'away' : 'home';
+    const payload = buildFinalResultImagePayload(homeLabel, awayLabel, score, scorerLines, scorersUnder);
+
+    try {
+      let response: Response;
+      if (isProduction()) {
+        const url =
+          process.env.REACT_APP_FINAL_RESULT_IMAGE_URL ||
+          '';
+        if (!url.trim()) {
+          throw new Error('URL immagine risultato non configurato in produzione (REACT_APP_FINAL_RESULT_IMAGE_URL)');
+        }
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        response = await fetch('http://localhost:4000/api/final-result-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (!response.ok) {
+        if (isProduction()) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const errJson = await response.json();
+        throw new Error(errJson.error || 'Errore generazione immagine');
+      }
+
+      const blob = await response.blob();
+      setGeneratedImageUrl(URL.createObjectURL(blob));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Errore durante la generazione';
+      setImageError(msg);
+      console.error('final result image:', e);
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  const resetImage = () => {
+    if (generatedImageUrl) URL.revokeObjectURL(generatedImageUrl);
+    setGeneratedImageUrl(null);
+    setImageError(null);
+  };
 
 
   return (
     <PageTemplate
       title="Risultato Finale"
-      description="Seleziona le due squadre, il risultato finale e chi ha segnato per il Casalpoglio"
+      description="Squadre, punteggio e marcatori: genera il video celebrativo e l'immagine 9:16 per social (stile goal)"
       icon="🏆"
     >
       <div className="result-container">
@@ -256,26 +383,63 @@ const RisultatoFinale: React.FC = () => {
             </div>
           )}
 
+          <div className="image-scorers-section">
+            <h3>Marcatori (immagine &amp; testo)</h3>
+            <p className="image-scorers-hint">
+              Se il Casalpoglio segna, compila i gol sopra: finiscono in lista automaticamente. Aggiungi qui una riga per
+              ogni altro marcatore (es. avversari o formato libero).
+            </p>
+            <div className="input-group">
+              <label className="input__label" htmlFor="manual-scorers">
+                Righe extra marcatori
+              </label>
+              <textarea
+                id="manual-scorers"
+                className="input maratori-textarea"
+                value={manualScorerLines}
+                onChange={(e) => setManualScorerLines(e.target.value)}
+                placeholder={"ROSSI 23'\nBIANCHI 67'"}
+                rows={5}
+              />
+            </div>
+          </div>
+
           <div className="result-actions">
-            <Button
-              onClick={handleGenerateVideo}
-              disabled={loading}
-              loading={loading}
-              size="large"
-              className="result-generate-btn"
-            >
-              {loading ? 'Generazione...' : 'Genera Video'}
-            </Button>
-            
-            {generatedUrl && (
-              <Button 
-                onClick={reset}
-                variant="secondary"
-                size="medium"
-                className="result-reset-btn"
+            <div className="result-actions-row">
+              <Button
+                onClick={handleGenerateImage}
+                disabled={imageLoading}
+                loading={imageLoading}
+                size="large"
+                variant="primary"
+                className="result-generate-btn"
               >
-                Genera Nuovo Video
+                {imageLoading ? 'Immagine...' : '📷 Genera immagine 9:16'}
               </Button>
+              <Button
+                onClick={handleGenerateVideo}
+                disabled={loading}
+                loading={loading}
+                size="large"
+                className="result-generate-btn"
+              >
+                {loading ? 'Video...' : '🎬 Genera video'}
+              </Button>
+            </div>
+
+            {(generatedUrl || generatedImageUrl) && (
+              <div className="result-actions-row">
+                {generatedImageUrl && (
+                  <Button onClick={resetImage} variant="outline" size="medium">
+                    Nuova immagine
+                  </Button>
+                )}
+                {generatedUrl && (
+                  <Button onClick={reset} variant="secondary" size="medium" className="result-reset-btn">
+                    Nuovo video
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -309,29 +473,71 @@ const RisultatoFinale: React.FC = () => {
         )}
 
         <div className="preview-section">
-          {generatedUrl ? (
-            <div className="video-preview">
-              <video className="video-player" src={generatedUrl} controls />
-              <div className="video-actions">
-                <Button
-                  onClick={() => window.open(generatedUrl, '_blank', 'noopener,noreferrer')}
-                  variant="secondary"
-                  size="medium"
-                >
-                  Apri in Nuova Scheda
-                </Button>
-                <a className="download-link" href={generatedUrl} download>
-                  Scarica video
-                </a>
+          {imageError && (
+            <div className="error-section">
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                <span className="error-text">{imageError}</span>
               </div>
             </div>
-          ) : (
-            <div className="preview-placeholder">
-              <div className="placeholder-icon">🏆</div>
-              <h3>Anteprima Video</h3>
-              <p>Inserisci le squadre e il punteggio per generare il video celebrativo</p>
-            </div>
           )}
+
+          <div className="preview-dual">
+            {generatedImageUrl ? (
+              <div className="final-result-image-preview">
+                <h3 className="preview-block-title">Immagine social</h3>
+                <div className="phone-frame">
+                  <div className="phone-frame-inner">
+                    <img src={generatedImageUrl} alt="Risultato finale" className="final-result-image" />
+                  </div>
+                </div>
+                <p className="preview-meta">Formato 9:16 · Stile goal</p>
+                <div className="video-actions">
+                  <Button
+                    onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
+                    variant="secondary"
+                    size="medium"
+                  >
+                    Apri PNG
+                  </Button>
+                  <a className="download-link" href={generatedImageUrl} download={`risultato_${Date.now()}.png`}>
+                    Scarica PNG
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="preview-placeholder preview-placeholder--compact">
+                <div className="placeholder-icon">📷</div>
+                <h3>Anteprima immagine</h3>
+                <p>Genera l&apos;immagine 9:16 con punteggio e marcatori</p>
+              </div>
+            )}
+
+            {generatedUrl ? (
+              <div className="video-preview">
+                <h3 className="preview-block-title">Video</h3>
+                <video className="video-player" src={generatedUrl} controls />
+                <div className="video-actions">
+                  <Button
+                    onClick={() => window.open(generatedUrl, '_blank', 'noopener,noreferrer')}
+                    variant="secondary"
+                    size="medium"
+                  >
+                    Apri in Nuova Scheda
+                  </Button>
+                  <a className="download-link" href={generatedUrl} download>
+                    Scarica video
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="preview-placeholder preview-placeholder--compact">
+                <div className="placeholder-icon">🏆</div>
+                <h3>Anteprima video</h3>
+                <p>Genera il video celebrativo</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </PageTemplate>

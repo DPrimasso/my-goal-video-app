@@ -67,6 +67,10 @@ npm run studio       # Apri Remotion Studio per preview
 npm run deploy:lambda      # Deploy su AWS Lambda
 npm run deploy:lambda:check # Lista siti Lambda esistenti
 npm run deploy:lambda:clean # Rimuovi sito Lambda
+
+# Immagine risultato finale (9:16) → `../final_result_test.png` (server temporaneo su porta 4077)
+npm run test:final-result-image
+# Override porta: FINAL_RESULT_TEST_PORT=4080 npm run test:final-result-image
 ```
 
 ## 🎯 Funzionalità Frontend

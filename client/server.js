@@ -6,7 +6,7 @@ const { getCompositions, renderMedia } = require('@remotion/renderer');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
 const { getAssetUrl, BASE_URL } = require('./assetUtils');
-const { validateGoalImagePayload, validateLineupPayload } = require('./serverValidation');
+const { validateGoalImagePayload, validateLineupPayload, validateFinalResultImagePayload } = require('./serverValidation');
 
 // Create videos directory
 const VIDEOS_DIR = path.join(__dirname, 'public', 'generated');
@@ -851,6 +851,394 @@ app.post('/api/goal-generate', async (req, res) => {
   }
 });
 
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// API endpoint for final result image (9:16, same visual language as goal image)
+app.post('/api/final-result-generate', async (req, res) => {
+  const validation = validateFinalResultImagePayload(req.body);
+  if (!validation.ok) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  const { homeTeam, awayTeam, homeScore, awayScore, scorerLines, scorersUnder: rawScorersUnder } = req.body;
+
+  let scorersUnder = rawScorersUnder;
+  if (scorersUnder !== 'home' && scorersUnder !== 'away') {
+    const hn = String(homeTeam).toUpperCase();
+    const an = String(awayTeam).toUpperCase();
+    if (hn.includes('CASALPOGLIO') && !an.includes('CASALPOGLIO')) scorersUnder = 'home';
+    else if (an.includes('CASALPOGLIO') && !hn.includes('CASALPOGLIO')) scorersUnder = 'away';
+    else scorersUnder = 'home';
+  }
+
+  const lines = (scorerLines || [])
+    .map((l) => String(l).trim())
+    .filter(Boolean)
+    .slice(0, 40);
+
+  const scorersItems = lines.map((line) => `<li>${escapeHtml(line)}</li>`).join('');
+  const scorersBlock = `<div class="scorers-wrap"><div class="scorers-title">MARCATORI</div><ul class="scorers-list scorers-columns">${scorersItems}</ul></div>`;
+  const scorersSlotHome = scorersUnder === 'home' ? scorersBlock : '';
+  const scorersSlotAway = scorersUnder === 'away' ? scorersBlock : '';
+
+  const sponsorRow = (base) => `
+      <div class="sponsor"><img src="${base}/lineup/vega.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/loooma.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/mm.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/onlight.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/sens.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/neotec.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/rubes-w.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/eurotir.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/transfilm.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/calzificio_leonardo.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/delta_antinfortunistica.png" alt="" /></div>
+      <div class="sponsor"><img src="${base}/lineup/lavanderia_moderna.png" alt="" /></div>`;
+
+  try {
+    const htmlTemplate = `
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Risultato finale — 9:16</title>
+  <style>
+    @font-face {
+      font-family: 'Tusker';
+      src: url('${BASE_URL}/gol/gol/TuskerGrotesk-3500Medium.woff2') format('woff2'),
+           url('${BASE_URL}/gol/gol/TuskerGrotesk-3500Medium.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+      ascent-override: 110%;
+    }
+    @font-face {
+      font-family: 'Founders';
+      src: url('${BASE_URL}/gol/gol/FoundersGrotesk-Regular.woff2') format('woff2'),
+           url('${BASE_URL}/gol/gol/FoundersGrotesk-Regular.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      ascent-override: 110%;
+    }
+    html,body{
+      color:white;
+      font-weight:500;
+      font-family: 'Tusker';
+      width: 100vw;
+      margin:0;
+      background-color: black;
+      display: flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+    .card{
+      width: 1440px;
+      height:2560px;
+      overflow:hidden;
+      padding: 0 36px 200px;
+      background-image: linear-gradient(to bottom, #00002d, #3b0649, #7e004f, #b8003a, #dd0000);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      box-sizing:border-box;
+    }
+    .logoback{
+      position:absolute;
+      z-index:8;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .logoback img{
+      width:auto;
+      height:auto;
+      max-width:none;
+      max-height:none;
+      opacity:.14;
+      object-fit:contain;
+      flex-shrink:0;
+    }
+    .body{
+      position:relative;
+      z-index:30;
+      flex:1;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      padding-top: 250px;
+    }
+    .slot-fine{
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    .slot-gap-after-fine{
+      height: 200px;
+      flex-shrink: 0;
+    }
+    .slot-teams{
+      min-height: 190px;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      padding: 4px 0;
+    }
+    .teams-inner{
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .stack-score{
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: stretch;
+    }
+    .title-fine{
+      font-family: 'Tusker', sans-serif;
+      font-weight: 500;
+      font-size: 310px;
+      line-height: 0.86;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      letter-spacing: -8px;
+      text-transform: uppercase;
+      -webkit-font-smoothing:antialiased;
+    }
+    .teams-row{
+      display:flex;
+      flex-direction:row;
+      justify-content:space-between;
+      align-items:center;
+      gap: 20px;
+      padding: 0 4px;
+    }
+    .team-name{
+      font-family: 'Founders';
+      font-weight: 400;
+      font-size: 82px;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+      line-height: 1.06;
+      text-align: center;
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+    .score-panel{
+      font-family: 'Founders';
+      font-weight: 400;
+      border-radius: 16px;
+      background-color: rgba(0, 0, 0, .82);
+      display: flex;
+      flex-direction:row;
+      align-items:center;
+      justify-content:center;
+      gap: 28px;
+      padding: 52px 36px;
+      line-height:1;
+      -webkit-font-smoothing:antialiased;
+    }
+    .score-num{
+      font-size: 200px;
+      letter-spacing: -6px;
+      min-width: 200px;
+      text-align: center;
+    }
+    .score-sep{
+      font-size: 120px;
+      opacity: 0.85;
+      font-weight: 400;
+      padding-bottom: 12px;
+    }
+    .scorers-wrap{
+      font-family: 'Founders';
+      font-weight: 400;
+      border-radius: 16px;
+      background-color: rgba(0, 0, 0, .82);
+      padding: 26px 36px 32px;
+      -webkit-font-smoothing:antialiased;
+    }
+    .scorers-title{
+      font-size: 40px;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      text-align: center;
+      margin-bottom: 18px;
+      opacity: 0.95;
+    }
+    .scorers-list.scorers-columns{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-rows: repeat(4, minmax(56px, auto));
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
+      gap: 12px 32px;
+      min-height: 296px;
+      align-items: center;
+    }
+    .scorers-list.scorers-columns li{
+      font-size: 42px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      text-align: center;
+      line-height: 1.12;
+    }
+    .scorers-row{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+      width: 100%;
+    }
+    .scorers-slot{
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+    }
+    .scorers-slot .scorers-wrap{
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .scorers-slot .scorers-list.scorers-columns{
+      gap: 10px 18px;
+      min-height: 260px;
+    }
+    .slot-gap-before-sponsors{
+      height: 200px;
+      flex-shrink: 0;
+    }
+    .sponsors-grid{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .sponsors-grid .sponsor{
+      grid-column: span 1 / span 1;
+      aspect-ratio: 2/1;
+      border-radius: 10px;
+      background-color: rgba(0, 0, 0, .8);
+      display: flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+    .sponsors-grid .sponsor img{
+      width: 60%;
+      max-height: 70%;
+      height: auto;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logoback">
+      <img src="${BASE_URL}/gol/gol/logo.png" alt="" />
+    </div>
+    <div class="body">
+      <div class="slot-fine">
+        <h1 class="title-fine">FINE</h1>
+      </div>
+      <div class="slot-gap-after-fine"></div>
+      <div class="slot-teams">
+        <div class="teams-inner">
+          <div class="teams-row">
+            <div class="team-name">${escapeHtml(String(homeTeam).toUpperCase())}</div>
+            <div class="team-name">${escapeHtml(String(awayTeam).toUpperCase())}</div>
+          </div>
+        </div>
+      </div>
+      <div class="stack-score">
+        <div class="score-panel">
+          <span class="score-num">${escapeHtml(String(homeScore))}</span>
+          <span class="score-sep">—</span>
+          <span class="score-num">${escapeHtml(String(awayScore))}</span>
+        </div>
+        <div class="scorers-row">
+          <div class="scorers-slot">${scorersSlotHome}</div>
+          <div class="scorers-slot">${scorersSlotAway}</div>
+        </div>
+      </div>
+      <div class="slot-gap-before-sponsors"></div>
+      <div class="sponsors-grid">
+        ${sponsorRow(BASE_URL)}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const browser = await launchPuppeteerBrowser();
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 2560, deviceScaleFactor: 1 });
+    await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await page.evaluate(() => document.fonts.ready);
+
+    await page.evaluate(() => {
+      document.documentElement.style.margin = '0';
+      document.documentElement.style.padding = '0';
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+      const card = document.querySelector('.card');
+      if (card) {
+        const rect = card.getBoundingClientRect();
+        if (rect.top > 0) card.style.marginTop = `-${rect.top}px`;
+      }
+    });
+
+    const screenshot = await page.screenshot({
+      type: 'png',
+      clip: { x: 0, y: 0, width: 1440, height: 2560 },
+    });
+    await browser.close();
+
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'inline; filename="risultato-finale.png"');
+    res.send(screenshot);
+    console.log('Final result image generated successfully');
+  } catch (err) {
+    console.error('Error generating final result image:', err);
+    res.status(500).json({ error: 'Failed to generate final result image', details: err.message });
+  }
+});
+
 // API endpoint for render status (for polling)
 app.get('/api/render-status/:renderId', (req, res) => {
   const { renderId } = req.params;
@@ -877,5 +1265,6 @@ app.listen(PORT, () => {
   console.log(`   • POST http://localhost:${PORT}/api/final-result-render (Final result video)`);
   console.log(`   • POST http://localhost:${PORT}/api/lineup-generate (Lineup image)`);
   console.log(`   • POST http://localhost:${PORT}/api/goal-generate (Goal image)`);
+  console.log(`   • POST http://localhost:${PORT}/api/final-result-generate (Risultato finale image)`);
   console.log(`   • GET  http://localhost:${PORT}/api/render-status/:renderId (Render status)`);
 });
