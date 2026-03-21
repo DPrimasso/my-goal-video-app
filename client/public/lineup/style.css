@@ -124,8 +124,9 @@ html,body{
   backdrop-filter: blur(30px);
 }
 .card .grid .sponsor img{
-  max-width: 80%;
-  max-height: 50%;
+  width: 60%;
+  max-height: 70%;
+  height: auto;
 }
 
 .card .list{

@@ -66,24 +66,23 @@ exports.handler = async (event) => {
     @font-face { font-family: 'Tusker'; src: url('${lineupBaseUrl}/TuskerGrotesk-3500Medium.woff2') format('woff2'), url('${lineupBaseUrl}/TuskerGrotesk-3500Medium.woff') format('woff'); font-weight: 500; font-style: normal; font-display: swap; ascent-override: 110%; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html,body{ color:white; font-weight:500; font-family: 'Tusker', sans-serif; width:1080px; height:2000px; margin:0; padding:0; background-color:black; overflow:hidden; position:absolute; top:0; left:0; }
-    .card{ width:1080px; height:2000px; overflow:visible; padding:55px 28px 60px; background-image:url('${lineupBaseUrl}/bg.jpg'); background-size:cover; background-repeat:no-repeat; background-position:center; position:absolute; top:0; left:0; display:flex; gap:6px; flex-direction:column; margin:0; box-sizing:border-box; }
+    .card{ width:1080px; height:2000px; overflow:visible; padding:50px 40px 120px; background-image:url('${lineupBaseUrl}/bg.jpg'); background-size:cover; background-repeat:no-repeat; background-position:center; position:absolute; top:0; left:0; display:flex; gap:10px; flex-direction:column; margin:0; box-sizing:border-box; }
     .bgimg{ position:absolute; inset:0; width:100%; height:100%; opacity:.2; }
     .bgimg img{ width:100%; height:100%; object-position:center; object-fit:cover; }
-    .card .element{ position:relative; z-index:50; border-radius:10px; background-color:rgba(0,0,0,.8); padding:45px; }
-    .card .element h1{ font-size:160px; margin:0; line-height:1; }
-    .card .element p{ font-size:54px; display:block; text-transform:uppercase; margin:0; margin-top:14px; line-height:1; }
+    .card .element{ position:relative; z-index:50; border-radius:10px; background-color:rgba(0,0,0,.8); padding:70px; }
+    .card .element h1{ font-size:180px; margin:0; line-height:1; white-space:nowrap; }
+    .card .element p{ font-size:60px; display:block; text-transform:uppercase; margin:0; margin-top:24px; line-height:1; }
     .card .element.flexmore { flex:1; }
-    .card .grid{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; position:relative; z-index:50; }
+    .card .grid{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; position:relative; z-index:50; }
     .card .grid .sponsor{ grid-column:span 1 / span 1; aspect-ratio:2/1; border-radius:10px; background-color:rgba(0,0,0,.8); display:flex; flex-direction:column; align-items:center; justify-content:center; }
-    .card .grid .sponsor:nth-child(9){ grid-column:1 / 2; grid-row:3; }
-    .card .grid .sponsor img{ width:60%; }
-    .card .list{ display:flex; width:100%; flex-direction:column; gap:6px; justify-content:space-between; height:100%; }
-    .card .list .row{ display:grid; line-height:1; grid-template-columns:repeat(10, minmax(0, 1fr)); font-size:72px; }
+    .card .grid .sponsor img{ width:60%; max-height:70%; height:auto; }
+    .card .list{ display:flex; width:100%; flex-direction:column; gap:10px; justify-content:space-between; height:100%; }
+    .card .list .row{ display:grid; line-height:1; grid-template-columns:repeat(10, minmax(0, 1fr)); font-size:80px; }
     .num{ grid-column:span 1 / span 1; color:#DD0000; }
     .name{ grid-column:span 7 / span 7; display:flex; align-items:center; gap:16px; }
     .name img.cap{ aspect-ratio:1; width:54px; }
-    .logoimg{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); max-width:45%; opacity:.1; overflow:hidden; clip-path:inset(0 0 50% 0); }
-    .logoimg img{ width:100%; height:auto; display:block; }
+    .logoimg{ position:absolute; bottom:30px; left:270px; right:0px; max-width:100%; height:auto; opacity:.1; overflow:visible; }
+    .logoimg img{ transform: translateX(-150px); }
   </style>
   </head>
   <body>
@@ -104,6 +103,9 @@ exports.handler = async (event) => {
       <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/rubes-w.png\" /></div>
       <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/eurotir.png\" /></div>
       <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/transfilm.png\" /></div>
+      <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/calzificio_leonardo.png\" /></div>
+      <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/delta_antinfortunistica.png\" /></div>
+      <div class=\"sponsor\"><img src=\"${lineupBaseUrl}/lavanderia_moderna.png\" /></div>
     </div>
   </div>
   </body>

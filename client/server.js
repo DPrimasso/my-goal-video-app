@@ -24,6 +24,37 @@ app.use('/videos', express.static(VIDEOS_DIR));
 // Serve static files from React app public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+/** Prefer Puppeteer-downloaded Chrome; else system Chrome (sandbox/CI often has no cache). */
+function launchPuppeteerBrowser() {
+  const launchOpts = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  };
+  const envChrome = process.env.PUPPETEER_EXECUTABLE_PATH;
+  const systemChrome = [
+    envChrome,
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+  ].find((p) => p && fs.existsSync(p));
+  let bundledChrome = null;
+  try {
+    const p = puppeteer.executablePath();
+    if (p && fs.existsSync(p)) bundledChrome = p;
+  } catch (_) {
+    /* no downloaded browser */
+  }
+  launchOpts.executablePath = bundledChrome || systemChrome;
+  if (!launchOpts.executablePath) {
+    throw new Error(
+      'No Chrome/Chromium found. Run: cd client && npx puppeteer browsers install chrome ' +
+        'or set PUPPETEER_EXECUTABLE_PATH to your Chrome binary.'
+    );
+  }
+  return puppeteer.launch(launchOpts);
+}
+
 // API endpoint for video generation (replicates the working server)
 app.post('/api/render', async (req, res) => {
   const { playerName, minuteGoal, goalClip, overlayImage, s3PlayerUrl, partialScore } = req.body || {};
@@ -340,7 +371,8 @@ app.post('/api/lineup-generate', async (req, res) => {
       width: 1080px;
       height:2000px;
       overflow:visible;
-      padding:55px 28px 60px;
+      padding:50px 40px;
+      padding-bottom: 120px;
       background-image: url('${BASE_URL}/lineup/bg.jpg');
       background-size:cover;
       background-repeat: no-repeat;
@@ -349,7 +381,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       top: 0;
       left: 0;
       display:flex;
-      gap:6px;
+      gap:10px;
       flex-direction:column;
       margin:0;
       box-sizing: border-box;
@@ -372,19 +404,20 @@ app.post('/api/lineup-generate', async (req, res) => {
       z-index:50;
       border-radius: 10px;
       background-color: rgba(0, 0, 0, .8);
-      padding: 45px;
+      padding: 70px;
     }
     .card .element h1{
-      font-size:160px;
+      font-size:180px;
       margin:0;
       line-height:1;
+      white-space: nowrap;
     }
     .card .element p{
-      font-size:54px;
+      font-size:60px;
       display:block;
       text-transform: uppercase;
       margin:0;
-      margin-top:14px;
+      margin-top:24px;
       line-height:1;
     }
     .card .element.flexmore {
@@ -393,7 +426,7 @@ app.post('/api/lineup-generate', async (req, res) => {
     .card .grid{
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
+      gap: 10px;
       position: relative;
       z-index:50;
     }
@@ -407,18 +440,16 @@ app.post('/api/lineup-generate', async (req, res) => {
       align-items:center;
       justify-content:center;
     }
-    .card .grid .sponsor:nth-child(9){
-      grid-column: 1 / 2;
-      grid-row: 3;
-    }
     .card .grid .sponsor img{
       width: 60%;
+      max-height: 70%;
+      height: auto;
     }
     .card .list{
       display: flex;
       width: 100%;
       flex-direction: column;
-      gap:6px;
+      gap:10px;
       justify-content:space-between;
       height:100%;
     }
@@ -426,7 +457,7 @@ app.post('/api/lineup-generate', async (req, res) => {
       display: grid;
       line-height:1;
       grid-template-columns: repeat(10, minmax(0, 1fr));
-      font-size:72px;
+      font-size:80px;
     }
     .num{
       grid-column: span 1 / span 1;
@@ -444,18 +475,16 @@ app.post('/api/lineup-generate', async (req, res) => {
     }
     .logoimg{
       position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      max-width: 45%;
+      bottom:30px;
+      left:270px;
+      right:0px;
+      max-width: 100%;
+      height: auto;
       opacity: .1;
-      overflow: hidden;
-      clip-path: inset(0 0 50% 0);
+      overflow:visible;
     }
     .logoimg img{
-      width: 100%;
-      height: auto;
-      display: block;
+      transform: translateX(-150px);
     }
   </style>
 </head>
@@ -486,17 +515,16 @@ app.post('/api/lineup-generate', async (req, res) => {
       <div class="sponsor"><img src="${BASE_URL}/lineup/rubes-w.png" /></div>
       <div class="sponsor"><img src="${BASE_URL}/lineup/eurotir.png" /></div>
       <div class="sponsor"><img src="${BASE_URL}/lineup/transfilm.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/calzificio_leonardo.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/delta_antinfortunistica.png" /></div>
+      <div class="sponsor"><img src="${BASE_URL}/lineup/lavanderia_moderna.png" /></div>
     </div>
   </div>
 </body>
 </html>
     `;
 
-    // Launch Puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    const browser = await launchPuppeteerBrowser();
     
     const page = await browser.newPage();
     
@@ -761,11 +789,7 @@ app.post('/api/goal-generate', async (req, res) => {
 </html>
     `;
 
-    // Launch Puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    const browser = await launchPuppeteerBrowser();
     
     const page = await browser.newPage();
     

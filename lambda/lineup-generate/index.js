@@ -93,7 +93,8 @@ exports.handler = async (event) => {
       width: 1080px;
       height:2000px;
       overflow:visible;
-      padding:55px 28px 60px;
+      padding:50px 40px;
+      padding-bottom: 120px;
       background-image: url('${baseUrl}/lineup/bg.jpg');
       background-size:cover;
       background-repeat: no-repeat;
@@ -102,7 +103,7 @@ exports.handler = async (event) => {
       top: 0;
       left: 0;
       display:flex;
-      gap:6px;
+      gap:10px;
       flex-direction:column;
       margin:0;
       box-sizing: border-box;
@@ -125,19 +126,20 @@ exports.handler = async (event) => {
       z-index:50;
       border-radius: 10px;
       background-color: rgba(0, 0, 0, .8);
-      padding: 45px;
+      padding: 70px;
     }
     .card .element h1{
-      font-size:160px;
+      font-size:180px;
       margin:0;
       line-height:1;
+      white-space: nowrap;
     }
     .card .element p{
-      font-size:54px;
+      font-size:60px;
       display:block;
       text-transform: uppercase;
       margin:0;
-      margin-top:14px;
+      margin-top:24px;
       line-height:1;
     }
     .card .element.flexmore {
@@ -146,7 +148,7 @@ exports.handler = async (event) => {
     .card .grid{
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
+      gap: 10px;
       position: relative;
       z-index:50;
     }
@@ -160,18 +162,16 @@ exports.handler = async (event) => {
       align-items:center;
       justify-content:center;
     }
-    .card .grid .sponsor:nth-child(9){
-      grid-column: 1 / 2;
-      grid-row: 3;
-    }
     .card .grid .sponsor img{
       width: 60%;
+      max-height: 70%;
+      height: auto;
     }
     .card .list{
       display: flex;
       width: 100%;
       flex-direction: column;
-      gap:6px;
+      gap:10px;
       justify-content:space-between;
       height:100%;
     }
@@ -179,7 +179,7 @@ exports.handler = async (event) => {
       display: grid;
       line-height:1;
       grid-template-columns: repeat(10, minmax(0, 1fr));
-      font-size:72px;
+      font-size:80px;
     }
     .num{
       grid-column: span 1 / span 1;
@@ -197,18 +197,16 @@ exports.handler = async (event) => {
     }
     .logoimg{
       position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      max-width: 45%;
+      bottom:30px;
+      left:270px;
+      right:0px;
+      max-width: 100%;
+      height: auto;
       opacity: .1;
-      overflow: hidden;
-      clip-path: inset(0 0 50% 0);
+      overflow:visible;
     }
     .logoimg img{
-      width: 100%;
-      height: auto;
-      display: block;
+      transform: translateX(-150px);
     }
   </style>
 </head>
@@ -239,6 +237,9 @@ exports.handler = async (event) => {
       <div class="sponsor"><img src="${baseUrl}/lineup/rubes-w.png" /></div>
       <div class="sponsor"><img src="${baseUrl}/lineup/eurotir.png" /></div>
       <div class="sponsor"><img src="${baseUrl}/lineup/transfilm.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/calzificio_leonardo.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/delta_antinfortunistica.png" /></div>
+      <div class="sponsor"><img src="${baseUrl}/lineup/lavanderia_moderna.png" /></div>
     </div>
   </div>
 </body>
