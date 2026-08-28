@@ -1,4 +1,4 @@
-const { assetUrl, getAssetContext } = require('../shared/assets');
+const { assetUrl, getAssetContext, LINEUP_SPONSOR_KEYS } = require('../shared/assets');
 const { getMethod, handleError, parseJsonBody, responseOptions, responsePng } = require('../shared/http');
 const { renderHtmlToPng } = require('../shared/render');
 const { escapeHtml, validateLineup } = require('../shared/validation');
@@ -15,13 +15,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       return `<div class="row"><div class="num">${number}</div><div class="name">${escapeHtml(player.shortName.toUpperCase())} ${captainIcon}</div></div>`;
     }).join('');
 
-    const sponsorNames = [
-      'vega.png', 'loooma.png', 'mm.png', 'onlight.png', 'sens.png', 'neotec.png',
-      'rubes-w.png', 'eurotir.png', 'transfilm.png', 'calzificio_leonardo.png',
-      'delta_antinfortunistica.png', 'lavanderia_moderna.png',
-      'brunetti.png', 'elman.png', 'maraldo.png',
-    ];
-    const sponsors = sponsorNames.map((name) => `<div class="sponsor"><img src="${lineupUrl(name)}" alt="" /></div>`).join('');
+    const sponsors = LINEUP_SPONSOR_KEYS.map((name) => `<div class="sponsor"><img src="${lineupUrl(name)}" alt="" /></div>`).join('');
 
     const html = `<!doctype html>
 <html lang="it"><head><meta charset="utf-8" /><style>

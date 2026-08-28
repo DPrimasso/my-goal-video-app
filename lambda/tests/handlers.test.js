@@ -6,6 +6,7 @@ process.env.ASSET_BUCKET = 'test-assets';
 const goal = require('../goal-image');
 const lineup = require('../lineup-image');
 const finalResult = require('../final-result-image');
+const { LINEUP_SPONSOR_KEYS } = require('../shared/assets');
 
 for (const [name, handler] of [['goal', goal.handler], ['lineup', lineup.handler], ['finalResult', finalResult.handler]]) {
   test(`${name}: OPTIONS restituisce 204 senza CORS applicativo`, async () => {
@@ -85,4 +86,75 @@ test('goal: il template esegue escaping dei valori malevoli', async () => {
   assert.equal(response.statusCode, 200);
   assert.equal(renderedHtml.includes(maliciousTeam), false);
   assert.equal(renderedHtml.includes('&lt;IMG SRC=X ONERROR=ALERT(1)&gt;'), true);
+});
+
+test('finalResult: riusa titolo, watermark, logo e sponsor della formazione', async () => {
+  let renderedHtml = '';
+  const handler = finalResult.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  const response = await handler({
+    requestContext: { http: { method: 'POST' } },
+    body: JSON.stringify({
+      homeTeam: 'Casalpoglio', awayTeam: 'Amatori Club',
+      homeScore: 2, awayScore: 1,
+      scorerLines: ["FAVA 21'"], scorersUnder: 'home',
+    }),
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(renderedHtml.includes('>FINAL<'), true);
+  assert.equal(renderedHtml.includes('class="score-word">SCORE<'), true);
+  assert.equal(renderedHtml.includes('>MARCATORI<'), false);
+  assert.equal(renderedHtml.includes('/lineup/group.png'), true);
+  assert.equal(renderedHtml.includes('/lineup/logo.png'), true);
+  for (const sponsor of LINEUP_SPONSOR_KEYS) {
+    assert.equal(renderedHtml.includes(`/lineup/${sponsor}`), true);
+  }
+});
+
+test('finalResult: non mostra un box marcatori vuoto', async () => {
+  let renderedHtml = '';
+  const handler = finalResult.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  const response = await handler({
+    requestContext: { http: { method: 'POST' } },
+    body: JSON.stringify({
+      homeTeam: 'Casalpoglio', awayTeam: 'Amatori Club',
+      homeScore: 0, awayScore: 0,
+      scorerLines: [], scorersUnder: 'home',
+    }),
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(renderedHtml.includes('>MARCATORI<'), false);
+});
+
+test('finalResult: posiziona i marcatori sotto la squadra indicata, uno per riga', async () => {
+  let renderedHtml = '';
+  const handler = finalResult.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  const response = await handler({
+    requestContext: { http: { method: 'POST' } },
+    body: JSON.stringify({
+      homeTeam: 'Amatori Club', awayTeam: 'Casalpoglio',
+      homeScore: 1, awayScore: 2,
+      scorerLines: ["FAVA 21'", "GOBBI 73'"], scorersUnder: 'away',
+    }),
+  });
+
+  assert.equal(response.statusCode, 200);
+  const homeColumn = renderedHtml.slice(
+    renderedHtml.indexOf('data-side="home"'),
+    renderedHtml.indexOf('data-side="away"'),
+  );
+  const awayColumn = renderedHtml.slice(renderedHtml.indexOf('data-side="away"'));
+  assert.equal(homeColumn.includes('scorers-list'), false);
+  assert.equal(awayColumn.includes('scorers-list'), true);
+  assert.equal((awayColumn.match(/class="scorer"/g) || []).length, 2);
 });
