@@ -32,7 +32,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   html,body{width:1440px;height:2560px;background:#000;color:#fff;overflow:hidden;font-family:Tusker,sans-serif}
   .card{position:relative;width:1440px;height:2560px;padding:80px 54px 150px;display:flex;flex-direction:column;gap:14px;background:url('${lineupUrl('bg.jpg')}') center/cover no-repeat;overflow:hidden}
   .bgimg{position:absolute;inset:0;opacity:.2}.bgimg img{width:100%;height:100%;object-fit:cover}
-  .header{position:relative;z-index:2;padding:72px 90px;border-radius:14px;background:rgba(0,0,0,.82);transform:translateY(32px)}
+  .header{position:relative;z-index:2;padding:96px 90px 48px;border-radius:14px;background:rgba(0,0,0,.82);transform:translateY(32px)}
   .header h1{font-family:Founders,sans-serif;font-weight:400;font-size:160px;line-height:1;letter-spacing:2px;white-space:nowrap;text-align:center;display:flex;align-items:baseline;justify-content:center;gap:38px}
   .header .score-word{display:inline-block;color:#ed1010;text-shadow:0 8px 28px rgba(221,0,0,.28)}
   .score-stage{position:relative;z-index:2;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
@@ -42,12 +42,12 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .duel-wrap::before{content:'';position:absolute;inset:0;border:2px solid rgba(255,255,255,.12);border-radius:28px;background:linear-gradient(110deg,rgba(221,0,0,.13),rgba(0,0,0,.04) 42%,rgba(113,0,116,.11));box-shadow:inset 0 0 80px rgba(0,0,0,.16),0 30px 80px rgba(0,0,0,.12)}
   .duel{position:relative;width:100%;display:grid;grid-template-columns:minmax(0,1fr) 126px minmax(0,1fr);align-items:start}
   .team-column{position:relative;z-index:2;min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:18px}
-  .team-card{position:relative;min-width:0;height:450px;padding:58px 38px 44px;border:2px solid rgba(255,255,255,.12);border-radius:18px;background:linear-gradient(150deg,rgba(22,2,20,.94),rgba(0,0,0,.86));box-shadow:0 28px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-transform:uppercase;overflow:hidden}
+  .team-card{position:relative;min-width:0;height:450px;padding:58px 38px 44px;border:2px solid rgba(255,255,255,.12);border-radius:18px;background:linear-gradient(150deg,rgba(22,2,20,.94),rgba(0,0,0,.86));box-shadow:0 28px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px;text-transform:uppercase;overflow:hidden}
   .team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:10px;background:rgba(255,255,255,.22)}
   .team-card::after{content:'';position:absolute;width:240px;height:240px;right:-160px;bottom:-160px;border:28px solid rgba(255,255,255,.025);transform:rotate(45deg)}
   .team-card.winner{border-color:rgba(221,0,0,.72);background:linear-gradient(150deg,rgba(78,0,20,.94),rgba(7,0,8,.9));box-shadow:0 0 0 1px rgba(221,0,0,.3),0 30px 80px rgba(185,0,34,.2)}
   .team-card.winner::before{background:#dd0000}
-  .score{font-size:270px;line-height:.78;letter-spacing:-3px;text-shadow:0 10px 34px rgba(0,0,0,.3)}
+  .score{font-size:240px;line-height:.92;letter-spacing:-3px;text-shadow:0 10px 34px rgba(0,0,0,.3)}
   .team{max-width:100%;font-size:64px;line-height:1;letter-spacing:1px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .match-center{position:relative;z-index:4;height:450px;display:flex;align-items:center;justify-content:center}
   .match-center::before,.match-center::after{content:'';position:absolute;top:50%;width:74px;height:7px;background:#dd0000;box-shadow:0 0 18px rgba(221,0,0,.45)}
