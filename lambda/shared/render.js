@@ -1,14 +1,20 @@
-const chromiumModule = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
-const chromium = chromiumModule.default || chromiumModule;
-
-if (!Array.isArray(chromium.args) || typeof chromium.executablePath !== 'function' || typeof puppeteer.launch !== 'function') {
-  throw new Error('Runtime Chromium/Puppeteer incompatibile.');
+async function loadRenderer() {
+  const [chromiumModule, puppeteerModule] = await Promise.all([
+    import('@sparticuz/chromium'),
+    import('puppeteer-core'),
+  ]);
+  const chromium = chromiumModule.default || chromiumModule;
+  const puppeteer = puppeteerModule.default || puppeteerModule;
+  if (!Array.isArray(chromium.args) || typeof chromium.executablePath !== 'function' || typeof puppeteer.launch !== 'function') {
+    throw new Error('Runtime Chromium/Puppeteer incompatibile.');
+  }
+  return { chromium, puppeteer };
 }
 
 async function renderHtmlToPng(html, viewport) {
   let browser;
   try {
+    const { chromium, puppeteer } = await loadRenderer();
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { ...viewport, deviceScaleFactor: 1 },
