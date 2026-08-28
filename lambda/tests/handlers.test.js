@@ -158,3 +158,24 @@ test('finalResult: posiziona i marcatori sotto la squadra indicata, uno per riga
   assert.equal(awayColumn.includes('scorers-list'), true);
   assert.equal((awayColumn.match(/class="scorer"/g) || []).length, 2);
 });
+
+test('le tre grafiche omettono la stagione e mantengono gli accenti colore richiesti', async () => {
+  const templates = {};
+  for (const [name, createHandler, payload] of validCases) {
+    const handler = createHandler(async (html) => {
+      templates[name] = html;
+      return png;
+    });
+    const response = await handler({
+      requestContext: { http: { method: 'POST' } },
+      body: JSON.stringify(payload),
+    });
+    assert.equal(response.statusCode, 200);
+    assert.equal(templates[name].includes('STAGIONE 26/27'), false);
+  }
+
+  assert.equal(templates.lineup.includes('class="xi">XI<'), true);
+  assert.equal(templates.goal.includes('id="goal-title-gradient"'), true);
+  assert.equal(templates.goal.includes('offset="50%" stop-color="#e12121"'), true);
+  assert.equal(templates.finalResult.includes('class="score-word">SCORE<'), true);
+});
