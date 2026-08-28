@@ -1,95 +1,43 @@
-# My Goal Video App
+# Casalpoglio Official
 
-Un'applicazione per la generazione di video personalizzati di gol calcistici con animazioni e overlay personalizzati.
+Applicazione interna, accessibile tramite URL senza login, per generare tre grafiche PNG:
 
-## 🏗️ Architettura del Progetto
+- formazione titolare;
+- goal;
+- risultato finale.
 
-```
-my-goal-video-app/
-├── client/          # Frontend React + Server Express locale
-├── lambda/          # Funzioni AWS Lambda per produzione
-├── build/           # Build di produzione
-└── dist/            # Distribuzione
-```
+La sorgente applicativa ufficiale è il branch `main`. Render costruisce direttamente il Dockerfile del repository dopo il superamento della CI; le tre funzioni AWS sono definite in `infra/template.yaml`.
 
-## 🚀 Modalità di Esecuzione
+## Sviluppo
 
-### **Development (Locale)**
-- **Frontend**: React app su `localhost:3000`
-- **Backend**: Server Express su `localhost:4000`
-- **Generazione Video**: Locale con Remotion
-- **Storage**: File system locale
+Richiede Node.js 22.17 o successivo.
 
-### **Production (AWS Lambda)**
-- **Frontend**: Build statico su CDN/S3
-- **Backend**: Funzioni AWS Lambda
-- **Generazione Video**: Serverless su AWS
-- **Storage**: Amazon S3
-
-## 🛠️ Tecnologie Utilizzate
-
-- **Frontend**: React + TypeScript
-- **Video Generation**: Remotion
-- **Backend Locale**: Express.js
-- **Backend Production**: AWS Lambda
-- **Storage**: File System (dev) / S3 (prod)
-
-## 📁 Struttura Principale
-
-- **`client/`**: Applicazione React completa con server Express integrato
-- **`lambda/`**: Funzioni AWS Lambda per la generazione video in produzione
-- **`build/`**: Build ottimizzato per produzione
-- **`dist/`**: Distribuzione finale
-
-## 🚦 Avvio Rapido
-
-### **Sviluppo Locale**
 ```bash
 cd client
-npm install
-npm run dev        # Avvia tutto (React + Server)
+npm ci
+cp .env.example .env.local
+npm run dev
 ```
 
-### **Produzione**
+Le tre variabili `VITE_*_IMAGE_URL` sono obbligatorie. Non esistono endpoint hardcoded o server di generazione locale.
+
+## Verifiche
+
 ```bash
-cd client
-npm run build     # Build per produzione
-# Deploy su AWS Lambda + S3
+node scripts/validate-assets.mjs
+cd client && npm run lint && npm run type-check && npm test && npm run test:e2e && npm run build
+cd ../lambda && npm test && npm run check
 ```
 
-## 🔧 Configurazione
+I test end-to-end usano Chromium e coprono i tre flussi sia a 390×844 sia a 1440×900, simulando esclusivamente la risposta PNG delle API.
 
-### **Variabili d'Ambiente**
-- `REACT_APP_ENVIRONMENT`: `dev` (locale) | `prod` (Lambda)
-- `REACT_APP_START_RENDER_URL`: URL Lambda per produzione
-- `REACT_APP_RENDER_STATUS_URL`: URL status Lambda per produzione
+## Struttura
 
-### **Porte**
-- **React App**: 3000
-- **Video Server**: 4000
-- **Lambda**: 443 (HTTPS)
+- `client/`: SPA React, TypeScript e Vite.
+- `lambda/`: handler dei tre generatori e moduli condivisi.
+- `assets/s3/`: fonte versionata degli asset sincronizzati sul bucket.
+- `infra/`: stack AWS SAM con alias `live`, Function URL e allarmi.
+- `render.yaml`: servizio Docker collegato a GitHub `main`.
+- `docs/deployment.md`: configurazione, rilascio e rollback.
 
-## 📚 Documentazione Dettagliata
-
-- **`client/README.md`**: Documentazione frontend e server locale
-- **`lambda/README.md`**: Documentazione funzioni Lambda
-
-## 🎯 Funzionalità
-
-- ✅ Generazione video personalizzati con overlay
-- ✅ Selezione giocatori e minuti gol
-- ✅ Gestione punteggi parziali
-- ✅ Anteprima video in tempo reale
-- ✅ Download video generati
-- ✅ Modalità locale e produzione
-
-## 🔄 Workflow
-
-1. **Input**: Selezione giocatore, minuto, punteggio
-2. **Generazione**: Creazione video con Remotion
-3. **Output**: Video personalizzato con overlay
-4. **Download**: Salvataggio video generato
-
-## 📝 Licenza
-
-Progetto privato per uso interno.
+Il catalogo canonico di giocatori e squadre è `lambda/shared/catalog.json` ed è importato anche dal frontend.

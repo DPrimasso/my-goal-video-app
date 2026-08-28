@@ -1,74 +1,18 @@
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
+const { assetUrl, getAssetContext } = require('../shared/assets');
+const { catalog } = require('../shared/catalog');
+const { getMethod, handleError, parseJsonBody, responseOptions, responsePng } = require('../shared/http');
+const { renderHtmlToPng } = require('../shared/render');
+const { escapeHtml, validateGoal } = require('../shared/validation');
 
-const getCorsHeaders = (event) => {
-  // Lambda Function URLs puts headers in event.headers (case-insensitive lookup)
-  const headers = event.headers || {};
-  const origin = headers.origin || headers.Origin || headers.ORIGIN || 
-                 event.requestContext?.http?.headers?.origin ||
-                 event.requestContext?.http?.headers?.Origin ||
-                 '*';
-  return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST,OPTIONS',
-  };
-};
-
-exports.handler = async (event) => {
-  // Handle preflight OPTIONS request
-  const requestMethod = event.requestContext?.http?.method || event.requestContext?.httpMethod || event.httpMethod || (typeof event === 'string' ? 'GET' : 'POST');
-  if (requestMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: getCorsHeaders(event),
-      body: '',
-    };
-  }
+const createHandler = (renderer = renderHtmlToPng) => async (event, context) => {
+  if (getMethod(event) === 'OPTIONS') return responseOptions();
 
   try {
-    const isApiGwV2 = !!event?.requestContext?.http;
-    const bodyStr = isApiGwV2 ? event.body : (event.body || '');
-    const payload = typeof bodyStr === 'string' && bodyStr ? JSON.parse(bodyStr) : (event || {});
-    const { minuteGoal, playerName, playerImageUrl, homeTeam, homeScore, awayTeam, awayScore } = payload || {};
-
-    if (!minuteGoal || !playerName) {
-      return responseJson(400, { error: 'Missing minuteGoal or playerName' }, event);
-    }
-
-    if (!homeTeam || !awayTeam) {
-      return responseJson(400, { error: 'Missing homeTeam or awayTeam' }, event);
-    }
-
-    if (homeScore === undefined || awayScore === undefined) {
-      return responseJson(400, { error: 'Missing homeScore or awayScore' }, event);
-    }
-
-    const region = process.env.AWS_REGION || 'eu-west-1';
-    const assetBucket = process.env.ASSET_BUCKET;
-    if (!assetBucket) {
-      return responseJson(500, { error: 'ASSET_BUCKET env var is required' }, event);
-    }
-
-    const golBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/gol/gol`;
-    const lineupBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/lineup`;
-    const playersBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/players`;
-
-    // Convert playerImageUrl to absolute URL if it's a relative path
-    let absolutePlayerImageUrl = playerImageUrl;
-    if (playerImageUrl && !playerImageUrl.startsWith('http://') && !playerImageUrl.startsWith('https://')) {
-      // Remove leading slash and /players/ prefix if present to avoid double /players/
-      let imagePath = playerImageUrl.startsWith('/') ? playerImageUrl.substring(1) : playerImageUrl;
-      if (imagePath.startsWith('players/')) {
-        imagePath = imagePath.substring('players/'.length);
-      }
-      absolutePlayerImageUrl = `${playersBaseUrl}/${imagePath}`;
-      console.log('Converted playerImageUrl:', playerImageUrl, '->', absolutePlayerImageUrl);
-    } else if (!playerImageUrl) {
-      absolutePlayerImageUrl = `${golBaseUrl}/cc.png`;
-    } else {
-      console.log('Using absolute URL:', absolutePlayerImageUrl);
-    }
+    const { player, minuteGoal, homeTeam, homeScore, awayTeam, awayScore } = validateGoal(parseJsonBody(event));
+    const assets = getAssetContext();
+    const golBaseUrl = assetUrl(assets, 'gol/gol');
+    const absolutePlayerImageUrl = assetUrl(assets, player.assetKey || catalog.fallbackPlayerAssetKey);
+    const playerName = player.shortName;
 
     const htmlTemplate = `<!doctype html>
 <html lang="it">
@@ -234,7 +178,7 @@ exports.handler = async (event) => {
 <body>
   <div class="card">
     <div class="logoback">
-      <img src="${golBaseUrl}/logo.png" class=""/>
+      <img src="${golBaseUrl}/logo.png" alt="" />
     </div>
     <div class="main-text">
       <svg viewBox="0 0 980 678" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -247,21 +191,21 @@ exports.handler = async (event) => {
       </svg>
     </div>
     <div class="player">
-      <img src="${absolutePlayerImageUrl}" class=""/>
+      <img src="${absolutePlayerImageUrl}" alt="${escapeHtml(playerName)}" />
     </div>
     
     <div class="grid">
       <div class="result">
         <span>${homeScore}</span>
-        <span class="squ">${String(homeTeam).toUpperCase()}</span>
+        <span class="squ">${escapeHtml(homeTeam.toUpperCase())}</span>
       </div>
       <div class="result">
         <span>${awayScore}</span>
-        <span class="squ">${String(awayTeam).toUpperCase()}</span>
+        <span class="squ">${escapeHtml(awayTeam.toUpperCase())}</span>
       </div>
       <div class="gol">
         <span style="letter-spacing: 2px !important; font-kerning: none !important;">${minuteGoal}'</span>
-        <span style="letter-spacing: 2px !important; font-kerning: none !important;">${String(playerName).toUpperCase()}</span>
+        <span style="letter-spacing: 2px !important; font-kerning: none !important;">${escapeHtml(playerName.toUpperCase())}</span>
       </div>
     </div>
     
@@ -269,89 +213,12 @@ exports.handler = async (event) => {
 </body>
 </html>`;
 
-    const executablePath = await chromium.executablePath();
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: { width: 1440, height: 2560, deviceScaleFactor: 1 },
-      executablePath,
-      headless: true,
-    });
-    const page = await browser.newPage();
-    await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
-    
-    // Attendi che i font siano caricati
-    await page.evaluate(() => {
-      return document.fonts.ready;
-    });
-    
-    // Attesa aggiuntiva per assicurarsi che tutto sia renderizzato
-    await new Promise((r) => setTimeout(r, 2000));
-    
-    // Attesa finale per il rendering completo
-    await new Promise((r) => setTimeout(r, 2000));
-    
-    // Verifica finale che tutto sia renderizzato
-    await page.evaluate(() => {
-      return new Promise(resolve => {
-        // Aspetta che tutte le immagini siano completamente renderizzate
-        const images = document.querySelectorAll('img');
-        let loaded = 0;
-        const total = images.length;
-        
-        if (total === 0) {
-          resolve();
-          return;
-        }
-        
-        images.forEach(img => {
-          if (img.complete && img.naturalHeight > 0) {
-            loaded++;
-            if (loaded === total) resolve();
-          } else {
-            img.addEventListener('load', () => {
-              loaded++;
-              if (loaded === total) resolve();
-            }, { once: true });
-          }
-        });
-        
-        // Timeout di sicurezza
-        setTimeout(resolve, 3000);
-      });
-    });
-    
-    // Attesa aggiuntiva per il rendering finale
-    await new Promise((r) => setTimeout(r, 1000));
-    
-    const png = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1440, height: 2560 } });
-    await browser.close();
-
-    return responsePng(png, event);
-  } catch (e) {
-    console.error('goal-image error:', e);
-    return responseJson(500, { error: String(e?.message || e) }, event);
+    return responsePng(await renderer(htmlTemplate, { width: 1440, height: 2560 }));
+  } catch (error) {
+    return handleError(error, context?.awsRequestId);
   }
 };
 
-function responseJson(statusCode, obj, event) {
-  return {
-    statusCode,
-    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(event) },
-    body: JSON.stringify(obj),
-  };
-}
-
-function responsePng(buffer, event) {
-  // AWS Lambda Function URLs supporta risposte binarie con isBase64Encoded: true
-  const base64Image = Buffer.from(buffer).toString('base64');
-  return {
-    statusCode: 200,
-    headers: { 
-      'Content-Type': 'image/png',
-      ...getCorsHeaders(event)
-    },
-    body: base64Image,
-    isBase64Encoded: true
-  };
-}
+exports.createHandler = createHandler;
+exports.handler = createHandler();
 

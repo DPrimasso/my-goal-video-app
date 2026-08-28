@@ -1,46 +1,24 @@
-# ---- build (React dentro client/) ----
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# copia solo i manifest per sfruttare la cache
 COPY client/package*.json ./client/
-
-# install
 WORKDIR /app/client
-# Se HAI package-lock.json in client:
 RUN npm ci
-# Se NON hai package-lock.json, sostituisci la riga sopra con:
-# RUN npm install
 
-# copia il codice del client e builda
-COPY client/ /app/client
+COPY lambda/shared /app/lambda/shared
+COPY assets/s3/gol/gol/TuskerGrotesk-3500Medium.woff2 /app/assets/s3/gol/gol/TuskerGrotesk-3500Medium.woff2
+COPY client/ /app/client/
 
-# variabili REACT_APP_ usate a build-time
-ARG REACT_APP_START_RENDER_URL
-ARG REACT_APP_RENDER_STATUS_URL
-ARG REACT_APP_AWS_REGION
-ARG REACT_APP_S3_PUBLIC_BASE
-ARG REACT_APP_ENVIRONMENT
-ARG REACT_APP_GOAL_IMAGE_URL
-ARG REACT_APP_LINEUP_IMAGE_URL
-ARG REACT_APP_FINAL_RESULT_IMAGE_URL
-ENV REACT_APP_START_RENDER_URL=$REACT_APP_START_RENDER_URL
-ENV REACT_APP_RENDER_STATUS_URL=$REACT_APP_RENDER_STATUS_URL
-ENV REACT_APP_AWS_REGION=$REACT_APP_AWS_REGION
-ENV REACT_APP_S3_PUBLIC_BASE=$REACT_APP_S3_PUBLIC_BASE
-ENV REACT_APP_ENVIRONMENT=$REACT_APP_ENVIRONMENT
-ENV REACT_APP_GOAL_IMAGE_URL=$REACT_APP_GOAL_IMAGE_URL
-ENV REACT_APP_LINEUP_IMAGE_URL=$REACT_APP_LINEUP_IMAGE_URL
-ENV REACT_APP_FINAL_RESULT_IMAGE_URL=$REACT_APP_FINAL_RESULT_IMAGE_URL
-
+ARG VITE_LINEUP_IMAGE_URL
+ARG VITE_GOAL_IMAGE_URL
+ARG VITE_FINAL_RESULT_IMAGE_URL
+ENV VITE_LINEUP_IMAGE_URL=$VITE_LINEUP_IMAGE_URL
+ENV VITE_GOAL_IMAGE_URL=$VITE_GOAL_IMAGE_URL
+ENV VITE_FINAL_RESULT_IMAGE_URL=$VITE_FINAL_RESULT_IMAGE_URL
 
 RUN npm run build
 
-# ---- runtime con serve su 10000 ----
-FROM node:20-alpine
-WORKDIR /app
-RUN npm i -g serve
-COPY --from=builder /app/client/build /app/build
-ENV PORT=10000
+FROM nginx:1.29-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/client/dist /usr/share/nginx/html
 EXPOSE 10000
-CMD ["serve", "-s", "build", "-l", "10000"]

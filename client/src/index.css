@@ -12,10 +12,17 @@
   --color-text: #f9fafb;             /* Testo chiaro */
   --color-text-secondary: #cbd5e1;   /* Testo secondario */
 
-  /* Font system (i @font-face sono dichiarati in public/index.html) */
+  /* Font dell'interfaccia; gli altri font restano negli asset delle Lambda. */
   --font-base: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'Tusker', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-alt: 'Founders', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@font-face {
+  font-family: 'Tusker';
+  src: url('../../assets/s3/gol/gol/TuskerGrotesk-3500Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
 
 body {
@@ -25,6 +32,30 @@ body {
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
 }
 
 code {

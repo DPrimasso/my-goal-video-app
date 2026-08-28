@@ -41,28 +41,29 @@ const initialState: SavedGoal = {
   score: { home: 0, away: 0 },
 };
 
-export function useGoalFormState() {
-  const [state, setState] = useState<SavedGoal>(initialState);
+function readSavedGoal(): SavedGoal {
+  const saved = getCookie(COOKIE_NAME);
+  if (!saved) return initialState;
 
-  // Load from cookie on mount
-  useEffect(() => {
-    const saved = getCookie(COOKIE_NAME);
-    if (!saved) return;
-    try {
-      const parsed: SavedGoal = JSON.parse(decodeURIComponent(saved));
-      setState((prev) => {
-        const next = { ...prev };
-        if (parsed.playerId) next.playerId = parsed.playerId;
-        if (parsed.minuteGoal) next.minuteGoal = parsed.minuteGoal;
-        if (parsed.homeTeam) next.homeTeam = parsed.homeTeam;
-        if (parsed.awayTeam) next.awayTeam = parsed.awayTeam;
-        if (parsed.score) next.score = parsed.score;
-        return next;
-      });
-    } catch (err) {
-      console.error('Errore nel caricamento dei dati salvati:', err);
-    }
-  }, []);
+  try {
+    const parsed = JSON.parse(decodeURIComponent(saved)) as Partial<SavedGoal>;
+    return {
+      playerId: typeof parsed.playerId === 'string' ? parsed.playerId : '',
+      minuteGoal: typeof parsed.minuteGoal === 'string' ? parsed.minuteGoal : '',
+      homeTeam: typeof parsed.homeTeam === 'string' ? parsed.homeTeam : '',
+      awayTeam: typeof parsed.awayTeam === 'string' ? parsed.awayTeam : '',
+      score: parsed.score && Number.isFinite(parsed.score.home) && Number.isFinite(parsed.score.away)
+        ? parsed.score
+        : initialState.score,
+    };
+  } catch (err) {
+    console.error('Errore nel caricamento dei dati salvati:', err);
+    return initialState;
+  }
+}
+
+export function useGoalFormState() {
+  const [state, setState] = useState<SavedGoal>(readSavedGoal);
 
   // Save to cookie when state changes
   useEffect(() => {

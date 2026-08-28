@@ -23,6 +23,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentPage, onPageChange 
               currentPage === item.id ? 'bottom-nav-item--active' : ''
             }`}
             onClick={() => onPageChange(item.id)}
+            aria-current={currentPage === item.id ? 'page' : undefined}
           >
             <span className="bottom-nav-icon">{item.icon}</span>
             <span className="bottom-nav-label">{item.label}</span>

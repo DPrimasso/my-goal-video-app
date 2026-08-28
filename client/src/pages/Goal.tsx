@@ -1,303 +1,129 @@
-import React, { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
-import { players, getSurname } from '../players';
-import { isProduction } from '../config/environment';
-import { videoService } from '../services/videoService';
-import { useGoalFormState } from '../hooks/useGoalFormState';
+import { players } from '../catalog';
+import { getEndpoint } from '../config/environment';
+import { useGeneratedImage, useGoalFormState } from '../hooks';
+import { requestGeneratedImage } from '../services/imageApi';
 import type { GoalImagePayload } from '../types';
 import './Goal.css';
 
-function buildGoalImagePayload(
-  playerName: string,
-  playerImageUrl: string,
-  minuteGoal: string,
-  homeTeam: string,
-  awayTeam: string,
-  score: { home: number; away: number }
-): GoalImagePayload {
-  return {
-    minuteGoal: Number(minuteGoal),
-    playerName,
-    playerImageUrl,
-    homeTeam: homeTeam.trim(),
-    homeScore: score.home,
-    awayTeam: awayTeam.trim(),
-    awayScore: score.away,
-  };
-}
+type GoalErrors = Partial<Record<'playerId' | 'minuteGoal' | 'homeTeam' | 'awayTeam' | 'score', string>>;
 
-const Goal: React.FC = () => {
+export default function Goal() {
   const { state, setState } = useGoalFormState();
   const { playerId, minuteGoal, homeTeam, awayTeam, score } = state;
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<GoalErrors>({});
   const [loading, setLoading] = useState(false);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const { url: generatedImageUrl, replace: replaceImage, reset: resetImage } = useGeneratedImage();
+  const errorRef = useRef<HTMLDivElement>(null);
 
-  const handleScoreChange = (team: 'home' | 'away', value: string) => {
-    const numValue = parseInt(value) || 0;
-    setState(prev => ({
-      ...prev,
-      score: { ...prev.score, [team]: numValue },
-    }));
+  useEffect(() => {
+    if (requestError) errorRef.current?.focus();
+  }, [requestError]);
+
+  const playerOptions = useMemo(() => players
+    .map((player) => ({ value: player.id, label: `${player.shortName}${player.assetKey ? '' : ' · foto fallback'}` }))
+    .sort((first, second) => first.label.localeCompare(second.label)), []);
+
+  const updateScore = (team: 'home' | 'away', value: string) => {
+    const numericValue = Math.min(99, Math.max(0, Number.parseInt(value, 10) || 0));
+    setState((current) => ({ ...current, score: { ...current.score, [team]: numericValue } }));
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!playerId) {
-      newErrors.playerId = 'Seleziona un giocatore';
+  const validate = (): boolean => {
+    const nextErrors: GoalErrors = {};
+    const minute = Number(minuteGoal);
+    if (!playerId) nextErrors.playerId = 'Seleziona un giocatore.';
+    if (!Number.isInteger(minute) || minute < 1 || minute > 150) nextErrors.minuteGoal = 'Inserisci un minuto compreso tra 1 e 150.';
+    if (!homeTeam.trim()) nextErrors.homeTeam = 'Inserisci la squadra di casa.';
+    if (!awayTeam.trim()) nextErrors.awayTeam = 'Inserisci la squadra ospite.';
+    if (homeTeam.trim().toLocaleLowerCase() === awayTeam.trim().toLocaleLowerCase() && homeTeam.trim()) {
+      nextErrors.awayTeam = 'Le due squadre devono essere differenti.';
     }
+    if (score.home < 0 || score.away < 0 || score.home > 99 || score.away > 99) nextErrors.score = 'Il punteggio deve essere compreso tra 0 e 99.';
+    if (score.home === 0 && score.away === 0) nextErrors.score = 'Il parziale deve contenere almeno un gol.';
+    setErrors(nextErrors);
 
-    if (!minuteGoal) {
-      newErrors.minuteGoal = 'Inserisci il minuto del gol';
-    } else if (isNaN(Number(minuteGoal)) || Number(minuteGoal) < 0) {
-      newErrors.minuteGoal = 'Il minuto del gol deve essere un numero positivo';
+    const firstInvalidField = [
+      ['playerId', 'goal-player'],
+      ['homeTeam', 'goal-home-team'],
+      ['awayTeam', 'goal-away-team'],
+      ['score', 'goal-score-home'],
+      ['minuteGoal', 'goal-minute'],
+    ].find(([field]) => nextErrors[field as keyof GoalErrors]);
+    if (firstInvalidField) {
+      requestAnimationFrame(() => document.getElementById(firstInvalidField[1])?.focus());
     }
-
-    if (!homeTeam.trim()) {
-      newErrors.homeTeam = 'Inserisci il nome della squadra casa';
-    }
-
-    if (!awayTeam.trim()) {
-      newErrors.awayTeam = 'Inserisci il nome della squadra ospite';
-    }
-
-    if (score.home < 0 || score.away < 0) {
-      newErrors.score = 'Il punteggio non può essere negativo';
-    }
-
-    if (score.home === 0 && score.away === 0) {
-      newErrors.score = 'Inserisci almeno un gol per una delle due squadre';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(nextErrors).length === 0;
   };
 
   const generate = async () => {
-    if (!validateForm()) return;
-
-    const selectedPlayer = players.find(p => p.id === playerId);
-    if (!selectedPlayer) return;
-
+    if (!validate()) return;
     setLoading(true);
-    setError(null);
-    setGeneratedImageUrl(null);
-
+    setRequestError(null);
     try {
-      const playerImageUrl = videoService.makeAssetUrl(selectedPlayer.image);
-      const playerName = getSurname(selectedPlayer.name);
-      const payload = buildGoalImagePayload(
-        playerName,
-        playerImageUrl,
-        minuteGoal,
-        homeTeam,
-        awayTeam,
-        score
-      );
-
-      let response: Response;
-      if (isProduction()) {
-        const goalImageUrl = process.env.REACT_APP_GOAL_IMAGE_URL || 'https://xgafdelrk5bwrvizodeoepwejm0ntuuz.lambda-url.eu-west-1.on.aws/';
-        if (!goalImageUrl || goalImageUrl.trim() === '') {
-          throw new Error('Goal image URL not configured for production');
-        }
-        response = await fetch(goalImageUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      } else {
-        response = await fetch('http://localhost:4000/api/goal-generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-      }
-
-      if (!response.ok) {
-        if (isProduction()) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Errore nella generazione dell\'immagine');
-      }
-
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
-      setGeneratedImageUrl(imageUrl);
-    } catch (err: any) {
-      console.error('Error generating goal image:', err);
-      setError(err.message || 'Errore durante la generazione');
+      const payload: GoalImagePayload = {
+        playerId,
+        minuteGoal: Number(minuteGoal),
+        homeTeam: homeTeam.trim(),
+        homeScore: score.home,
+        awayTeam: awayTeam.trim(),
+        awayScore: score.away,
+      };
+      replaceImage(await requestGeneratedImage(getEndpoint('goal'), payload));
+    } catch (reason) {
+      setRequestError(reason instanceof Error ? reason.message : 'Errore durante la generazione del goal.');
     } finally {
       setLoading(false);
     }
   };
 
-  const reset = () => {
-    setGeneratedImageUrl(null);
-    setError(null);
-  };
-
-  const playerOptions = players.map(player => ({
-    value: player.id,
-    label: getSurname(player.name),
-  }));
-
-  playerOptions.sort((a, b) => a.label.localeCompare(b.label));
-
   return (
-    <PageTemplate
-      title="Goal"
-      description="Seleziona il giocatore che ha segnato, il risultato parziale e il minuto del goal"
-      icon="⚽"
-    >
+    <PageTemplate title="Goal" description="Giocatore, risultato parziale e minuto del gol." icon="⚽">
       <div className="goal-container">
-        <div className="card goal-form-container">
+        <section className="card goal-form-container" aria-label="Dati del goal">
           <div className="form-section">
-            <Select
-              label="Giocatore"
-              value={playerId}
-              onChange={(v) => setState(prev => ({ ...prev, playerId: v }))}
-              options={playerOptions}
-              required
-              error={errors.playerId}
-            />
+            <Select id="goal-player" label="Giocatore" value={playerId} onChange={(value) => setState((current) => ({ ...current, playerId: value }))} options={playerOptions} required error={errors.playerId} />
+            <Input id="goal-home-team" label="Squadra casa" value={homeTeam} onChange={(value) => setState((current) => ({ ...current, homeTeam: value.slice(0, 80) }))} placeholder="es. Casalpoglio" maxLength={80} required error={errors.homeTeam} />
+            <Input id="goal-away-team" label="Squadra ospite" value={awayTeam} onChange={(value) => setState((current) => ({ ...current, awayTeam: value.slice(0, 80) }))} placeholder="es. Amatori Club" maxLength={80} required error={errors.awayTeam} />
 
-            <Input
-              label="Squadra Casa"
-              value={homeTeam}
-              onChange={(v) => setState(prev => ({ ...prev, homeTeam: v }))}
-              type="text"
-              placeholder="es. Casalpoglio"
-              required
-              error={errors.homeTeam}
-            />
-
-            <Input
-              label="Squadra Ospite"
-              value={awayTeam}
-              onChange={(v) => setState(prev => ({ ...prev, awayTeam: v }))}
-              type="text"
-              placeholder="es. Squadra Avversaria"
-              required
-              error={errors.awayTeam}
-            />
-
-            <div className="score-section">
+            <fieldset className="score-section">
+              <legend>Risultato parziale</legend>
               <div className="score-inputs">
-                <div className="score-input">
-                  <Input
-                    label="Parziale casa"
-                    value={score.home.toString()}
-                    onChange={(value) => handleScoreChange('home', value)}
-                    type="number"
-                    min={0}
-                    placeholder="es. 2"
-                    required
-                  />
-                </div>
-                
-                <div className="score-separator">-</div>
-                
-                <div className="score-input">
-                  <Input
-                    label="Parziale Ospite"
-                    value={score.away.toString()}
-                    onChange={(value) => handleScoreChange('away', value)}
-                    type="number"
-                    min={0}
-                    placeholder="es. 1"
-                    required
-                  />
-                </div>
+                <Input id="goal-score-home" label="Parziale casa" value={score.home.toString()} onChange={(value) => updateScore('home', value)} type="number" min={0} max={99} required />
+                <div className="score-separator" aria-hidden="true">–</div>
+                <Input id="goal-score-away" label="Parziale ospite" value={score.away.toString()} onChange={(value) => updateScore('away', value)} type="number" min={0} max={99} required />
               </div>
-              {errors.score && <div className="error-text">{errors.score}</div>}
-            </div>
+              {errors.score && <div className="error-text" role="alert">{errors.score}</div>}
+            </fieldset>
 
-            <Input
-              label="Minuto del Gol"
-              value={minuteGoal}
-              onChange={(v) => setState(prev => ({ ...prev, minuteGoal: v }))}
-              type="number"
-              min={0}
-              placeholder="es. 78"
-              required
-              error={errors.minuteGoal}
-            />
+            <Input id="goal-minute" label="Minuto del gol" value={minuteGoal} onChange={(value) => setState((current) => ({ ...current, minuteGoal: value }))} type="number" min={1} max={150} placeholder="es. 78" required error={errors.minuteGoal} />
 
+            {requestError && <div ref={errorRef} tabIndex={-1} className="error-message" role="alert">⚠️ {requestError}</div>}
             <div className="form-actions">
-              <Button
-                onClick={generate}
-                disabled={loading}
-                loading={loading}
-                size="large"
-                className="form-submit-btn"
-              >
-                {loading ? '⏳ Generazione...' : '✨ Genera Goal'}
-              </Button>
-
-              {generatedImageUrl && (
-                <Button
-                  onClick={reset}
-                  variant="outline"
-                  size="large"
-                >
-                  Nuovo Goal
-                </Button>
-              )}
+              <Button onClick={generate} disabled={loading} loading={loading} size="large">{loading ? 'Generazione...' : '✨ Genera goal'}</Button>
+              {generatedImageUrl && <Button onClick={resetImage} variant="outline" size="large">Nuovo goal</Button>}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="preview-section">
-          {error && (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              {error}
-            </div>
-          )}
-
+        <section className="preview-section" aria-live="polite">
           {generatedImageUrl ? (
             <div className="image-preview">
-              <div className="phone-frame">
-                <div className="phone-frame-inner">
-                  <img src={generatedImageUrl} alt="Goal" className="goal-image" />
-                </div>
-              </div>
-              <p className="preview-meta">
-                Formato 9:16 · Perfetto per Stories e Reels
-              </p>
+              <div className="phone-frame"><div className="phone-frame-inner"><img src={generatedImageUrl} alt="Grafica goal generata" className="goal-image" /></div></div>
+              <p className="preview-meta">Formato 9:16 · pronto per Stories e Reels</p>
               <div className="image-actions">
-                <Button
-                  onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
-                  variant="primary"
-                  size="medium"
-                >
-                  📱 Apri
-                </Button>
-                <a
-                  className="download-btn"
-                  href={generatedImageUrl}
-                  download={`goal_${Date.now()}.png`}
-                >
-                  💾 Scarica
-                </a>
+                <Button onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}>Apri PNG</Button>
+                <a className="download-btn" href={generatedImageUrl} download="goal.png">Scarica PNG</a>
               </div>
             </div>
           ) : (
-            <div className="preview-placeholder">
-              <div className="placeholder-icon">⚽</div>
-              <h3>Anteprima Goal</h3>
-              <p>Compila il form e genera la tua immagine personalizzata</p>
-            </div>
+            <div className="preview-placeholder"><div className="placeholder-icon">⚽</div><h3>Anteprima goal</h3><p>Compila il modulo per generare la grafica.</p></div>
           )}
-        </div>
+        </section>
       </div>
     </PageTemplate>
   );
-};
-
-export default Goal;
+}

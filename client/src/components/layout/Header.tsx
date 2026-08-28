@@ -33,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => 
               key={item.id}
               className={`nav-item ${currentPage === item.id ? 'nav-item--active' : ''}`}
               onClick={() => onPageChange(item.id)}
+              aria-current={currentPage === item.id ? 'page' : undefined}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>

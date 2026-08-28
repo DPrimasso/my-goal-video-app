@@ -1,0 +1,43 @@
+{
+  "fallbackPlayerAssetKey": "players/player-fallback.svg",
+  "players": [
+    { "id": "davide_fava", "displayName": "Davide Fava", "shortName": "Fava", "assetKey": "players/davide_fava.webp" },
+    { "id": "lorenzo_campagnari", "displayName": "Lorenzo Campagnari", "shortName": "Campagnari", "assetKey": null },
+    { "id": "davide_scalmana", "displayName": "Davide Scalmana", "shortName": "Scalmana", "assetKey": "players/davide_scalmana.webp" },
+    { "id": "saif_ardhaoui", "displayName": "Saif Ardhaoui", "shortName": "Ardhaoui", "assetKey": null },
+    { "id": "nicolo_castellini", "displayName": "Nicolò Castellini", "shortName": "Castellini", "assetKey": "players/nicolò_castellini.webp" },
+    { "id": "andrea_contesini", "displayName": "Andrea Contesini", "shortName": "Contesini", "assetKey": "players/andrea_contesini.webp", "defaultNumber": 19 },
+    { "id": "davide_di_roberto", "displayName": "Davide Di Roberto", "shortName": "Di Roberto", "assetKey": "players/davide_di_roberto.webp", "defaultNumber": 10 },
+    { "id": "francesco_gabusi", "displayName": "Francesco Gabusi", "shortName": "Gabusi", "assetKey": "players/francesco_gabusi.webp" },
+    { "id": "massimiliano_gandellini", "displayName": "Massimiliano Gandellini", "shortName": "Gandellini", "assetKey": "players/massimiliano_gandellini.webp" },
+    { "id": "lorenzo_gobbi", "displayName": "Lorenzo Gobbi", "shortName": "Gobbi", "assetKey": "players/lorenzo_gobbi.webp", "defaultNumber": 8 },
+    { "id": "antonio_inglese", "displayName": "Antonio Inglese", "shortName": "Inglese", "assetKey": "players/antonio_inglese.webp" },
+    { "id": "vase_jakimovski", "displayName": "Vase Jakimovski", "shortName": "Jakimovski", "assetKey": "players/vase_jakimovski.webp" },
+    { "id": "filippo_lodetti", "displayName": "Filippo Lodetti", "shortName": "Lodetti", "assetKey": "players/filippo_lodetti.webp", "defaultNumber": 4 },
+    { "id": "braian_marchi", "displayName": "Braian Marchi", "shortName": "Marchi", "assetKey": "players/braian_marchi.webp" },
+    { "id": "vincenzo_marino", "displayName": "Vincenzo Marino", "shortName": "Marino", "assetKey": null },
+    { "id": "rosario_nastasi", "displayName": "Rosario Nastasi", "shortName": "Nastasi", "assetKey": "players/rosario_nastasi.webp" },
+    { "id": "david_perosi", "displayName": "David Perosi", "shortName": "Perosi", "assetKey": "players/david_perosi.webp" },
+    { "id": "michael_pezzi", "displayName": "Michael Pezzi", "shortName": "Pezzi", "assetKey": "players/michael_pezzi.webp" },
+    { "id": "lorenzo_piccinelli", "displayName": "Lorenzo Piccinelli", "shortName": "Piccinelli", "assetKey": "players/lorenzo_piccinelli.webp", "defaultNumber": 11 },
+    { "id": "matteo_pinelli", "displayName": "Matteo Pinelli", "shortName": "Pinelli", "assetKey": "players/matteo_pinelli.webp", "defaultNumber": 22 },
+    { "id": "sebastiano_pretto", "displayName": "Sebastiano Pretto", "shortName": "Pretto", "assetKey": "players/sebastiano_pretto.webp" },
+    { "id": "daniele_primasso", "displayName": "Daniele Primasso", "shortName": "Primasso", "assetKey": "players/daniele_primasso.webp", "defaultNumber": 5 },
+    { "id": "cristian_ramponi", "displayName": "Cristian Ramponi", "shortName": "Ramponi", "assetKey": "players/cristian_ramponi.webp", "defaultNumber": 15 },
+    { "id": "fabio_rampulla", "displayName": "Fabio Rampulla", "shortName": "Rampulla", "assetKey": "players/fabio_rampulla.webp" },
+    { "id": "daniele_rossetto", "displayName": "Daniele Rossetto", "shortName": "Rossetto", "assetKey": "players/daniele_rossetto.webp" },
+    { "id": "andrea_serpellini", "displayName": "Andrea Serpellini", "shortName": "Serpellini", "assetKey": null },
+    { "id": "davide_sipolo", "displayName": "Davide Sipolo", "shortName": "Sipolo", "assetKey": null, "defaultNumber": 1 },
+    { "id": "marco_turini", "displayName": "Marco Turini", "shortName": "Turini", "assetKey": "players/marco_turini.webp", "defaultNumber": 9 },
+    { "id": "marco_vaccari", "displayName": "Marco Vaccari", "shortName": "Vaccari", "assetKey": "players/marco_vaccari.webp" },
+    { "id": "nathan_gorgaini", "displayName": "Nathan Gorgaini", "shortName": "Gorgaini", "assetKey": "players/nathan_gorgaini.webp" },
+    { "id": "alberto_viola", "displayName": "Alberto Viola", "shortName": "Viola", "assetKey": "players/alberto_viola.webp", "defaultNumber": 3 },
+    { "id": "autogol", "displayName": "Autogol", "shortName": "Autogol", "assetKey": "players/autogol.webp" }
+  ],
+  "teams": [
+    { "id": "casalpoglio", "displayName": "Casalpoglio" },
+    { "id": "amatori_club", "displayName": "Amatori Club" },
+    { "id": "team_3", "displayName": "Team 3" },
+    { "id": "team_4", "displayName": "Team 4" }
+  ]
+}

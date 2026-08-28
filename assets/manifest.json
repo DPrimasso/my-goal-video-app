@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "catalog": "lambda/shared/catalog.json",
+  "sourceDirectory": "assets/s3",
+  "fallbackPlayerAsset": "players/player-fallback.svg",
+  "requiredAssets": [
+    "gol/gol/logo.png",
+    "gol/gol/TuskerGrotesk-3500Medium.woff2",
+    "gol/gol/TuskerGrotesk-3500Medium.woff",
+    "gol/gol/FoundersGrotesk-Regular.woff2",
+    "gol/gol/FoundersGrotesk-Regular.woff",
+    "lineup/bg.jpg",
+    "lineup/group.png",
+    "lineup/logo.png",
+    "lineup/cap.png",
+    "lineup/TuskerGrotesk-3500Medium.woff2",
+    "lineup/vega.png",
+    "lineup/loooma.png",
+    "lineup/mm.png",
+    "lineup/onlight.png",
+    "lineup/sens.png",
+    "lineup/neotec.png",
+    "lineup/rubes-w.png",
+    "lineup/eurotir.png",
+    "lineup/transfilm.png",
+    "lineup/calzificio_leonardo.png",
+    "lineup/delta_antinfortunistica.png",
+    "lineup/lavanderia_moderna.png"
+  ]
+}

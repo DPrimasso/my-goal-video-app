@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.17'
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            lambda/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+      - name: Install Lambda dependencies
+        working-directory: lambda
+        run: npm ci
+      - name: Validate versioned assets
+        run: node scripts/validate-assets.mjs
+      - name: Lint frontend
+        working-directory: client
+        run: npm run lint
+      - name: Test frontend
+        working-directory: client
+        run: npm test
+      - name: Type-check frontend
+        working-directory: client
+        run: npm run type-check
+      - name: Test Lambda contracts
+        working-directory: lambda
+        run: npm test
+      - name: Build frontend
+        working-directory: client
+        env:
+          VITE_LINEUP_IMAGE_URL: https://example.invalid/lineup
+          VITE_GOAL_IMAGE_URL: https://example.invalid/goal
+          VITE_FINAL_RESULT_IMAGE_URL: https://example.invalid/final-result
+        run: npm run build
+      - name: Enforce frontend size budget
+        shell: bash
+        run: test "$(du -sb client/dist | cut -f1)" -le 5242880
+      - name: Install browser for end-to-end tests
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+      - name: Test all three flows at mobile and desktop sizes
+        working-directory: client
+        run: npm run test:e2e
+      - uses: aws-actions/setup-sam@v2
+      - name: Validate SAM template
+        run: sam validate --lint --template-file infra/template.yaml

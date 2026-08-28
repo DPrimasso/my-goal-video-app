@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Casalpoglio image generators
+
+Parameters:
+  AssetsBucketName:
+    Type: String
+    Default: casalpoglio-social-assets
+  AllowedOrigin:
+    Type: String
+    Description: Origin Render completo, senza slash finale
+  InvocationAlarmThreshold:
+    Type: Number
+    Default: 500
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [x86_64]
+    MemorySize: 2048
+    Timeout: 120
+    EphemeralStorage:
+      Size: 1024
+    Environment:
+      Variables:
+        ASSET_BUCKET: !Ref AssetsBucketName
+
+Resources:
+  GoalImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: goal-image
+      CodeUri: ../lambda/
+      Handler: goal-image/index.handler
+      ReservedConcurrentExecutions: 2
+      AutoPublishAlias: live
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [!Ref AllowedOrigin]
+          AllowMethods: [POST]
+          AllowHeaders: [content-type]
+          MaxAge: 300
+
+  LineupImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: lineup-image
+      CodeUri: ../lambda/
+      Handler: lineup-image/index.handler
+      ReservedConcurrentExecutions: 2
+      AutoPublishAlias: live
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [!Ref AllowedOrigin]
+          AllowMethods: [POST]
+          AllowHeaders: [content-type]
+          MaxAge: 300
+
+  FinalResultImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: final-result-image
+      CodeUri: ../lambda/
+      Handler: final-result-image/index.handler
+      ReservedConcurrentExecutions: 2
+      AutoPublishAlias: live
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [!Ref AllowedOrigin]
+          AllowMethods: [POST]
+          AllowHeaders: [content-type]
+          MaxAge: 300
+
+  GoalInvocationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Volume anomalo di generazioni Goal in cinque minuti
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions: [{ Name: FunctionName, Value: !Ref GoalImageFunction }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref InvocationAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  LineupInvocationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Volume anomalo di generazioni Formazione in cinque minuti
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions: [{ Name: FunctionName, Value: !Ref LineupImageFunction }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref InvocationAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  FinalResultInvocationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Volume anomalo di generazioni Risultato in cinque minuti
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions: [{ Name: FunctionName, Value: !Ref FinalResultImageFunction }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref InvocationAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+Outputs:
+  GoalImageUrl:
+    Value: !GetAtt GoalImageFunctionUrl.FunctionUrl
+  LineupImageUrl:
+    Value: !GetAtt LineupImageFunctionUrl.FunctionUrl
+  FinalResultImageUrl:
+    Value: !GetAtt FinalResultImageFunctionUrl.FunctionUrl

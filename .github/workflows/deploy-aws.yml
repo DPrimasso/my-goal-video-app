@@ -1,0 +1,55 @@
+name: Deploy image generators
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lambda/**'
+      - 'assets/**'
+      - 'infra/**'
+      - 'scripts/validate-assets.mjs'
+      - '.github/workflows/deploy-aws.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-aws
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.17'
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-1
+      - name: Install and test Lambda package
+        working-directory: lambda
+        run: npm ci && npm test
+      - name: Validate assets
+        run: node scripts/validate-assets.mjs
+      - name: Synchronize versioned assets
+        run: aws s3 sync assets/s3 "s3://${{ vars.ASSETS_BUCKET_NAME }}" --cache-control "public,max-age=86400"
+      - name: Build SAM application
+        run: sam build --template-file infra/template.yaml
+      - name: Deploy versioned Lambda aliases and Function URLs
+        run: >-
+          sam deploy
+          --stack-name casalpoglio-image-generators
+          --region eu-west-1
+          --resolve-s3
+          --capabilities CAPABILITY_IAM
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --parameter-overrides
+          AssetsBucketName=${{ vars.ASSETS_BUCKET_NAME }}
+          AllowedOrigin=${{ vars.RENDER_ORIGIN }}

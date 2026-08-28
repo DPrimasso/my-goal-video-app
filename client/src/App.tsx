@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Header, BottomNav } from './components/layout';
 import { pages } from './pages';
+import { getConfigurationErrors } from './config/environment';
 import './App.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('formazione');
+  const configurationErrors = getConfigurationErrors();
 
   const handlePageChange = (pageId: string) => {
     setCurrentPage(pageId);
@@ -31,6 +33,11 @@ function App() {
       <Header currentPage={currentPage} onPageChange={handlePageChange} />
       
       <main className="main-content">
+        {configurationErrors.length > 0 && (
+          <div className="configuration-warning" role="alert">
+            <strong>Configurazione incompleta.</strong> {configurationErrors.join(' · ')}
+          </div>
+        )}
         {renderCurrentPage()}
       </main>
 

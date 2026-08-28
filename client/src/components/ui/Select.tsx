@@ -1,13 +1,16 @@
-import React from 'react';
+import { useId } from 'react';
 import './Input.css';
 
 interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 interface SelectProps {
+  id?: string;
   label?: string;
+  ariaLabel?: string;
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
@@ -18,8 +21,10 @@ interface SelectProps {
   className?: string;
 }
 
-export const Select: React.FC<SelectProps> = ({
+export function Select({
+  id,
   label,
+  ariaLabel,
   value,
   onChange,
   options,
@@ -28,33 +33,37 @@ export const Select: React.FC<SelectProps> = ({
   disabled = false,
   error,
   className = '',
-}) => {
-  const selectId = `select-${Math.random().toString(36).substr(2, 9)}`;
+}: SelectProps) {
+  const generatedId = useId();
+  const selectId = id || `select-${generatedId}`;
+  const errorId = `${selectId}-error`;
 
   return (
     <div className={`input-group ${className}`}>
       {label && (
         <label htmlFor={selectId} className="input__label">
-          {label}
-          {required && <span className="input__required">*</span>}
+          {label}{required && <span className="input__required" aria-hidden="true">*</span>}
         </label>
       )}
       <select
         id={selectId}
+        aria-label={!label ? ariaLabel : undefined}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         required={required}
         disabled={disabled}
         className={`input ${error ? 'input--error' : ''}`}
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
           </option>
         ))}
       </select>
-      {error && <span className="input__error">{error}</span>}
+      {error && <span id={errorId} className="input__error" role="alert">{error}</span>}
     </div>
   );
-};
+}

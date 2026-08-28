@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: my-goal-video-app
+    runtime: docker
+    branch: main
+    autoDeployTrigger: checksPass
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - client/**
+        - lambda/shared/catalog.json
+        - assets/s3/gol/gol/*.woff2
+        - Dockerfile
+        - nginx.conf
+        - render.yaml
+    envVars:
+      - key: VITE_LINEUP_IMAGE_URL
+        sync: false
+      - key: VITE_GOAL_IMAGE_URL
+        sync: false
+      - key: VITE_FINAL_RESULT_IMAGE_URL
+        sync: false

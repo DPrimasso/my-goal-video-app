@@ -1,427 +1,208 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button } from '../components/ui';
-import { Input } from '../components/ui';
-import { players, getSurname } from '../players';
-import { LineupPlayer, LineupRequest } from '../types';
+import { players } from '../catalog';
+import { getEndpoint } from '../config/environment';
+import { useGeneratedImage } from '../hooks';
+import { requestGeneratedImage } from '../services/imageApi';
+import type { LineupImagePayload, LineupPlayer } from '../types';
 import './Formazione.css';
-import { isProduction } from '../config/environment';
 
-// Mapping numeri di default per giocatori (basato sul demo)
-const DEFAULT_PLAYER_NUMBERS: Record<string, number> = {
-  'davide_sipolo': 1,
-  'andrea_contesini': 19,
-  'daniele_primasso': 5,
-  'alberto_viola': 3,
-  'matteo_pinelli': 22,
-  'davide_di_roberto': 10,
-  'filippo_lodetti': 4,
-  'lorenzo_gobbi': 8,
-  'marco_turini': 9,
-  'lorenzo_piccinelli': 11,
-  'cristian_ramponi': 15,
-};
+const COOKIE_NAME = 'savedFormation';
+const emptyLineup = (): LineupPlayer[] => Array.from({ length: 11 }, (_, index) => ({
+  playerId: '',
+  number: index + 1,
+  isCaptain: false,
+}));
 
-function getDefaultNumber(playerId: string, index: number): number {
-  return DEFAULT_PLAYER_NUMBERS[playerId] || (index + 1);
-}
-
-function getPlayerName(playerId: string): string {
-  const player = players.find(p => p.id === playerId);
-  return player ? getSurname(player.name) : '';
-}
-
-// Helper functions per gestire i cookie
-function setCookie(name: string, value: string, days: number = 365) {
-  const date = new Date();
-  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-  const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${value};${expires};path=/`;
-}
-
-function getCookie(name: string): string | null {
-  const nameEQ = `${name}=`;
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+function readSavedLineup(): { players: LineupPlayer[]; opponentTeam: string } | null {
+  const entry = document.cookie.split(';').map((value) => value.trim()).find((value) => value.startsWith(`${COOKIE_NAME}=`));
+  if (!entry) return null;
+  try {
+    const parsed = JSON.parse(decodeURIComponent(entry.slice(COOKIE_NAME.length + 1))) as {
+      players?: LineupPlayer[];
+      lineupPlayers?: Array<LineupPlayer & { playerName?: string }>;
+      opponentTeam?: string;
+    };
+    const savedPlayers = parsed.players || parsed.lineupPlayers;
+    if (!Array.isArray(savedPlayers) || savedPlayers.length !== 11) return null;
+    const knownIds = new Set(players.map((player) => player.id));
+    return {
+      players: savedPlayers.map((player, index) => ({
+        playerId: knownIds.has(player.playerId) ? player.playerId : '',
+        number: Number.isInteger(player.number) && player.number >= 1 && player.number <= 99 ? player.number : index + 1,
+        isCaptain: Boolean(player.isCaptain),
+      })),
+      opponentTeam: typeof parsed.opponentTeam === 'string' ? parsed.opponentTeam.slice(0, 80) : '',
+    };
+  } catch {
+    return null;
   }
-  return null;
 }
 
-interface SavedFormation {
-  lineupPlayers: LineupPlayer[];
-  opponentTeam: string;
-  captainIndex: number | null;
-}
-
-const Formazione: React.FC = () => {
-  const [lineupPlayers, setLineupPlayers] = useState<LineupPlayer[]>(
-    Array.from({ length: 11 }, (_, index) => ({
-      playerId: '',
-      playerName: '',
-      number: index + 1,
-      isCaptain: false,
-    }))
-  );
-  const [opponentTeam, setOpponentTeam] = useState('');
-  const [captainIndex, setCaptainIndex] = useState<number | null>(null);
+export default function Formazione() {
+  const [saved] = useState(() => readSavedLineup());
+  const [lineup, setLineup] = useState<LineupPlayer[]>(saved?.players || emptyLineup());
+  const [opponentTeam, setOpponentTeam] = useState(saved?.opponentTeam || '');
   const [loading, setLoading] = useState(false);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { url: generatedImageUrl, replace: replaceImage, reset: resetImage } = useGeneratedImage();
+  const errorRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Carica la formazione salvata dai cookie all'avvio
   useEffect(() => {
-    const savedFormation = getCookie('savedFormation');
-    if (savedFormation) {
-      try {
-        const parsed: SavedFormation = JSON.parse(decodeURIComponent(savedFormation));
-        if (parsed.lineupPlayers && Array.isArray(parsed.lineupPlayers)) {
-          setLineupPlayers(parsed.lineupPlayers);
-        }
-        if (parsed.opponentTeam) {
-          setOpponentTeam(parsed.opponentTeam);
-        }
-        if (parsed.captainIndex !== undefined) {
-          setCaptainIndex(parsed.captainIndex);
-        }
-      } catch (err) {
-        console.error('Errore nel caricamento della formazione salvata:', err);
-      }
-    }
-  }, []);
+    const value = encodeURIComponent(JSON.stringify({ players: lineup, opponentTeam }));
+    document.cookie = `${COOKIE_NAME}=${value};max-age=31536000;path=/;SameSite=Lax`;
+  }, [lineup, opponentTeam]);
 
-  // Salva la formazione nei cookie quando cambia
   useEffect(() => {
-    const formationData: SavedFormation = {
-      lineupPlayers,
-      opponentTeam,
-      captainIndex,
-    };
-    const encodedData = encodeURIComponent(JSON.stringify(formationData));
-    setCookie('savedFormation', encodedData, 365);
-  }, [lineupPlayers, opponentTeam, captainIndex]);
+    if (error) errorRef.current?.focus();
+  }, [error]);
 
-  // Scroll automatico all'immagine generata su mobile
   useEffect(() => {
-    if (generatedImageUrl && previewRef.current) {
-      // Piccolo delay per assicurarsi che l'immagine sia renderizzata
-      setTimeout(() => {
-        previewRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-      }, 100);
-    }
+    if (generatedImageUrl) previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [generatedImageUrl]);
 
-  const handlePlayerChange = (index: number, playerId: string) => {
-    const newPlayers = [...lineupPlayers];
-    const player = players.find(p => p.id === playerId);
-    
-    if (player) {
-      newPlayers[index] = {
+  const selectedIds = new Set(lineup.map((player) => player.playerId).filter(Boolean));
+  const filledPlayersCount = selectedIds.size;
+
+  const updatePlayer = (index: number, playerId: string) => {
+    setLineup((current) => current.map((entry, entryIndex) => {
+      if (entryIndex !== index) return entry;
+      const player = players.find((candidate) => candidate.id === playerId);
+      return {
         playerId,
-        playerName: getSurname(player.name),
-        number: getDefaultNumber(playerId, index),
-        isCaptain: index === captainIndex,
+        number: player?.defaultNumber || entry.number || index + 1,
+        isCaptain: playerId ? entry.isCaptain : false,
       };
-    } else {
-      newPlayers[index] = {
-        playerId: '',
-        playerName: '',
-        number: index + 1,
-        isCaptain: false,
-      };
-      if (captainIndex === index) {
-        setCaptainIndex(null);
-      }
-    }
-    
-    setLineupPlayers(newPlayers);
-  };
-
-  const handleNumberChange = (index: number, value: string) => {
-    const newPlayers = [...lineupPlayers];
-    // Permetti valori vuoti durante la digitazione
-    if (value === '') {
-      newPlayers[index] = {
-        ...newPlayers[index],
-        number: 0, // Usiamo 0 come valore temporaneo per campo vuoto
-      };
-    } else {
-      const numValue = parseInt(value, 10);
-      if (!isNaN(numValue)) {
-        newPlayers[index] = {
-          ...newPlayers[index],
-          number: Math.max(1, Math.min(99, numValue)),
-        };
-      }
-    }
-    setLineupPlayers(newPlayers);
-  };
-
-  const handleNumberBlur = (index: number) => {
-    const newPlayers = [...lineupPlayers];
-    // Se il campo è vuoto quando perde il focus, imposta il valore di default
-    if (newPlayers[index].number === 0 || isNaN(newPlayers[index].number)) {
-      newPlayers[index] = {
-        ...newPlayers[index],
-        number: getDefaultNumber(newPlayers[index].playerId || '', index),
-      };
-    }
-    setLineupPlayers(newPlayers);
-  };
-
-  const handleCaptainChange = (index: number) => {
-    const newCaptainIndex = captainIndex === index ? null : index;
-    setCaptainIndex(newCaptainIndex);
-    
-    const newPlayers = lineupPlayers.map((p, i) => ({
-      ...p,
-      isCaptain: i === newCaptainIndex,
     }));
-    setLineupPlayers(newPlayers);
+  };
+
+  const updateNumber = (index: number, value: string) => {
+    const number = Math.min(99, Math.max(1, Number.parseInt(value, 10) || 1));
+    setLineup((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, number } : entry));
+  };
+
+  const toggleCaptain = (index: number) => {
+    setLineup((current) => current.map((entry, entryIndex) => ({
+      ...entry,
+      isCaptain: entryIndex === index ? !entry.isCaptain : false,
+    })));
   };
 
   const generate = async () => {
-    const validPlayers = lineupPlayers.filter(p => p.playerId);
-    
-    if (validPlayers.length !== 11) {
-      alert('Seleziona esattamente 11 giocatori');
+    const ids = lineup.map((player) => player.playerId);
+    if (ids.some((id) => !id)) {
+      setError('Seleziona esattamente undici giocatori.');
+      return;
+    }
+    if (new Set(ids).size !== 11) {
+      setError('Ogni giocatore può comparire una sola volta.');
+      return;
+    }
+    if (!opponentTeam.trim()) {
+      setError('Inserisci il nome della squadra avversaria.');
       return;
     }
 
-    if (!opponentTeam.trim()) {
-      alert('Inserisci il nome della squadra avversaria');
-      return;
-    }
-    
     setLoading(true);
     setError(null);
-    setGeneratedImageUrl(null);
-
     try {
-      if (isProduction()) {
-        // In produzione: genera IMMAGINE lineup via Lambda lineup-image (stesso design del locale)
-        const validPlayersForRequest = lineupPlayers.filter(p => p.playerId);
-        const lineupImageUrl = process.env.REACT_APP_LINEUP_IMAGE_URL || 'https://4nmg24nu7tkv6mo6ikistuh2la0dbxtl.lambda-url.eu-west-1.on.aws/';
-        const response = await fetch(lineupImageUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            players: validPlayersForRequest,
-            opponentTeam: opponentTeam.trim(),
-          }),
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        // La Lambda restituisce direttamente l'immagine binaria
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGeneratedImageUrl(imageUrl);
-      } else {
-        // In sviluppo locale: genera IMMAGINE via server locale
-        const request: LineupRequest = {
-          players: lineupPlayers.filter(p => p.playerId),
-          opponentTeam: opponentTeam.trim(),
-        };
-
-        const response = await fetch('http://localhost:4000/api/lineup-generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(request),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Errore nella generazione dell\'immagine');
-        }
-
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGeneratedImageUrl(imageUrl);
-      }
-    } catch (err: any) {
-      console.error('Error generating lineup:', err);
-      setError(err.message || 'Errore durante la generazione');
+      const payload: LineupImagePayload = { players: lineup, opponentTeam: opponentTeam.trim() };
+      replaceImage(await requestGeneratedImage(getEndpoint('lineup'), payload));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Errore durante la generazione della formazione.');
     } finally {
       setLoading(false);
     }
   };
 
-  const reset = () => {
-    setGeneratedImageUrl(null);
-    setError(null);
-  };
-
-  const filledPlayersCount = lineupPlayers.filter(p => p.playerId).length;
-
   return (
-    <PageTemplate
-      title="Starting XI"
-      icon="📋"
-    >
+    <PageTemplate title="Starting XI" description="Componi gli undici titolari e genera la grafica ufficiale." icon="📋">
       <div className="lineup-container">
-        {/* Squadra Avversaria */}
-        <div className="card opponent-section">
-          <label className="opponent-label">
-            <span className="label-icon">⚽</span>
-            <span>Squadra Avversaria</span>
-          </label>
+        <section className="card opponent-section">
+          <label className="opponent-label" htmlFor="opponent-team">⚽ Squadra avversaria</label>
           <input
+            id="opponent-team"
             type="text"
             className="opponent-input-mobile"
             value={opponentTeam}
-            onChange={(e) => setOpponentTeam(e.target.value)}
-            placeholder="Squadra Avversaria"
+            onChange={(event) => setOpponentTeam(event.target.value.slice(0, 80))}
+            placeholder="Squadra avversaria"
+            maxLength={80}
           />
-        </div>
+        </section>
 
-        {/* Lista Giocatori */}
-        <div className="card players-section">
-          <h3 className="section-title">
-            <span>👥</span> Giocatori
-          </h3>
-          
+        <section className="card players-section" aria-labelledby="players-heading">
+          <h2 id="players-heading" className="section-title">👥 Giocatori</h2>
           <div className="players-list">
-            {lineupPlayers.map((player, index) => (
-              <div 
-                key={index} 
-                className={`player-row ${player.playerId ? 'player-row-filled' : ''} ${player.isCaptain ? 'player-row-captain' : ''}`}
-              >
-                <span className="player-number">#{index + 1}</span>
-                
+            {lineup.map((entry, index) => (
+              <div key={index} className={`player-row ${entry.playerId ? 'player-row-filled' : ''} ${entry.isCaptain ? 'player-row-captain' : ''}`}>
+                <span className="player-number" aria-hidden="true">#{index + 1}</span>
+                <label className="sr-only" htmlFor={`lineup-player-${index}`}>Giocatore {index + 1}</label>
                 <select
+                  id={`lineup-player-${index}`}
                   className="player-select-compact"
-                  value={player.playerId}
-                  onChange={(e) => handlePlayerChange(index, e.target.value)}
+                  value={entry.playerId}
+                  onChange={(event) => updatePlayer(index, event.target.value)}
                 >
                   <option value="">Giocatore...</option>
-                  {players.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {getSurname(p.name)}
+                  {players.map((player) => (
+                    <option key={player.id} value={player.id} disabled={selectedIds.has(player.id) && player.id !== entry.playerId}>
+                      {player.shortName}{player.assetKey ? '' : ' · foto fallback'}
                     </option>
                   ))}
                 </select>
-
+                <label className="sr-only" htmlFor={`lineup-number-${index}`}>Numero maglia di {entry.playerId ? players.find((player) => player.id === entry.playerId)?.shortName : `giocatore ${index + 1}`}</label>
                 <input
+                  id={`lineup-number-${index}`}
+                  className="number-input-compact"
                   type="number"
                   min={1}
                   max={99}
-                  className="number-input-compact"
-                  value={player.number === 0 ? '' : player.number}
-                  onChange={(e) => handleNumberChange(index, e.target.value)}
-                  onBlur={() => handleNumberBlur(index)}
-                  placeholder="N°"
+                  value={entry.number}
+                  onChange={(event) => updateNumber(index, event.target.value)}
                 />
-
                 <button
-                  className={`captain-btn ${player.isCaptain ? 'captain-btn-active' : ''}`}
-                  onClick={() => handleCaptainChange(index)}
-                  disabled={!player.playerId}
-                  title={player.isCaptain ? 'Capitano' : 'Imposta capitano'}
-                >
-                  <span className="captain-c">C</span>
-                </button>
+                  type="button"
+                  className={`captain-btn ${entry.isCaptain ? 'captain-btn-active' : ''}`}
+                  disabled={!entry.playerId}
+                  onClick={() => toggleCaptain(index)}
+                  aria-pressed={entry.isCaptain}
+                  aria-label={`Imposta ${entry.playerId ? players.find((player) => player.id === entry.playerId)?.shortName : `giocatore ${index + 1}`} come capitano`}
+                >C</button>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Contatore e Azioni */}
-        <div className="card lineup-actions-mobile">
-          {/* Contatore giocatori */}
-          <div className="lineup-counter-bottom">
-            <span className="counter-value">{filledPlayersCount}</span>
-            <span className="counter-label">/ 11 giocatori</span>
+          <div className="lineup-counter-bottom" aria-live="polite">
+            <span className="counter-value">{filledPlayersCount}/11</span>
+            <span className="counter-label">giocatori univoci</span>
           </div>
+        </section>
 
-          <Button 
-            onClick={generate} 
-            disabled={loading || filledPlayersCount !== 11 || !opponentTeam.trim()}
-            loading={loading}
-            size="large"
-            className="generate-btn-mobile"
-          >
-            {loading ? '⏳ Generazione...' : '✨ Genera Formazione'}
+        {error && <div ref={errorRef} tabIndex={-1} className="error-message" role="alert">⚠️ {error}</div>}
+
+        <div className="form-actions">
+          <Button onClick={generate} disabled={loading} loading={loading} size="large">
+            {loading ? 'Generazione...' : '✨ Genera formazione'}
           </Button>
-          
-          {filledPlayersCount !== 11 && (
-            <p className="helper-text">
-              Seleziona tutti gli 11 giocatori per continuare
-            </p>
-          )}
-          
-          {filledPlayersCount === 11 && !opponentTeam.trim() && (
-            <p className="helper-text">
-              Inserisci il nome della squadra avversaria
-            </p>
-          )}
+          {generatedImageUrl && <Button onClick={resetImage} variant="outline">Nuova formazione</Button>}
         </div>
 
-        {/* Errore */}
-        {error && (
-          <div className="card error-section-mobile">
-            <div className="error-content">
-              <span className="error-icon">⚠️</span>
-              <span className="error-text">{error}</span>
+        <div ref={previewRef} className="preview-section">
+          {generatedImageUrl ? (
+            <div className="image-preview">
+              <div className="phone-frame"><div className="phone-frame-inner"><img src={generatedImageUrl} alt="Formazione titolare generata" className="goal-image" /></div></div>
+              <div className="image-actions">
+                <Button onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}>Apri PNG</Button>
+                <a className="download-btn" href={generatedImageUrl} download="formazione.png">Scarica PNG</a>
+              </div>
             </div>
-            <Button 
-              onClick={reset}
-              variant="secondary"
-              size="medium"
-              className="retry-btn"
-            >
-              Riprova
-            </Button>
-          </div>
-        )}
-        
-        {/* Anteprima */}
-        {generatedImageUrl && (
-          <div className="card preview-section-mobile" ref={previewRef}>
-            <h3 className="preview-title">
-              <span>🎉</span> Formazione Generata
-            </h3>
-            <div className="image-container-mobile">
-              <img src={generatedImageUrl} alt="Lineup" className="lineup-image-mobile" />
-            </div>
-            <div className="preview-actions-mobile">
-              <Button 
-                onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}
-                variant="secondary"
-                size="large"
-                className="action-btn-mobile"
-              >
-                📱 Apri
-              </Button>
-              <a
-                className="download-btn-mobile"
-                href={generatedImageUrl}
-                download={`lineup_${Date.now()}.png`}
-              >
-                💾 Scarica
-              </a>
-              <Button 
-                onClick={reset}
-                variant="secondary"
-                size="large"
-                className="action-btn-mobile"
-              >
-                🔄 Nuova Formazione
-              </Button>
-            </div>
-          </div>
-        )}
+          ) : (
+            <div className="preview-placeholder"><div className="placeholder-icon">🏟️</div><h3>Anteprima formazione</h3><p>La grafica apparirà qui dopo la generazione.</p></div>
+          )}
+        </div>
       </div>
     </PageTemplate>
   );
-};
-
-export default Formazione;
+}

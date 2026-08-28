@@ -1,75 +1,41 @@
 {
   "name": "my-goal-video-app",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
-  "dependencies": {
-    "@remotion/bundler": "4.0.333",
-    "@remotion/lambda": "^4.0.333",
-    "@remotion/renderer": "4.0.333",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.6.4",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^24.1.0",
-    "@types/react": "^19.1.9",
-    "@types/react-dom": "^19.1.7",
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "html-to-image": "^1.11.13",
-    "puppeteer": "^24.27.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-router-dom": "^6.22.0",
-    "react-scripts": "^5.0.1",
-    "remotion": "4.0.333",
-    "typescript": "^4.9.5",
-    "web-vitals": "^5.1.0",
-    "zustand": "^4.5.0"
-  },
+  "type": "module",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "dev": "vite",
+    "start": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings 0",
     "type-check": "tsc --noEmit",
-    "server": "node server.js",
-    "dev": "concurrently \"npm run server\" \"npm start\"",
-    "start:full": "npm run dev",
-    "start:react": "PORT=3000 react-scripts start",
-    "start:server": "PORT_SERVER=4000 node server.js",
-    "test:final-result-image": "bash ../scripts/test-final-result-image.sh",
-    "check-ports": "lsof -i :3000 && lsof -i :4000",
-    "kill-ports": "pkill -f \"node server.js\" && pkill -f \"react-scripts\"",
-    "clean-start": "npm run kill-ports && npm run dev",
-    "studio": "npx @remotion/studio src/remotion/index.tsx",
-    "deploy:lambda": "AWS_PROFILE=daniele17 npx remotion lambda sites create src/remotion/index.tsx --site-name my-goal-video-app",
-    "deploy:lambda:check": "npx remotion lambda sites ls",
-    "deploy:lambda:clean": "npx remotion lambda sites rm my-goal-video-app"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
-  "eslintConfig": {
-    "extends": [
-
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@types/fluent-ffmpeg": "^2.1.27",
-    "concurrently": "^8.2.2"
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^6.1.0",
+    "eslint": "^10.9.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.5",
+    "globals": "^16.3.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.68.0",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   }
 }

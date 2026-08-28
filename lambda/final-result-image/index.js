@@ -1,100 +1,17 @@
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
+const { assetUrl, getAssetContext } = require('../shared/assets');
+const { getMethod, handleError, parseJsonBody, responseOptions, responsePng } = require('../shared/http');
+const { renderHtmlToPng } = require('../shared/render');
+const { escapeHtml, validateFinalResult } = require('../shared/validation');
 
-const getCorsHeaders = (event) => {
-  const headers = event.headers || {};
-  const origin =
-    headers.origin ||
-    headers.Origin ||
-    headers.ORIGIN ||
-    event.requestContext?.http?.headers?.origin ||
-    event.requestContext?.http?.headers?.Origin ||
-    '*';
-  return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST,OPTIONS',
-  };
-};
-
-function escapeHtml(s) {
-  if (s == null) return '';
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-exports.handler = async (event) => {
-  const requestMethod =
-    event.requestContext?.http?.method ||
-    event.requestContext?.httpMethod ||
-    event.httpMethod ||
-    (typeof event === 'string' ? 'GET' : 'POST');
-  if (requestMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: getCorsHeaders(event),
-      body: '',
-    };
-  }
+const createHandler = (renderer = renderHtmlToPng) => async (event, context) => {
+  if (getMethod(event) === 'OPTIONS') return responseOptions();
 
   try {
-    const isApiGwV2 = !!event?.requestContext?.http;
-    const bodyStr = isApiGwV2 ? event.body : (event.body || '');
-    const payload = typeof bodyStr === 'string' && bodyStr ? JSON.parse(bodyStr) : event || {};
-    const { homeTeam, awayTeam, homeScore, awayScore, scorerLines, scorersUnder: rawScorersUnder } = payload || {};
-
-    if (!homeTeam || !String(homeTeam).trim()) {
-      return responseJson(400, { error: 'Missing homeTeam or awayTeam' }, event);
-    }
-    if (!awayTeam || !String(awayTeam).trim()) {
-      return responseJson(400, { error: 'Missing homeTeam or awayTeam' }, event);
-    }
-    if (homeScore === undefined || homeScore === null || Number.isNaN(Number(homeScore))) {
-      return responseJson(400, { error: 'Missing or invalid homeScore or awayScore' }, event);
-    }
-    if (awayScore === undefined || awayScore === null || Number.isNaN(Number(awayScore))) {
-      return responseJson(400, { error: 'Missing or invalid homeScore or awayScore' }, event);
-    }
-    if (Number(homeScore) < 0 || Number(awayScore) < 0) {
-      return responseJson(400, { error: 'Scores cannot be negative' }, event);
-    }
-    if (!Array.isArray(scorerLines)) {
-      return responseJson(400, { error: 'scorerLines must be an array of strings' }, event);
-    }
-    if (
-      rawScorersUnder !== undefined &&
-      rawScorersUnder !== null &&
-      rawScorersUnder !== 'home' &&
-      rawScorersUnder !== 'away'
-    ) {
-      return responseJson(400, { error: 'scorersUnder must be "home" or "away"' }, event);
-    }
-
-    let scorersUnder = rawScorersUnder;
-    if (scorersUnder !== 'home' && scorersUnder !== 'away') {
-      const hn = String(homeTeam).toUpperCase();
-      const an = String(awayTeam).toUpperCase();
-      if (hn.includes('CASALPOGLIO') && !an.includes('CASALPOGLIO')) scorersUnder = 'home';
-      else if (an.includes('CASALPOGLIO') && !hn.includes('CASALPOGLIO')) scorersUnder = 'away';
-      else scorersUnder = 'home';
-    }
-
-    const region = process.env.AWS_REGION || 'eu-west-1';
-    const assetBucket = process.env.ASSET_BUCKET;
-    if (!assetBucket) {
-      return responseJson(500, { error: 'ASSET_BUCKET env var is required' }, event);
-    }
-
-    const golBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/gol/gol`;
-    const lineupBaseUrl = `https://${assetBucket}.s3.${region}.amazonaws.com/lineup`;
-
-    const lines = scorerLines
-      .map((l) => String(l).trim())
-      .filter(Boolean)
-      .slice(0, 40);
+    const { homeTeam, awayTeam, homeScore, awayScore, scorerLines, scorersUnder } = validateFinalResult(parseJsonBody(event));
+    const assets = getAssetContext();
+    const golBaseUrl = assetUrl(assets, 'gol/gol');
+    const lineupBaseUrl = assetUrl(assets, 'lineup');
+    const lines = scorerLines;
 
     const scorersItems = lines.map((line) => `<li>${escapeHtml(line)}</li>`).join('');
     const scorersBlock = `<div class="scorers-wrap"><div class="scorers-title">MARCATORI</div><ul class="scorers-list scorers-columns">${scorersItems}</ul></div>`;
@@ -407,74 +324,11 @@ exports.handler = async (event) => {
 </body>
 </html>`;
 
-    const executablePath = await chromium.executablePath();
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: { width: 1440, height: 2560, deviceScaleFactor: 1 },
-      executablePath,
-      headless: true,
-    });
-    const page = await browser.newPage();
-    await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
-    await page.evaluate(() => document.fonts.ready);
-    await new Promise((r) => setTimeout(r, 2000));
-    await new Promise((r) => setTimeout(r, 2000));
-    await page.evaluate(() => {
-      return new Promise((resolve) => {
-        const images = document.querySelectorAll('img');
-        let loaded = 0;
-        const total = images.length;
-        if (total === 0) {
-          resolve();
-          return;
-        }
-        images.forEach((img) => {
-          if (img.complete && img.naturalHeight > 0) {
-            loaded++;
-            if (loaded === total) resolve();
-          } else {
-            img.addEventListener(
-              'load',
-              () => {
-                loaded++;
-                if (loaded === total) resolve();
-              },
-              { once: true }
-            );
-          }
-        });
-        setTimeout(resolve, 3000);
-      });
-    });
-    await new Promise((r) => setTimeout(r, 1000));
-
-    const png = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1440, height: 2560 } });
-    await browser.close();
-
-    return responsePng(png, event);
-  } catch (e) {
-    console.error('final-result-image error:', e);
-    return responseJson(500, { error: String(e?.message || e) }, event);
+    return responsePng(await renderer(htmlTemplate, { width: 1440, height: 2560 }));
+  } catch (error) {
+    return handleError(error, context?.awsRequestId);
   }
 };
 
-function responseJson(statusCode, obj, event) {
-  return {
-    statusCode,
-    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(event) },
-    body: JSON.stringify(obj),
-  };
-}
-
-function responsePng(buffer, event) {
-  const base64Image = Buffer.from(buffer).toString('base64');
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'image/png',
-      ...getCorsHeaders(event),
-    },
-    body: base64Image,
-    isBase64Encoded: true,
-  };
-}
+exports.createHandler = createHandler;
+exports.handler = createHandler();
