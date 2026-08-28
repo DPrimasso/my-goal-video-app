@@ -31,9 +31,9 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .bgimg{position:absolute;inset:0;opacity:.2}.bgimg img{width:100%;height:100%;object-fit:cover}
   .element{position:relative;z-index:2;padding:70px;border-radius:10px;background:rgba(0,0,0,.8)}
   .element h1{font-size:180px;line-height:1;white-space:nowrap}.element p{margin-top:24px;font-size:60px;line-height:1;text-transform:uppercase}
-  .flexmore{flex:1;overflow:hidden}.list{height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+  .flexmore{flex:1}.list{height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
   .row{display:grid;grid-template-columns:1fr 9fr;font-size:80px;line-height:1}.num{color:#d00}.name{display:flex;align-items:center;gap:16px}.cap{width:54px;aspect-ratio:1}
-  .logoimg{position:absolute;bottom:30px;left:120px;right:0;opacity:.1}.logoimg img{width:140%;max-width:none;transform:rotate(-6deg);transform-origin:left center}
+  .logoimg{position:absolute;bottom:30px;left:120px;right:0;opacity:.1}.logoimg img{width:160%;max-width:none;transform:rotate(-10deg);transform-origin:left center}
   .grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .sponsor{aspect-ratio:2/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}.sponsor img{width:60%;max-height:70%;object-fit:contain}
 </style></head><body><div class="card">
