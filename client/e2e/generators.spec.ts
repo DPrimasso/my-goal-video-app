@@ -40,8 +40,9 @@ test('i tre generatori restano utilizzabili con una sola navigazione', async ({ 
   await expect(page.getByRole('img', { name: 'Grafica goal generata' })).toBeVisible();
 
   await visibleNavigation.getByRole('button', { name: /Risultato/ }).click();
-  await page.getByLabel('Squadra casa').selectOption('casalpoglio');
-  await page.getByLabel('Squadra ospite').selectOption('amatori_club');
+  await page.getByLabel('Squadra casa').fill('Casalpoglio');
+  await page.getByLabel('Squadra ospite').fill('Amatori Club');
+  await expect(page.getByText('Marcatori extra')).toHaveCount(0);
   await page.getByRole('button', { name: /Genera immagine/ }).click();
   await expect(page.getByRole('img', { name: 'Grafica del risultato finale' })).toBeVisible();
   await expect(page.locator('video')).toHaveCount(0);

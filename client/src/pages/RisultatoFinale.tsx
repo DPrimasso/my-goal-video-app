@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PageTemplate } from '../components/layout';
 import { Button, Input, Select } from '../components/ui';
-import { getPlayer, getTeam, players, teams } from '../catalog';
+import { getPlayer, players } from '../catalog';
 import { getEndpoint } from '../config/environment';
 import { useGeneratedImage } from '../hooks';
 import { requestGeneratedImage } from '../services/imageApi';
@@ -13,20 +13,22 @@ interface TeamScore {
   away: number;
 }
 
+const isCasalpoglio = (teamName: string) => teamName.trim().toLocaleLowerCase('it-IT') === 'casalpoglio';
+
 export default function RisultatoFinale() {
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
   const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
   const [scorers, setScorers] = useState<Scorer[]>([]);
-  const [manualScorerLines, setManualScorerLines] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { url: generatedImageUrl, replace: replaceImage, reset: resetImage } = useGeneratedImage();
   const errorRef = useRef<HTMLDivElement>(null);
 
-  const teamOptions = useMemo(() => teams.map((team) => ({ value: team.id, label: team.displayName })), []);
   const playerOptions = useMemo(() => players.map((player) => ({ value: player.id, label: player.shortName })) , []);
-  const casalpoglioGoals = homeTeam === 'casalpoglio' ? score.home : awayTeam === 'casalpoglio' ? score.away : 0;
+  const homeIsCasalpoglio = isCasalpoglio(homeTeam);
+  const awayIsCasalpoglio = isCasalpoglio(awayTeam);
+  const casalpoglioGoals = homeIsCasalpoglio ? score.home : awayIsCasalpoglio ? score.away : 0;
 
   useEffect(() => {
     if (error) errorRef.current?.focus();
@@ -39,14 +41,15 @@ export default function RisultatoFinale() {
     ));
   };
 
-  const updateTeam = (side: 'home' | 'away', teamId: string) => {
-    const nextHomeTeam = side === 'home' ? teamId : homeTeam;
-    const nextAwayTeam = side === 'away' ? teamId : awayTeam;
-    const nextGoals = nextHomeTeam === 'casalpoglio'
+  const updateTeam = (side: 'home' | 'away', teamName: string) => {
+    const nextTeamName = teamName.slice(0, 80);
+    const nextHomeTeam = side === 'home' ? nextTeamName : homeTeam;
+    const nextAwayTeam = side === 'away' ? nextTeamName : awayTeam;
+    const nextGoals = isCasalpoglio(nextHomeTeam)
       ? score.home
-      : nextAwayTeam === 'casalpoglio' ? score.away : 0;
-    if (side === 'home') setHomeTeam(teamId);
-    else setAwayTeam(teamId);
+      : isCasalpoglio(nextAwayTeam) ? score.away : 0;
+    if (side === 'home') setHomeTeam(nextTeamName);
+    else setAwayTeam(nextTeamName);
     resizeScorers(nextGoals);
   };
 
@@ -54,7 +57,7 @@ export default function RisultatoFinale() {
     const numericValue = Math.min(99, Math.max(0, Number.parseInt(value, 10) || 0));
     const nextScore = { ...score, [side]: numericValue };
     setScore(nextScore);
-    resizeScorers(homeTeam === 'casalpoglio' ? nextScore.home : awayTeam === 'casalpoglio' ? nextScore.away : 0);
+    resizeScorers(homeIsCasalpoglio ? nextScore.home : awayIsCasalpoglio ? nextScore.away : 0);
   };
 
   const updateScorer = (index: number, field: keyof Scorer, value: string) => {
@@ -67,22 +70,21 @@ export default function RisultatoFinale() {
   };
 
   const buildScorerLines = (): string[] => {
-    const automatic = scorers.flatMap((scorer) => {
+    return scorers.flatMap((scorer) => {
       const player = getPlayer(scorer.playerId);
       return player && scorer.minute > 0 ? [`${player.shortName} ${scorer.minute}'`] : [];
     });
-    const manual = manualScorerLines.split('\n').map((line) => line.trim()).filter(Boolean).slice(0, 20);
-    return [...automatic, ...manual];
   };
 
   const validate = (): string | null => {
-    if (!homeTeam || !awayTeam) return 'Seleziona entrambe le squadre.';
-    if (homeTeam === awayTeam) return 'Le due squadre devono essere differenti.';
+    const normalizedHomeTeam = homeTeam.trim();
+    const normalizedAwayTeam = awayTeam.trim();
+    if (!normalizedHomeTeam || !normalizedAwayTeam) return 'Inserisci entrambe le squadre.';
+    if (normalizedHomeTeam.localeCompare(normalizedAwayTeam, 'it', { sensitivity: 'base' }) === 0) return 'Le due squadre devono essere differenti.';
     if (score.home < 0 || score.away < 0 || score.home > 99 || score.away > 99) return 'Il punteggio deve essere compreso tra 0 e 99.';
     if (scorers.some((scorer) => !scorer.playerId || scorer.minute < 1 || scorer.minute > 150)) {
       return 'Compila giocatore e minuto per ogni gol del Casalpoglio.';
     }
-    if (manualScorerLines.split('\n').some((line) => line.length > 80)) return 'Ogni riga marcatore può contenere al massimo 80 caratteri.';
     return null;
   };
 
@@ -95,15 +97,13 @@ export default function RisultatoFinale() {
     setLoading(true);
     setError(null);
     try {
-      const homeLabel = getTeam(homeTeam)?.displayName || homeTeam;
-      const awayLabel = getTeam(awayTeam)?.displayName || awayTeam;
       const payload: FinalResultImagePayload = {
-        homeTeam: homeLabel,
-        awayTeam: awayLabel,
+        homeTeam: homeTeam.trim(),
+        awayTeam: awayTeam.trim(),
         homeScore: score.home,
         awayScore: score.away,
         scorerLines: buildScorerLines(),
-        scorersUnder: homeTeam === 'casalpoglio' ? 'home' : awayTeam === 'casalpoglio' ? 'away' : 'home',
+        scorersUnder: homeIsCasalpoglio ? 'home' : awayIsCasalpoglio ? 'away' : 'home',
       };
       replaceImage(await requestGeneratedImage(getEndpoint('finalResult'), payload));
     } catch (reason) {
@@ -114,7 +114,7 @@ export default function RisultatoFinale() {
   };
 
   const summary = homeTeam && awayTeam
-    ? `${getTeam(homeTeam)?.displayName} ${score.home} – ${score.away} ${getTeam(awayTeam)?.displayName}`
+    ? `${homeTeam.trim()} ${score.home} – ${score.away} ${awayTeam.trim()}`
     : '';
 
   return (
@@ -122,9 +122,9 @@ export default function RisultatoFinale() {
       <div className="result-container">
         <section className="card result-form-container" aria-label="Dati del risultato finale">
           <div className="teams-section">
-            <Select label="Squadra casa" value={homeTeam} onChange={(value) => updateTeam('home', value)} options={teamOptions} required />
+            <Input id="final-home-team" label="Squadra casa" value={homeTeam} onChange={(value) => updateTeam('home', value)} placeholder="es. Casalpoglio" maxLength={80} required />
             <div className="vs-section"><div className="vs-text" aria-hidden="true">VS</div></div>
-            <Select label="Squadra ospite" value={awayTeam} onChange={(value) => updateTeam('away', value)} options={teamOptions} required />
+            <Input id="final-away-team" label="Squadra ospite" value={awayTeam} onChange={(value) => updateTeam('away', value)} placeholder="es. Castelletto" maxLength={80} required />
           </div>
 
           <fieldset className="score-section">
@@ -154,20 +154,6 @@ export default function RisultatoFinale() {
           )}
 
           {summary && <div className="match-summary" aria-live="polite">{summary}</div>}
-
-          <section className="image-scorers-section" aria-labelledby="extra-scorers-title">
-            <h2 id="extra-scorers-title">Marcatori extra</h2>
-            <p className="image-scorers-hint">Una riga per ogni marcatore aggiuntivo, massimo 20 righe e 80 caratteri per riga.</p>
-            <label className="input__label" htmlFor="manual-scorers">Righe extra marcatori</label>
-            <textarea
-              id="manual-scorers"
-              className="input marcatori-textarea"
-              value={manualScorerLines}
-              onChange={(event) => setManualScorerLines(event.target.value.slice(0, 1600))}
-              placeholder={"ROSSI 23'\nBIANCHI 67'"}
-              rows={5}
-            />
-          </section>
 
           {error && <div ref={errorRef} tabIndex={-1} className="error-message" role="alert">⚠️ {error}</div>}
           <div className="result-actions">
