@@ -13,13 +13,63 @@ interface TeamScore {
   away: number;
 }
 
+interface SavedFinalResult {
+  homeTeam: string;
+  awayTeam: string;
+  score: TeamScore;
+  scorers: Scorer[];
+}
+
+const COOKIE_NAME = 'savedFinalResult';
+const EMPTY_SCORE: TeamScore = { home: 0, away: 0 };
 const isCasalpoglio = (teamName: string) => teamName.trim().toLocaleLowerCase('it-IT') === 'casalpoglio';
 
+const sanitizeScore = (value: unknown): number => (
+  typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(99, Math.max(0, Math.trunc(value)))
+    : 0
+);
+
+function readSavedFinalResult(): SavedFinalResult {
+  const emptyState: SavedFinalResult = { homeTeam: '', awayTeam: '', score: EMPTY_SCORE, scorers: [] };
+  const entry = document.cookie
+    .split(';')
+    .map((value) => value.trim())
+    .find((value) => value.startsWith(`${COOKIE_NAME}=`));
+  if (!entry) return emptyState;
+
+  try {
+    const parsed = JSON.parse(decodeURIComponent(entry.slice(COOKIE_NAME.length + 1))) as Partial<SavedFinalResult>;
+    const homeTeam = typeof parsed.homeTeam === 'string' ? parsed.homeTeam.slice(0, 80) : '';
+    const awayTeam = typeof parsed.awayTeam === 'string' ? parsed.awayTeam.slice(0, 80) : '';
+    const score = {
+      home: sanitizeScore(parsed.score?.home),
+      away: sanitizeScore(parsed.score?.away),
+    };
+    const casalpoglioGoals = isCasalpoglio(homeTeam) ? score.home : isCasalpoglio(awayTeam) ? score.away : 0;
+    const savedScorers = Array.isArray(parsed.scorers) ? parsed.scorers : [];
+    const scorers = Array.from({ length: casalpoglioGoals }, (_, index) => {
+      const scorer = savedScorers[index];
+      return {
+        playerId: typeof scorer?.playerId === 'string' && getPlayer(scorer.playerId) ? scorer.playerId : '',
+        minute: typeof scorer?.minute === 'number' && Number.isFinite(scorer.minute)
+          ? Math.min(150, Math.max(0, Math.trunc(scorer.minute)))
+          : 0,
+      };
+    });
+
+    return { homeTeam, awayTeam, score, scorers };
+  } catch {
+    return emptyState;
+  }
+}
+
 export default function RisultatoFinale() {
-  const [homeTeam, setHomeTeam] = useState('');
-  const [awayTeam, setAwayTeam] = useState('');
-  const [score, setScore] = useState<TeamScore>({ home: 0, away: 0 });
-  const [scorers, setScorers] = useState<Scorer[]>([]);
+  const [saved] = useState(readSavedFinalResult);
+  const [homeTeam, setHomeTeam] = useState(saved.homeTeam);
+  const [awayTeam, setAwayTeam] = useState(saved.awayTeam);
+  const [score, setScore] = useState<TeamScore>(saved.score);
+  const [scorers, setScorers] = useState<Scorer[]>(saved.scorers);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { url: generatedImageUrl, replace: replaceImage, reset: resetImage } = useGeneratedImage();
@@ -29,6 +79,11 @@ export default function RisultatoFinale() {
   const homeIsCasalpoglio = isCasalpoglio(homeTeam);
   const awayIsCasalpoglio = isCasalpoglio(awayTeam);
   const casalpoglioGoals = homeIsCasalpoglio ? score.home : awayIsCasalpoglio ? score.away : 0;
+
+  useEffect(() => {
+    const value = encodeURIComponent(JSON.stringify({ homeTeam, awayTeam, score, scorers }));
+    document.cookie = `${COOKIE_NAME}=${value};max-age=31536000;path=/;SameSite=Lax`;
+  }, [homeTeam, awayTeam, score, scorers]);
 
   useEffect(() => {
     if (error) errorRef.current?.focus();
