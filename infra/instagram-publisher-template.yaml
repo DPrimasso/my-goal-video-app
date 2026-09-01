@@ -65,6 +65,7 @@ Resources:
       Timeout: 60
       ReservedConcurrentExecutions: 2
       AutoPublishAlias: live
+      AutoPublishAliasAllProperties: true
       Role: !GetAtt InstagramStoryPublisherExecutionRole.Arn
       EphemeralStorage:
         Size: 512
