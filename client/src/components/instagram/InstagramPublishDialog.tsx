@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { INSTAGRAM_PUBLISH_URL } from '../../config/environment';
-import { publishInstagramStory } from '../../services/instagramApi';
+import {
+  fingerprintInstagramImage,
+  InstagramApiError,
+  prepareInstagramImage,
+  publishInstagramStory,
+} from '../../services/instagramApi';
+import {
+  createInstagramAttempt,
+  getOrCreateInstagramAttempt,
+  type InstagramAttemptRecord,
+  updateInstagramAttempt,
+} from '../../services/instagramPublishState';
 import { Button } from '../ui';
 import './InstagramPublishDialog.css';
 
@@ -9,20 +20,44 @@ interface InstagramPublishDialogProps {
   endpoint?: string;
 }
 
-function newIdempotencyKey(): string {
-  return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}-instagram`;
-}
-
 export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_URL }: InstagramPublishDialogProps) {
   const [open, setOpen] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [preparationError, setPreparationError] = useState<string | null>(null);
+  const [preparing, setPreparing] = useState(true);
+  const [preparedImage, setPreparedImage] = useState<Blob | null>(null);
+  const [fingerprint, setFingerprint] = useState('');
+  const [attempt, setAttempt] = useState<InstagramAttemptRecord | null>(null);
   const [published, setPublished] = useState(false);
-  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
+  const [uncertain, setUncertain] = useState(false);
   const pinRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!endpoint) return undefined;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const image = await prepareInstagramImage(imageUrl);
+        const imageFingerprint = await fingerprintInstagramImage(image);
+        const storedAttempt = getOrCreateInstagramAttempt(imageFingerprint);
+        if (cancelled) return;
+        setPreparedImage(image);
+        setFingerprint(imageFingerprint);
+        setAttempt(storedAttempt);
+        setPublished(storedAttempt.status === 'PUBLISHED');
+        setUncertain(storedAttempt.status === 'UNKNOWN');
+      } catch (reason) {
+        if (!cancelled) setPreparationError(reason instanceof Error ? reason.message : 'Impossibile preparare la grafica.');
+      } finally {
+        if (!cancelled) setPreparing(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [endpoint, imageUrl]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -53,6 +88,18 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
     requestAnimationFrame(() => triggerRef.current?.focus());
   };
 
+  const startNewAttempt = () => {
+    if (!fingerprint) return;
+    const nextAttempt = createInstagramAttempt(fingerprint);
+    setAttempt(nextAttempt);
+    setPublished(false);
+    setUncertain(false);
+    setPin('');
+    setConfirmed(false);
+    setError(null);
+    setOpen(true);
+  };
+
   const publish = async () => {
     if (!/^\d{8,16}$/.test(pin)) {
       setError('Inserisci il PIN di pubblicazione (da 8 a 16 cifre).');
@@ -63,16 +110,27 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
       setError('Conferma di voler pubblicare la Storia.');
       return;
     }
+    if (!preparedImage || !attempt || !fingerprint) {
+      setError(preparationError || 'La grafica è ancora in preparazione. Riprova tra poco.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      await publishInstagramStory(endpoint, imageUrl, pin, idempotencyKey);
+      const result = await publishInstagramStory(endpoint, preparedImage, pin, attempt.key);
+      const publishedAttempt = updateInstagramAttempt(fingerprint, attempt, 'PUBLISHED', result.mediaId);
+      setAttempt(publishedAttempt);
       setPublished(true);
+      setUncertain(false);
       setOpen(false);
       setPin('');
       setConfirmed(false);
-      setIdempotencyKey(newIdempotencyKey());
     } catch (reason) {
+      if (reason instanceof InstagramApiError && reason.code === 'PUBLISH_STATUS_UNKNOWN') {
+        const unknownAttempt = updateInstagramAttempt(fingerprint, attempt, 'UNKNOWN');
+        setAttempt(unknownAttempt);
+        setUncertain(true);
+      }
       setError(reason instanceof Error ? reason.message : 'Pubblicazione non riuscita.');
     } finally {
       setLoading(false);
@@ -81,16 +139,23 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`instagram-publish-trigger${published ? ' instagram-publish-trigger--success' : ''}`}
-        onClick={() => { setError(null); setOpen(true); }}
-        disabled={published}
-      >
-        <span aria-hidden="true">{published ? '✓' : '◎'}</span>
-        {published ? 'Pubblicata su Instagram' : 'Pubblica come Storia'}
-      </button>
+      <div className="instagram-publish-controls">
+        <button
+          ref={triggerRef}
+          type="button"
+          className={`instagram-publish-trigger${published ? ' instagram-publish-trigger--success' : ''}`}
+          onClick={() => { setError(preparationError); setOpen(true); }}
+          disabled={published || preparing}
+        >
+          <span aria-hidden="true">{published ? '✓' : '◎'}</span>
+          {published ? 'Pubblicata su Instagram' : preparing ? 'Preparazione...' : uncertain ? 'Controlla pubblicazione' : 'Pubblica come Storia'}
+        </button>
+        {published && (
+          <button type="button" className="instagram-republish-trigger" onClick={startNewAttempt}>
+            Pubblica di nuovo
+          </button>
+        )}
+      </div>
 
       {open && (
         <div className="instagram-dialog-backdrop" onMouseDown={(event) => {
@@ -104,8 +169,16 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
 
             <div className="instagram-dialog-preview">
               <img src={imageUrl} alt="Anteprima della Storia da pubblicare" />
-              <div><strong>La pubblicazione è immediata</strong><span>La Storia sarà visibile su Instagram appena Meta completa l’elaborazione.</span></div>
+              <div><strong>La pubblicazione è immediata</strong><span>Meta può impiegare fino a 5 minuti. Non chiudere questa pagina durante l’elaborazione.</span></div>
             </div>
+
+            {uncertain && (
+              <div className="instagram-dialog-warning" role="alert">
+                <strong>Controlla prima Instagram</strong>
+                <span>L’esito del tentativo precedente non è certo. Se la Storia non è presente, crea volontariamente un nuovo tentativo.</span>
+                <button type="button" onClick={startNewAttempt}>Ho controllato: nuovo tentativo</button>
+              </div>
+            )}
 
             <label className="instagram-pin-label" htmlFor="instagram-publisher-pin">PIN di pubblicazione</label>
             <input
@@ -131,8 +204,8 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
             {error && <div className="instagram-dialog-error" role="alert">⚠️ {error}</div>}
             <div className="instagram-dialog-actions">
               <Button variant="outline" onClick={close} disabled={loading}>Annulla</Button>
-              <Button onClick={publish} disabled={!confirmed || pin.length < 8} loading={loading}>
-                {loading ? 'Pubblicazione...' : 'Pubblica ora'}
+              <Button onClick={publish} disabled={!confirmed || pin.length < 8 || preparing || !preparedImage || uncertain} loading={loading}>
+                {loading ? 'Elaborazione Instagram...' : 'Pubblica ora'}
               </Button>
             </div>
           </section>

@@ -4,6 +4,8 @@
 
 Il frontend invia il PNG generato alla Function URL `instagram-story-publisher`. La Lambda verifica un PIN, converte il file in JPEG 1080×1920, lo deposita temporaneamente nel bucket privato e chiede a Meta di pubblicarlo come Storia.
 
+Prima della pubblicazione la Lambda verifica che ID e username restituiti da Meta corrispondano a `@polisportiva.casalpoglio`. L’elaborazione resta sincrona e può attendere Meta fino a cinque minuti, senza introdurre code o altri servizi AWS.
+
 - Nessun API Gateway, database, Secrets Manager o allarme CloudWatch.
 - Un solo parametro SSM Standard SecureString.
 - Gli oggetti temporanei sotto `instagram-stories/` scadono dopo un giorno.
@@ -36,7 +38,7 @@ Deve essere di tipo **SecureString**, tier **Standard**, nella regione `eu-west-
 4. Conservare il token in un password manager e annotare l'ID numerico dell'account Instagram mostrato dal flusso. Non copiare questi dati nel repository.
 5. Dal terminale nella root del progetto eseguire `node scripts/hash-instagram-pin.mjs`. Digitare un PIN numerico di 8–16 cifre: il terminale non lo mostra. Conservare il PIN nel password manager e copiare soltanto `pinSalt` e `pinHash`.
 6. Nella console AWS creare il parametro SecureString con il JSON indicato sopra.
-7. Impostare la repository variable GitHub `INSTAGRAM_PUBLISHING_ENABLED` a `true` e rilanciare manualmente il workflow **Deploy Instagram story publisher**.
+7. Impostare le repository variables GitHub `INSTAGRAM_PUBLISHING_ENABLED=true` e `INSTAGRAM_EXPECTED_USERNAME=polisportiva.casalpoglio`, quindi rilanciare manualmente il workflow **Deploy Instagram story publisher**.
 8. Copiare l'output CloudFormation `InstagramStoryPublisherUrl` in Render come `VITE_INSTAGRAM_PUBLISH_URL` e avviare un deploy del frontend.
 9. Generare una grafica di prova, pubblicarla con il PIN e controllare subito la Storia su Instagram.
 
@@ -46,8 +48,11 @@ L'app Meta può restare in modalità sviluppo finché pubblica soltanto per l'ac
 
 - La Function URL è tecnicamente pubblica, ma accetta soltanto richieste provenienti dal browser Render via CORS e richiede PIN.
 - CORS non protegge invocazioni fatte fuori dal browser: il PIN lungo, la conferma e la concorrenza limitata sono protezioni intenzionali per questo strumento interno.
-- Una chiave idempotente impedisce al doppio tap di creare due Storie uguali.
-- Se l'esito Meta diventa incerto dopo il comando di pubblicazione, il backend blocca il retry e chiede di controllare Instagram.
+- Il browser calcola SHA-256 del PNG e conserva per 24 ore in `sessionStorage` soltanto chiave, stato, media ID e timestamp del tentativo. PIN e token non vengono memorizzati.
+- Gli stati S3 usano scritture condizionali: un solo processo può acquisire o recuperare un tentativo. Un `PROCESSING` può essere recuperato dopo sette minuti; `UNKNOWN` non viene mai riprovato automaticamente.
+- Retry, refresh e rigenerazione della stessa grafica riutilizzano la medesima chiave. Una nuova chiave viene creata soltanto dal comando esplicito **Pubblica di nuovo**.
+- Se l’esito Meta diventa incerto dopo il comando di pubblicazione, l’app chiede di controllare Instagram prima di consentire un nuovo tentativo volontario.
+- Meta viene interrogato subito e poi una volta al minuto, per non più di cinque minuti.
 - Il token viene inviato a Meta tramite header Bearer e non appare negli URL applicativi.
 
 ## Rinnovo e disattivazione

@@ -27,12 +27,7 @@ async function readError(response: Response): Promise<InstagramApiError> {
   return new InstagramApiError(message, code, response.status);
 }
 
-export async function publishInstagramStory(
-  endpoint: string,
-  imageUrl: string,
-  pin: string,
-  idempotencyKey: string,
-): Promise<InstagramPublishResult> {
+export async function prepareInstagramImage(imageUrl: string): Promise<Blob> {
   let imageResponse: Response;
   try {
     imageResponse = await fetch(imageUrl);
@@ -50,6 +45,24 @@ export async function publishInstagramStory(
   if (image.size > MAX_IMAGE_BYTES) {
     throw new InstagramApiError('La grafica supera il limite di 4 MB.', 'IMAGE_TOO_LARGE', 413);
   }
+  return image;
+}
+
+export async function fingerprintInstagramImage(image: Blob): Promise<string> {
+  if (!globalThis.crypto?.subtle) {
+    throw new InstagramApiError('Questo browser non supporta la pubblicazione sicura. Aggiornalo e riprova.', 'BROWSER_UNSUPPORTED', 0);
+  }
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', await image.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+export async function publishInstagramStory(
+  endpoint: string,
+  imageSource: string | Blob,
+  pin: string,
+  idempotencyKey: string,
+): Promise<InstagramPublishResult> {
+  const image = typeof imageSource === 'string' ? await prepareInstagramImage(imageSource) : imageSource;
 
   let response: Response;
   try {

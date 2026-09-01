@@ -7,7 +7,7 @@
 3. Configurare su Render le tre variabili `VITE_*_IMAGE_URL` dei generatori. Configurare `VITE_INSTAGRAM_PUBLISH_URL` soltanto dopo la prima attivazione descritta in `instagram-publishing.md`.
 4. Creare un ruolo IAM assumibile da GitHub Actions tramite OIDC e salvarne l’ARN nel secret `AWS_DEPLOY_ROLE_ARN`.
 5. Configurare le repository variables `ASSETS_BUCKET_NAME` e `RENDER_ORIGIN`.
-6. Per Instagram, configurare anche `INSTAGRAM_PUBLISHING_ENABLED`; deve restare `false` fino al completamento dello smoke test backend.
+6. Per Instagram, configurare anche `INSTAGRAM_PUBLISHING_ENABLED` e `INSTAGRAM_EXPECTED_USERNAME`; la prima deve restare `false` fino al completamento dello smoke test backend, la seconda deve valere `polisportiva.casalpoglio`.
 
 Non applicare il Blueprint finché il commit mostrato nel pannello Render non coincide con il commit atteso di `main`.
 
@@ -21,6 +21,8 @@ Non applicare il Blueprint finché il commit mostrato nel pannello Render non co
 Le variabili Vite sono valori pubblici incorporati nel bundle, quindi non devono contenere segreti.
 
 Il publisher Instagram usa uno stack separato (`infra/instagram-publisher-template.yaml`) e un workflow separato. Il token e l'hash del PIN rimangono in un parametro SecureString di SSM e non devono mai essere inseriti in GitHub, Render o nel repository.
+
+Il deploy imposta un timeout Lambda di 330 secondi per permettere i cinque controlli previsti da Meta. Durante questa attesa il frontend mantiene aperta la richiesta e riutilizza la stessa chiave idempotente in caso di retry.
 
 ## Prima attivazione dello stack SAM
 

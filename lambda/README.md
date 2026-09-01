@@ -28,4 +28,4 @@ Il rendering reale con Chromium deve essere verificato nel preview AWS prima del
 
 ## Publisher Instagram
 
-`instagram-story-publisher/` è un pacchetto Lambda indipendente: riceve il PNG generato, verifica PIN e idempotenza, converte in JPEG 1080×1920 e pubblica una Storia tramite Instagram API. Il relativo stack è `infra/instagram-publisher-template.yaml`; configurazione e attivazione sono descritte in `docs/instagram-publishing.md`.
+`instagram-story-publisher/` è un pacchetto Lambda indipendente: riceve il PNG generato, verifica PIN, destinazione Instagram e idempotenza atomica, converte in JPEG 1080×1920 e pubblica una Storia tramite Instagram API. Attende l’elaborazione Meta fino a cinque minuti e consente di recuperare un tentativo interrotto senza duplicarlo. Il relativo stack è `infra/instagram-publisher-template.yaml`; configurazione e attivazione sono descritte in `docs/instagram-publishing.md`.

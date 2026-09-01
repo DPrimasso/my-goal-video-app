@@ -22,14 +22,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: '22.17'
           cache: npm
           cache-dependency-path: lambda/instagram-story-publisher/package-lock.json
-      - uses: aws-actions/setup-sam@v2
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/setup-sam@v3
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-1
@@ -53,6 +53,7 @@ jobs:
           AssetsBucketName=${{ vars.ASSETS_BUCKET_NAME || 'casalpoglio-social-assets' }}
           AllowedOrigin=${{ vars.RENDER_ORIGIN || 'https://my-goal-video-app-1.onrender.com' }}
           PublishingEnabled=${{ vars.INSTAGRAM_PUBLISHING_ENABLED || 'false' }}
+          ExpectedInstagramUsername=${{ vars.INSTAGRAM_EXPECTED_USERNAME || 'polisportiva.casalpoglio' }}
       - name: Keep temporary Stories for at most one day
         shell: bash
         run: |

@@ -55,8 +55,23 @@ function createMetaClient({ accessToken, instagramAccountId, apiVersion, graphBa
     return result.id;
   }
 
+  async function verifyAccount(expectedUsername) {
+    const query = new URLSearchParams({ fields: 'id,username' });
+    const result = await request(`${encodeURIComponent(instagramAccountId)}?${query}`);
+    const actualUsername = String(result.username || '').replace(/^@/, '').toLowerCase();
+    const wantedUsername = String(expectedUsername || '').replace(/^@/, '').toLowerCase();
+    if (String(result.id || '') !== String(instagramAccountId) || !wantedUsername || actualUsername !== wantedUsername) {
+      throw new MetaApiError(
+        'META_ACCOUNT_MISMATCH',
+        'L’account Instagram autorizzato non corrisponde alla destinazione configurata.',
+        503,
+      );
+    }
+    return { id: String(result.id), username: result.username };
+  }
+
   async function waitUntilReady(containerId) {
-    for (let attempt = 0; attempt < 15; attempt += 1) {
+    for (let attempt = 0; attempt <= 5; attempt += 1) {
       const query = new URLSearchParams({ fields: 'status_code,status' });
       const result = await request(`${encodeURIComponent(containerId)}?${query}`);
       if (result.status_code === 'FINISHED') return;
@@ -67,7 +82,7 @@ function createMetaClient({ accessToken, instagramAccountId, apiVersion, graphBa
           502,
         );
       }
-      await pause(2_000);
+      if (attempt < 5) await pause(60_000);
     }
     throw new MetaApiError('META_PROCESSING_TIMEOUT', 'Instagram sta impiegando troppo tempo a elaborare la grafica.', 504);
   }
@@ -79,7 +94,7 @@ function createMetaClient({ accessToken, instagramAccountId, apiVersion, graphBa
     return result.id;
   }
 
-  return { createContainer, publish, waitUntilReady };
+  return { createContainer, publish, verifyAccount, waitUntilReady };
 }
 
 module.exports = { createMetaClient, MetaApiError };

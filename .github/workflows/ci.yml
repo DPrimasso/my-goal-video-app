@@ -9,8 +9,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: '22.17'
           cache: npm
@@ -58,7 +58,7 @@ jobs:
       - name: Test all three flows at mobile and desktop sizes
         working-directory: client
         run: npm run test:e2e
-      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/setup-sam@v3
       - name: Validate SAM template
         run: sam validate --lint --template-file infra/template.yaml
       - name: Validate Instagram publisher SAM template

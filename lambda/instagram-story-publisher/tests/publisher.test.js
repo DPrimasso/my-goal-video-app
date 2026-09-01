@@ -26,7 +26,7 @@ function event(overrides = {}) {
 function dependencies(storageOverrides = {}, metaOverrides = {}) {
   const state = [];
   const storage = {
-    claim: async () => ({ claimed: true }),
+    claim: async () => ({ claimed: true, etag: '"claim-etag"' }),
     uploadImage: async () => {},
     getImageUrl: async () => 'https://example.invalid/story.jpg',
     putState: async (_key, value) => state.push(value),
@@ -34,6 +34,7 @@ function dependencies(storageOverrides = {}, metaOverrides = {}) {
     ...storageOverrides,
   };
   const meta = {
+    verifyAccount: async () => ({ id: 'ig-id', username: 'polisportiva.casalpoglio' }),
     createContainer: async () => 'container-id',
     waitUntilReady: async () => {},
     publish: async () => 'media-id',
@@ -101,6 +102,52 @@ test('dopo un errore precedente incerto blocca il retry', async () => {
   const response = await createHandler(deps)(event());
   assert.equal(response.statusCode, 409);
   assert.equal(JSON.parse(response.body).code, 'PUBLISH_STATUS_UNKNOWN');
+  assert.deepEqual(deps.state, []);
+});
+
+test('una pubblicazione già in corso non altera lo stato esistente', async () => {
+  const deps = dependencies({ claim: async () => ({ claimed: false, state: { status: 'PROCESSING' } }) });
+  const response = await createHandler(deps)(event());
+  assert.equal(response.statusCode, 409);
+  assert.equal(JSON.parse(response.body).code, 'PUBLISH_IN_PROGRESS');
+  assert.deepEqual(deps.state, []);
+});
+
+test('blocca la pubblicazione se l’account Instagram non corrisponde', async () => {
+  let uploaded = false;
+  const deps = dependencies({ uploadImage: async () => { uploaded = true; } }, {
+    verifyAccount: async () => {
+      throw new MetaApiError('META_ACCOUNT_MISMATCH', 'Account Instagram non corrispondente.', 503);
+    },
+  });
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const response = await createHandler(deps)(event());
+    assert.equal(response.statusCode, 503);
+    assert.equal(JSON.parse(response.body).code, 'META_ACCOUNT_MISMATCH');
+    assert.equal(uploaded, false);
+    assert.deepEqual(deps.state.at(-1), { status: 'FAILED_RETRYABLE' });
+  } finally {
+    console.error = originalError;
+  }
+});
+
+test('registra UNKNOWN se Meta non conferma il comando di pubblicazione', async () => {
+  const deps = dependencies({}, {
+    publish: async () => {
+      throw new MetaApiError('META_REQUEST_FAILED', 'Esito non disponibile.', 502);
+    },
+  });
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const response = await createHandler(deps)(event());
+    assert.equal(response.statusCode, 502);
+    assert.deepEqual(deps.state.at(-1), { status: 'UNKNOWN' });
+  } finally {
+    console.error = originalError;
+  }
 });
 
 test('restituisce una diagnostica Meta senza esporre token', async () => {

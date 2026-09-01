@@ -42,3 +42,52 @@ test('riconosce un token Meta non valido', async () => {
       && error.metaCode === 190,
   );
 });
+
+test('verifica ID e username dell’account Instagram', async () => {
+  const client = createMetaClient({
+    accessToken: 'token', instagramAccountId: 'account-id', apiVersion: 'v25.0',
+    fetchImpl: async () => jsonResponse({ id: 'account-id', username: 'polisportiva.casalpoglio' }),
+  });
+  await assert.doesNotReject(() => client.verifyAccount('polisportiva.casalpoglio'));
+});
+
+test('rifiuta un account Instagram differente da quello atteso', async () => {
+  const client = createMetaClient({
+    accessToken: 'token', instagramAccountId: 'account-id', apiVersion: 'v25.0',
+    fetchImpl: async () => jsonResponse({ id: 'account-id', username: 'altro.account' }),
+  });
+  await assert.rejects(
+    () => client.verifyAccount('polisportiva.casalpoglio'),
+    (error) => error instanceof MetaApiError && error.code === 'META_ACCOUNT_MISMATCH',
+  );
+});
+
+test('attende Meta ogni minuto per non più di cinque minuti', async () => {
+  const waits = [];
+  let calls = 0;
+  const client = createMetaClient({
+    accessToken: 'token', instagramAccountId: 'account-id', apiVersion: 'v25.0',
+    fetchImpl: async () => { calls += 1; return jsonResponse({ status_code: 'IN_PROGRESS' }); },
+    wait: async (milliseconds) => { waits.push(milliseconds); },
+  });
+  await assert.rejects(
+    () => client.waitUntilReady('container'),
+    (error) => error instanceof MetaApiError && error.code === 'META_PROCESSING_TIMEOUT',
+  );
+  assert.equal(calls, 6);
+  assert.deepEqual(waits, [60_000, 60_000, 60_000, 60_000, 60_000]);
+});
+
+for (const statusCode of ['ERROR', 'EXPIRED']) {
+  test(`interrompe l’attesa quando Meta restituisce ${statusCode}`, async () => {
+    const client = createMetaClient({
+      accessToken: 'token', instagramAccountId: 'account-id', apiVersion: 'v25.0',
+      fetchImpl: async () => jsonResponse({ status_code: statusCode, status: 'failed' }),
+      wait: async () => {},
+    });
+    await assert.rejects(
+      () => client.waitUntilReady('container'),
+      (error) => error instanceof MetaApiError && error.code === 'META_PROCESSING_FAILED',
+    );
+  });
+}

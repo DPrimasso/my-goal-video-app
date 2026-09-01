@@ -17,6 +17,10 @@ Parameters:
     Type: String
     Default: 'false'
     AllowedValues: ['true', 'false']
+  ExpectedInstagramUsername:
+    Type: String
+    Default: polisportiva.casalpoglio
+    Description: Username Instagram di destinazione, senza chiocciola
 
 Resources:
   InstagramStoryPublisherExecutionRole:
@@ -62,7 +66,7 @@ Resources:
       Runtime: nodejs22.x
       Architectures: [x86_64]
       MemorySize: 1024
-      Timeout: 60
+      Timeout: 330
       ReservedConcurrentExecutions: 2
       AutoPublishAlias: live
       AutoPublishAliasAllProperties: true
@@ -76,6 +80,7 @@ Resources:
           META_GRAPH_API_VERSION: v25.0
           META_GRAPH_BASE_URL: https://graph.instagram.com
           PUBLISHING_ENABLED: !Ref PublishingEnabled
+          EXPECTED_INSTAGRAM_USERNAME: !Ref ExpectedInstagramUsername
       FunctionUrlConfig:
         AuthType: NONE
         Cors:

@@ -100,6 +100,9 @@ function createHandler(overrides = {}) {
     apiVersion: process.env.META_GRAPH_API_VERSION || 'v25.0',
     graphBaseUrl: process.env.META_GRAPH_BASE_URL || 'https://graph.instagram.com',
   }));
+  const expectedInstagramUsername = overrides.expectedInstagramUsername
+    || process.env.EXPECTED_INSTAGRAM_USERNAME
+    || 'polisportiva.casalpoglio';
 
   return async function handler(event = {}, context = {}) {
     const method = getMethod(event);
@@ -109,6 +112,8 @@ function createHandler(overrides = {}) {
 
     let storage;
     let idempotencyKey = '';
+    let claimEtag;
+    let ownsClaim = false;
     let publishAttempted = false;
     let metaStage = 'configurazione';
     try {
@@ -138,6 +143,12 @@ function createHandler(overrides = {}) {
         }
         throw new PublisherError(409, 'PUBLISH_IN_PROGRESS', 'La pubblicazione di questa grafica è già in corso.');
       }
+      ownsClaim = true;
+      claimEtag = claim.etag;
+
+      const meta = createMeta(config);
+      metaStage = 'verifica dell’account';
+      await meta.verifyAccount(expectedInstagramUsername);
 
       let jpeg;
       try {
@@ -151,7 +162,6 @@ function createHandler(overrides = {}) {
       }
       await storage.uploadImage(idempotencyKey, jpeg);
       const imageUrl = await storage.getImageUrl(idempotencyKey);
-      const meta = createMeta(config);
       metaStage = 'creazione del contenitore';
       const containerId = await meta.createContainer(imageUrl);
       metaStage = 'elaborazione del contenuto';
@@ -159,7 +169,8 @@ function createHandler(overrides = {}) {
       publishAttempted = true;
       metaStage = 'pubblicazione';
       const mediaId = await meta.publish(containerId);
-      await storage.putState(idempotencyKey, { status: 'PUBLISHED', mediaId });
+      await storage.putState(idempotencyKey, { status: 'PUBLISHED', mediaId }, { ifMatch: claimEtag });
+      ownsClaim = false;
       try {
         await storage.deleteImage(idempotencyKey);
       } catch (cleanupError) {
@@ -167,10 +178,10 @@ function createHandler(overrides = {}) {
       }
       return responseJson(200, 'STORY_PUBLISHED', 'Storia pubblicata su Instagram.', { mediaId });
     } catch (error) {
-      if (storage && idempotencyKey) {
+      if (ownsClaim && storage && idempotencyKey) {
         const status = publishAttempted ? 'UNKNOWN' : 'FAILED_RETRYABLE';
         try {
-          await storage.putState(idempotencyKey, { status });
+          await storage.putState(idempotencyKey, { status }, { ifMatch: claimEtag });
         } catch (stateError) {
           console.error('Instagram publication state update failed', { requestId: context.awsRequestId, message: stateError?.message });
         }
@@ -192,6 +203,8 @@ function createHandler(overrides = {}) {
         });
         const message = error.authError
           ? 'Il collegamento Instagram deve essere rinnovato.'
+          : error.code === 'META_ACCOUNT_MISMATCH'
+            ? error.message
           : `Instagram ha rifiutato la ${metaStage} (${diagnostic}): ${safeMetaMessage(error.message)}`;
         return responseJson(error.status || 502, code, message, { diagnostic, stage: metaStage });
       }

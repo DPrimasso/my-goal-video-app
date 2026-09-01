@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { publishInstagramStory } from './instagramApi';
+import { fingerprintInstagramImage, publishInstagramStory } from './instagramApi';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -39,5 +39,13 @@ describe('publishInstagramStory', () => {
     await expect(publishInstagramStory('https://publisher.test', 'blob:image', '12345678', 'request-key-12345678'))
       .rejects.toMatchObject({ code: 'INVALID_IMAGE' });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('calcola un fingerprint SHA-256 stabile del PNG', async () => {
+    const image = new Blob(['same-png'], { type: 'image/png' });
+    const first = await fingerprintInstagramImage(image);
+    const second = await fingerprintInstagramImage(image);
+    expect(first).toMatch(/^[a-f0-9]{64}$/);
+    expect(second).toBe(first);
   });
 });
