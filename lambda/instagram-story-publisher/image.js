@@ -14,11 +14,14 @@ async function convertPngToInstagramJpeg(buffer) {
     throw new Error('INVALID_PNG');
   }
   const ratio = metadata.width / metadata.height;
-  if (Math.abs(ratio - 9 / 16) > 0.01) throw new Error('INVALID_ASPECT_RATIO');
+  // Le grafiche ufficiali sono verticali: Goal e Risultato sono 9:16,
+  // mentre la Lineup storica è 1080x2000. Accettiamo entrambe e adattiamo
+  // senza ritagliare contenuti, nomi o sponsor.
+  if (ratio < 0.5 || ratio > 0.65) throw new Error('INVALID_ASPECT_RATIO');
 
   return source
     .rotate()
-    .resize(1080, 1920, { fit: 'fill' })
+    .resize(1080, 1920, { fit: 'contain', background: '#08000d' })
     .flatten({ background: '#000000' })
     .toColorspace('srgb')
     .jpeg({ quality: 92, chromaSubsampling: '4:4:4', mozjpeg: true })

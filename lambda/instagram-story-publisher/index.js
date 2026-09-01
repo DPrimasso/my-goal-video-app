@@ -134,8 +134,12 @@ function createHandler(overrides = {}) {
       let jpeg;
       try {
         jpeg = await convertImage(png);
-      } catch {
-        throw new PublisherError(400, 'INVALID_IMAGE', 'La grafica non è un PNG 9:16 valido.');
+      } catch (conversionError) {
+        console.error('Instagram image conversion failed', {
+          requestId: context.awsRequestId,
+          message: conversionError?.message || String(conversionError),
+        });
+        throw new PublisherError(400, 'INVALID_IMAGE', 'La grafica non può essere adattata al formato Storia.');
       }
       await storage.uploadImage(idempotencyKey, jpeg);
       const imageUrl = await storage.getImageUrl(idempotencyKey);
