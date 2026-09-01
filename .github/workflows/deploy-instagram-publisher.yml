@@ -59,7 +59,7 @@ jobs:
           bucket="${{ vars.ASSETS_BUCKET_NAME || 'casalpoglio-social-assets' }}"
           if aws s3api get-bucket-lifecycle-configuration --bucket "$bucket" > current-lifecycle.json 2>/dev/null; then
             jq --slurpfile desired infra/instagram-story-lifecycle.json \
-              '.Rules = ((.Rules // []) | map(select(.ID != "ExpireInstagramStoryStaging")) + $desired[0].Rules)' \
+              '{Rules: ((.Rules // []) | map(select(.ID != "ExpireInstagramStoryStaging")) + $desired[0].Rules)}' \
               current-lifecycle.json > merged-lifecycle.json
           else
             cp infra/instagram-story-lifecycle.json merged-lifecycle.json
