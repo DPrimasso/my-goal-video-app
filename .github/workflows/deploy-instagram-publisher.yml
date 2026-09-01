@@ -39,6 +39,7 @@ jobs:
       - name: Build publisher
         run: sam build --template-file infra/instagram-publisher-template.yaml
       - name: Deploy publisher
+        # Reuse the existing private assets bucket instead of creating a SAM-managed bucket.
         run: >-
           sam deploy
           --stack-name casalpoglio-instagram-publisher
