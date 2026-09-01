@@ -17,6 +17,7 @@ jobs:
           cache-dependency-path: |
             client/package-lock.json
             lambda/package-lock.json
+            lambda/instagram-story-publisher/package-lock.json
       - name: Install frontend dependencies
         working-directory: client
         run: npm ci
@@ -37,12 +38,16 @@ jobs:
       - name: Test Lambda contracts
         working-directory: lambda
         run: npm test
+      - name: Install and test Instagram publisher
+        working-directory: lambda/instagram-story-publisher
+        run: npm ci && npm test && npm run check && npm audit --omit=dev --audit-level=high
       - name: Build frontend
         working-directory: client
         env:
           VITE_LINEUP_IMAGE_URL: https://example.invalid/lineup
           VITE_GOAL_IMAGE_URL: https://example.invalid/goal
           VITE_FINAL_RESULT_IMAGE_URL: https://example.invalid/final-result
+          VITE_INSTAGRAM_PUBLISH_URL: https://example.invalid/instagram-story
         run: npm run build
       - name: Enforce frontend size budget
         shell: bash
@@ -56,3 +61,5 @@ jobs:
       - uses: aws-actions/setup-sam@v2
       - name: Validate SAM template
         run: sam validate --lint --template-file infra/template.yaml
+      - name: Validate Instagram publisher SAM template
+        run: sam validate --lint --template-file infra/instagram-publisher-template.yaml

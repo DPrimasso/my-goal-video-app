@@ -1,0 +1,73 @@
+class MetaApiError extends Error {
+  constructor(code, message, status, authError = false) {
+    super(message);
+    this.name = 'MetaApiError';
+    this.code = code;
+    this.status = status;
+    this.authError = authError;
+  }
+}
+
+function createMetaClient({ accessToken, instagramAccountId, apiVersion, graphBaseUrl = 'https://graph.instagram.com', fetchImpl = fetch, wait = undefined }) {
+  const pause = wait || ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
+  const baseUrl = `${graphBaseUrl.replace(/\/$/, '')}/${encodeURIComponent(apiVersion)}`;
+
+  async function request(path, options = {}) {
+    const response = await fetchImpl(`${baseUrl}/${path}`, {
+      ...options,
+      headers: { Authorization: `Bearer ${accessToken}`, ...options.headers },
+    });
+    const text = await response.text();
+    let body = {};
+    try {
+      body = text ? JSON.parse(text) : {};
+    } catch {
+      throw new MetaApiError('META_INVALID_RESPONSE', 'Meta ha restituito una risposta non valida.', response.status);
+    }
+    if (!response.ok || body.error) {
+      const metaCode = body.error?.code;
+      const authError = response.status === 401 || metaCode === 190;
+      throw new MetaApiError(
+        authError ? 'META_AUTH_EXPIRED' : 'META_REQUEST_FAILED',
+        body.error?.message || `Richiesta Meta non riuscita (HTTP ${response.status}).`,
+        response.status,
+        authError,
+      );
+    }
+    return body;
+  }
+
+  async function createContainer(imageUrl) {
+    const body = new URLSearchParams({
+      image_url: imageUrl,
+      media_type: 'STORIES',
+    });
+    const result = await request(`${encodeURIComponent(instagramAccountId)}/media`, { method: 'POST', body });
+    if (!result.id) throw new MetaApiError('META_INVALID_RESPONSE', 'Meta non ha restituito il container della Storia.', 502);
+    return result.id;
+  }
+
+  async function waitUntilReady(containerId) {
+    for (let attempt = 0; attempt < 15; attempt += 1) {
+      const query = new URLSearchParams({ fields: 'status_code,status' });
+      const result = await request(`${encodeURIComponent(containerId)}?${query}`);
+      if (result.status_code === 'FINISHED') return;
+      if (['ERROR', 'EXPIRED'].includes(result.status_code)) {
+        throw new MetaApiError('META_PROCESSING_FAILED', 'Instagram non è riuscito a elaborare la grafica.', 502);
+      }
+      await pause(2_000);
+    }
+    throw new MetaApiError('META_PROCESSING_TIMEOUT', 'Instagram sta impiegando troppo tempo a elaborare la grafica.', 504);
+  }
+
+  async function publish(containerId) {
+    const body = new URLSearchParams({ creation_id: containerId });
+    const result = await request(`${encodeURIComponent(instagramAccountId)}/media_publish`, { method: 'POST', body });
+    if (!result.id) throw new MetaApiError('META_INVALID_RESPONSE', 'Meta non ha confermato la pubblicazione.', 502);
+    return result.id;
+  }
+
+  return { createContainer, publish, waitUntilReady };
+}
+
+module.exports = { createMetaClient, MetaApiError };

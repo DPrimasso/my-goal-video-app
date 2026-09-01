@@ -1,0 +1,11 @@
+{
+  "Rules": [
+    {
+      "ID": "ExpireInstagramStoryStaging",
+      "Status": "Enabled",
+      "Filter": { "Prefix": "instagram-stories/" },
+      "Expiration": { "Days": 1 },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 1 }
+    }
+  ]
+}

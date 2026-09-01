@@ -5,11 +5,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'lambda/**'
+      - 'lambda/goal-image/**'
+      - 'lambda/lineup-image/**'
+      - 'lambda/final-result-image/**'
+      - 'lambda/shared/**'
+      - 'lambda/package.json'
+      - 'lambda/package-lock.json'
       - 'assets/**'
-      - 'infra/**'
+      - 'infra/template.yaml'
       - 'scripts/validate-assets.mjs'
-      - '.github/workflows/deploy-aws.yml'
 
 permissions:
   contents: read

@@ -4,9 +4,10 @@
 
 1. Collegare il servizio Render al repository GitHub e al branch `main`.
 2. Importare o ricreare il servizio tramite `render.yaml`, verificando che il nome corrisponda al servizio esistente.
-3. Configurare su Render le tre variabili `VITE_*_IMAGE_URL`.
+3. Configurare su Render le tre variabili `VITE_*_IMAGE_URL` dei generatori. Configurare `VITE_INSTAGRAM_PUBLISH_URL` soltanto dopo la prima attivazione descritta in `instagram-publishing.md`.
 4. Creare un ruolo IAM assumibile da GitHub Actions tramite OIDC e salvarne l’ARN nel secret `AWS_DEPLOY_ROLE_ARN`.
 5. Configurare le repository variables `ASSETS_BUCKET_NAME` e `RENDER_ORIGIN`.
+6. Per Instagram, configurare anche `INSTAGRAM_PUBLISHING_ENABLED`; deve restare `false` fino al completamento dello smoke test backend.
 
 Non applicare il Blueprint finché il commit mostrato nel pannello Render non coincide con il commit atteso di `main`.
 
@@ -19,6 +20,8 @@ Non applicare il Blueprint finché il commit mostrato nel pannello Render non co
 
 Le variabili Vite sono valori pubblici incorporati nel bundle, quindi non devono contenere segreti.
 
+Il publisher Instagram usa uno stack separato (`infra/instagram-publisher-template.yaml`) e un workflow separato. Il token e l'hash del PIN rimangono in un parametro SecureString di SSM e non devono mai essere inseriti in GitHub, Render o nel repository.
+
 ## Prima attivazione dello stack SAM
 
 Lo stack introduce Function URL associate agli alias `live`, quindi gli URL possono differire da quelli storici. Eseguire prima il deploy AWS, provarne gli output, aggiornare le variabili Render e solo dopo pubblicare il frontend.
@@ -30,6 +33,7 @@ AWS SAM crea le policy pubbliche necessarie a `AuthType: NONE`. CORS ammette sol
 - Frontend: usare la funzione Rollback di Render verso il deploy precedente.
 - Lambda: spostare l’alias `live` alla versione precedente oppure effettuare il rollback dello stack CloudFormation.
 - Endpoint: ripristinare temporaneamente su Render i precedenti URL e avviare una nuova build.
-- Asset: gli upload non eliminano file remoti; ripubblicare la versione Git precedente dell’asset interessato.
+- Asset: gli upload non eliminano file remoti; ripubblicare la versione Git precedente dell'asset interessato.
+- Instagram: impostare `INSTAGRAM_PUBLISHING_ENABLED=false` e rilanciare il workflow dedicato; il pulsante può essere nascosto rimuovendo `VITE_INSTAGRAM_PUBLISH_URL` da Render.
 
 Le vecchie funzioni e i vecchi endpoint vanno eliminati solo dopo uno smoke test completo e un periodo di osservazione.

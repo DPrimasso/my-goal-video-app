@@ -6,6 +6,8 @@ export const APP_CONFIG: Readonly<Record<ImageEndpointName, string>> = Object.fr
   finalResult: (import.meta.env.VITE_FINAL_RESULT_IMAGE_URL || '').trim(),
 });
 
+export const INSTAGRAM_PUBLISH_URL = (import.meta.env.VITE_INSTAGRAM_PUBLISH_URL || '').trim();
+
 const endpointLabels: Record<ImageEndpointName, string> = {
   lineup: 'Formazione',
   goal: 'Goal',

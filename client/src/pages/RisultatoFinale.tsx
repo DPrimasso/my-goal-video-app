@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PageTemplate } from '../components/layout';
+import { InstagramPublishDialog } from '../components/instagram/InstagramPublishDialog';
 import { Button, Input, Select } from '../components/ui';
 import { getPlayer, players } from '../catalog';
 import { getEndpoint } from '../config/environment';
@@ -225,6 +226,7 @@ export default function RisultatoFinale() {
               <div className="image-actions">
                 <Button onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}>Apri PNG</Button>
                 <a className="download-link" href={generatedImageUrl} download="risultato-finale.png">Scarica PNG</a>
+                <InstagramPublishDialog key={generatedImageUrl} imageUrl={generatedImageUrl} />
               </div>
             </div>
           ) : (

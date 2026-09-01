@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Pubblicazione controllata delle grafiche Casalpoglio come Instagram Stories
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: https://my-goal-video-app-1.onrender.com
+    Description: Origin Render completo, senza slash finale
+  AssetsBucketName:
+    Type: String
+    Default: casalpoglio-social-assets
+  InstagramConfigParameter:
+    Type: String
+    Default: /casalpoglio/instagram-publisher
+  PublishingEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+
+Resources:
+  InstagramStoryPublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: instagram-story-publisher
+      CodeUri: ../lambda/instagram-story-publisher/
+      Handler: index.handler
+      Runtime: nodejs22.x
+      Architectures: [x86_64]
+      MemorySize: 1024
+      Timeout: 60
+      ReservedConcurrentExecutions: 2
+      AutoPublishAlias: live
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          STAGING_BUCKET: !Ref AssetsBucketName
+          INSTAGRAM_CONFIG_PARAMETER: !Ref InstagramConfigParameter
+          META_GRAPH_API_VERSION: v25.0
+          META_GRAPH_BASE_URL: https://graph.instagram.com
+          PUBLISHING_ENABLED: !Ref PublishingEnabled
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: ReadInstagramConfiguration
+              Effect: Allow
+              Action: ssm:GetParameter
+              Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${InstagramConfigParameter}
+            - Sid: ManagePrivateStoryStaging
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${AssetsBucketName}/instagram-stories/*
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: [!Ref AllowedOrigin]
+          AllowMethods: [POST]
+          AllowHeaders:
+            - content-type
+            - x-publisher-pin
+            - x-idempotency-key
+          MaxAge: 300
+
+  InstagramStoryPublisherLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/instagram-story-publisher
+      RetentionInDays: 3
+
+Outputs:
+  InstagramStoryPublisherUrl:
+    Description: Inserire questo valore in VITE_INSTAGRAM_PUBLISH_URL su Render
+    Value: !GetAtt InstagramStoryPublisherFunctionUrl.FunctionUrl
+  PublishingState:
+    Value: !Ref PublishingEnabled

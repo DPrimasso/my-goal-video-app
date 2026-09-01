@@ -24,4 +24,8 @@ npm test
 npm run check
 ```
 
-Il rendering reale con Chromium deve essere verificato nel preview AWS prima del passaggio dell’alias `live`.
+Il rendering reale con Chromium deve essere verificato nel preview AWS prima del passaggio dell'alias `live`.
+
+## Publisher Instagram
+
+`instagram-story-publisher/` è un pacchetto Lambda indipendente: riceve il PNG generato, verifica PIN e idempotenza, converte in JPEG 1080×1920 e pubblica una Storia tramite Instagram API. Il relativo stack è `infra/instagram-publisher-template.yaml`; configurazione e attivazione sono descritte in `docs/instagram-publishing.md`.

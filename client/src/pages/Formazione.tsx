@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { PageTemplate } from '../components/layout';
+import { InstagramPublishDialog } from '../components/instagram/InstagramPublishDialog';
 import { Button } from '../components/ui';
 import { players } from '../catalog';
 import { getEndpoint } from '../config/environment';
@@ -196,6 +197,7 @@ export default function Formazione() {
               <div className="image-actions">
                 <Button onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}>Apri PNG</Button>
                 <a className="download-btn" href={generatedImageUrl} download="formazione.png">Scarica PNG</a>
+                <InstagramPublishDialog key={generatedImageUrl} imageUrl={generatedImageUrl} />
               </div>
             </div>
           ) : (

@@ -1,0 +1,67 @@
+name: Deploy Instagram story publisher
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lambda/instagram-story-publisher/**'
+      - 'infra/instagram-publisher-template.yaml'
+      - 'infra/instagram-story-lifecycle.json'
+      - '.github/workflows/deploy-instagram-publisher.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-instagram-publisher
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.17'
+          cache: npm
+          cache-dependency-path: lambda/instagram-story-publisher/package-lock.json
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-1
+      - name: Verify publisher
+        working-directory: lambda/instagram-story-publisher
+        run: npm ci && npm test && npm run check && npm audit --omit=dev --audit-level=high
+      - name: Build publisher
+        run: sam build --template-file infra/instagram-publisher-template.yaml
+      - name: Deploy publisher
+        run: >-
+          sam deploy
+          --stack-name casalpoglio-instagram-publisher
+          --region eu-west-1
+          --resolve-s3
+          --capabilities CAPABILITY_IAM
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --parameter-overrides
+          AssetsBucketName=${{ vars.ASSETS_BUCKET_NAME || 'casalpoglio-social-assets' }}
+          AllowedOrigin=${{ vars.RENDER_ORIGIN || 'https://my-goal-video-app-1.onrender.com' }}
+          PublishingEnabled=${{ vars.INSTAGRAM_PUBLISHING_ENABLED || 'false' }}
+      - name: Keep temporary Stories for at most one day
+        shell: bash
+        run: |
+          bucket="${{ vars.ASSETS_BUCKET_NAME || 'casalpoglio-social-assets' }}"
+          if aws s3api get-bucket-lifecycle-configuration --bucket "$bucket" > current-lifecycle.json 2>/dev/null; then
+            jq --slurpfile desired infra/instagram-story-lifecycle.json \
+              '.Rules = ((.Rules // []) | map(select(.ID != "ExpireInstagramStoryStaging")) + $desired[0].Rules)' \
+              current-lifecycle.json > merged-lifecycle.json
+          else
+            cp infra/instagram-story-lifecycle.json merged-lifecycle.json
+          fi
+          aws s3api put-bucket-lifecycle-configuration \
+            --bucket "$bucket" \
+            --lifecycle-configuration file://merged-lifecycle.json

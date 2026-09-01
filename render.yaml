@@ -22,3 +22,5 @@ services:
         sync: false
       - key: VITE_FINAL_RESULT_IMAGE_URL
         sync: false
+      - key: VITE_INSTAGRAM_PUBLISH_URL
+        sync: false
