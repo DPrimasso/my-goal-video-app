@@ -12,7 +12,7 @@ describe('InstagramPublishDialog', () => {
 
   it('richiede PIN e conferma prima della pubblicazione', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(new Blob(['png'], { type: 'image/png' }), { status: 200, headers: { 'Content-Type': 'image/png' } }))
+      .mockResolvedValueOnce(new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }))
       .mockResolvedValueOnce(new Response(JSON.stringify({ code: 'STORY_PUBLISHED', message: 'ok', mediaId: 'media' }), {
         status: 200, headers: { 'Content-Type': 'application/json' },
       }));

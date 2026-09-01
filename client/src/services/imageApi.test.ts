@@ -5,7 +5,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('requestGeneratedImage', () => {
   it('crea un object URL soltanto da una risposta PNG', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(new Blob(['png']), {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('png', {
       status: 200,
       headers: { 'Content-Type': 'image/png' },
     })));
