@@ -12,6 +12,7 @@ import {
   type InstagramAttemptRecord,
   updateInstagramAttempt,
 } from '../../services/instagramPublishState';
+import { shareInstagramStoryForEditing } from '../../services/instagramNativeShare';
 import { Button } from '../ui';
 import './InstagramPublishDialog.css';
 
@@ -33,11 +34,12 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
   const [attempt, setAttempt] = useState<InstagramAttemptRecord | null>(null);
   const [published, setPublished] = useState(false);
   const [uncertain, setUncertain] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
   const pinRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (!endpoint) return undefined;
     let cancelled = false;
     void (async () => {
       try {
@@ -57,7 +59,7 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
       }
     })();
     return () => { cancelled = true; };
-  }, [endpoint, imageUrl]);
+  }, [imageUrl]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -76,8 +78,6 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
       document.removeEventListener('keydown', closeOnEscape);
     };
   }, [open, loading]);
-
-  if (!endpoint) return null;
 
   const close = () => {
     if (loading) return;
@@ -137,20 +137,54 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
     }
   };
 
+  const shareForEditing = async () => {
+    if (!preparedImage) {
+      setShareMessage(preparationError || 'La grafica è ancora in preparazione. Riprova tra poco.');
+      return;
+    }
+    setSharing(true);
+    setShareMessage(null);
+    try {
+      const result = await shareInstagramStoryForEditing(preparedImage);
+      if (result === 'SHARED') {
+        setShareMessage('Nel menu Condividi scegli Instagram, poi Storia. Potrai aggiungere musica, tag e sticker prima di pubblicare.');
+      } else if (result === 'DOWNLOADED') {
+        setShareMessage('Il browser non può aprire direttamente Instagram: grafica scaricata. Aprila nell’app Instagram e scegli La tua storia.');
+      }
+    } catch (reason) {
+      setShareMessage(reason instanceof Error ? reason.message : 'Non riesco a condividere la grafica.');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <>
       <div className="instagram-publish-controls">
+        {endpoint && (
+          <button
+            ref={triggerRef}
+            type="button"
+            className={`instagram-publish-trigger${published ? ' instagram-publish-trigger--success' : ''}`}
+            onClick={() => { setError(preparationError); setOpen(true); }}
+            disabled={published || preparing}
+          >
+            <span aria-hidden="true">{published ? '✓' : '◎'}</span>
+            {published ? 'Pubblicata su Instagram' : preparing ? 'Preparazione...' : uncertain ? 'Controlla pubblicazione' : 'Pubblica come Storia'}
+          </button>
+        )}
         <button
-          ref={triggerRef}
           type="button"
-          className={`instagram-publish-trigger${published ? ' instagram-publish-trigger--success' : ''}`}
-          onClick={() => { setError(preparationError); setOpen(true); }}
-          disabled={published || preparing}
+          className="instagram-customize-trigger"
+          onClick={shareForEditing}
+          disabled={preparing || sharing || !preparedImage}
         >
-          <span aria-hidden="true">{published ? '✓' : '◎'}</span>
-          {published ? 'Pubblicata su Instagram' : preparing ? 'Preparazione...' : uncertain ? 'Controlla pubblicazione' : 'Pubblica come Storia'}
+          <span aria-hidden="true">♫</span>
+          {sharing ? 'Apertura condivisione...' : 'Aggiungi musica e tag'}
         </button>
-        {published && (
+        <p className="instagram-share-help">Sul telefono scegli Instagram e poi Storia: la grafica sarà già pronta da completare.</p>
+        {shareMessage && <p className="instagram-share-message" role="status">{shareMessage}</p>}
+        {endpoint && published && (
           <button type="button" className="instagram-republish-trigger" onClick={startNewAttempt}>
             Pubblica di nuovo
           </button>

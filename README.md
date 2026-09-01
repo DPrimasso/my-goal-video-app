@@ -6,7 +6,7 @@ Applicazione interna, accessibile tramite URL senza login, per generare tre graf
 - goal;
 - risultato finale.
 
-Le grafiche generate possono essere pubblicate direttamente come Storie sull'account Instagram Business del Casalpoglio. La pubblicazione richiede ogni volta PIN e conferma esplicita.
+Le grafiche generate possono essere pubblicate direttamente come Storie sull'account Instagram Business del Casalpoglio oppure condivise nell'app Instagram per aggiungere manualmente musica, tag e sticker. La pubblicazione diretta richiede ogni volta PIN e conferma esplicita.
 
 La sorgente applicativa ufficiale è il branch `main`. Render costruisce direttamente il Dockerfile del repository dopo il superamento della CI; le tre funzioni AWS sono definite in `infra/template.yaml`.
 

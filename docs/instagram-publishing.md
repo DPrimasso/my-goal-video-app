@@ -4,6 +4,8 @@
 
 Il frontend invia il PNG generato alla Function URL `instagram-story-publisher`. La Lambda verifica un PIN, converte il file in JPEG 1080×1920, lo deposita temporaneamente nel bucket privato e chiede a Meta di pubblicarlo come Storia.
 
+In alternativa, **Aggiungi musica e tag** usa il menu Condividi nativo del telefono per passare il PNG all'app Instagram. Questo percorso non usa Lambda, PIN o token: musica, menzioni e sticker vengono aggiunti manualmente nell'editor di Instagram prima della pubblicazione. Se il browser non supporta la condivisione di file, l'app scarica il PNG come fallback.
+
 Prima della pubblicazione la Lambda verifica che ID e username restituiti da Meta corrispondano a `@polisportiva.casalpoglio`. L’elaborazione resta sincrona e può attendere Meta fino a cinque minuti, senza introdurre code o altri servizi AWS.
 
 - Nessun API Gateway, database, Secrets Manager o allarme CloudWatch.

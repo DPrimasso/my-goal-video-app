@@ -5,13 +5,36 @@ import { InstagramPublishDialog } from './InstagramPublishDialog';
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   sessionStorage.clear();
 });
 
 describe('InstagramPublishDialog', () => {
-  it('resta nascosto senza endpoint configurato', () => {
+  it('mantiene disponibile la condivisione manuale senza endpoint configurato', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }),
+    ));
     render(<InstagramPublishDialog imageUrl="blob:image" endpoint="" />);
     expect(screen.queryByRole('button', { name: /pubblica come storia/i })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: /aggiungi musica e tag/i })).toBeEnabled());
+  });
+
+  it('condivide il PNG per completare la Storia in Instagram senza chiedere il PIN', async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }),
+    ));
+    vi.stubGlobal('navigator', { ...navigator, share, canShare: vi.fn(() => true) });
+    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /aggiungi musica e tag/i }));
+
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    const sharedFile = (share.mock.calls[0][0] as ShareData).files?.[0];
+    expect(sharedFile).toBeInstanceOf(File);
+    expect(sharedFile).toMatchObject({ name: 'casalpoglio-storia.png', type: 'image/png' });
+    expect(screen.queryByLabelText(/pin di pubblicazione/i)).not.toBeInTheDocument();
+    expect(await screen.findByRole('status')).toHaveTextContent(/scegli Instagram, poi Storia/i);
   });
 
   it('richiede PIN e conferma prima della pubblicazione', async () => {
