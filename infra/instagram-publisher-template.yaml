@@ -19,6 +19,40 @@ Parameters:
     AllowedValues: ['true', 'false']
 
 Resources:
+  InstagramStoryPublisherExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: casalpoglio-instagram-publisher-execution
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InstagramStoryPublisherRuntime
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: WriteFunctionLogs
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/instagram-story-publisher:*
+              - Sid: ReadInstagramConfiguration
+                Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${InstagramConfigParameter}
+              - Sid: ManagePrivateStoryStaging
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub arn:${AWS::Partition}:s3:::${AssetsBucketName}/instagram-stories/*
+
   InstagramStoryPublisherFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -31,6 +65,7 @@ Resources:
       Timeout: 60
       ReservedConcurrentExecutions: 2
       AutoPublishAlias: live
+      Role: !GetAtt InstagramStoryPublisherExecutionRole.Arn
       EphemeralStorage:
         Size: 512
       Environment:
@@ -40,20 +75,6 @@ Resources:
           META_GRAPH_API_VERSION: v25.0
           META_GRAPH_BASE_URL: https://graph.instagram.com
           PUBLISHING_ENABLED: !Ref PublishingEnabled
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Sid: ReadInstagramConfiguration
-              Effect: Allow
-              Action: ssm:GetParameter
-              Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${InstagramConfigParameter}
-            - Sid: ManagePrivateStoryStaging
-              Effect: Allow
-              Action:
-                - s3:GetObject
-                - s3:PutObject
-                - s3:DeleteObject
-              Resource: !Sub arn:${AWS::Partition}:s3:::${AssetsBucketName}/instagram-stories/*
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
