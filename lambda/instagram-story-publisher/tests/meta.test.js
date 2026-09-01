@@ -37,6 +37,8 @@ test('riconosce un token Meta non valido', async () => {
   });
   await assert.rejects(
     () => client.createContainer('https://example.invalid/story.jpg'),
-    (error) => error instanceof MetaApiError && error.authError === true,
+    (error) => error instanceof MetaApiError
+      && error.authError === true
+      && error.metaCode === 190,
   );
 });

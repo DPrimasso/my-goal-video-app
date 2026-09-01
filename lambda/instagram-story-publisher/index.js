@@ -55,6 +55,13 @@ function validateConfig(config) {
   return config;
 }
 
+function safeMetaMessage(message) {
+  return String(message || '')
+    .replace(/access[_ -]?token\s*[:=]?\s*[^\s,;]+/gi, 'access token [nascosto]')
+    .replace(/[A-Za-z0-9_-]{80,}/g, '[dato nascosto]')
+    .slice(0, 280);
+}
+
 function createParameterLoader({ parameterName, region, ttlMilliseconds = 300_000 }) {
   let cached;
   let cachedAt = 0;
@@ -103,6 +110,7 @@ function createHandler(overrides = {}) {
     let storage;
     let idempotencyKey = '';
     let publishAttempted = false;
+    let metaStage = 'configurazione';
     try {
       const config = validateConfig(await loadConfig());
       const pin = getHeader(event, 'x-publisher-pin');
@@ -144,9 +152,12 @@ function createHandler(overrides = {}) {
       await storage.uploadImage(idempotencyKey, jpeg);
       const imageUrl = await storage.getImageUrl(idempotencyKey);
       const meta = createMeta(config);
+      metaStage = 'creazione del contenitore';
       const containerId = await meta.createContainer(imageUrl);
+      metaStage = 'elaborazione del contenuto';
       await meta.waitUntilReady(containerId);
       publishAttempted = true;
+      metaStage = 'pubblicazione';
       const mediaId = await meta.publish(containerId);
       await storage.putState(idempotencyKey, { status: 'PUBLISHED', mediaId });
       try {
@@ -167,10 +178,22 @@ function createHandler(overrides = {}) {
       if (error instanceof PublisherError) return responseJson(error.statusCode, error.code, error.message);
       if (error instanceof MetaApiError) {
         const code = error.authError ? 'META_AUTH_EXPIRED' : error.code;
+        const diagnosticParts = [error.metaCode, error.metaSubcode].filter((value) => value !== undefined);
+        const diagnostic = diagnosticParts.length ? diagnosticParts.join('/') : error.code;
+        console.error('Instagram Meta API request failed', {
+          requestId: context.awsRequestId,
+          stage: metaStage,
+          code: error.code,
+          status: error.status,
+          metaCode: error.metaCode,
+          metaSubcode: error.metaSubcode,
+          metaType: error.metaType,
+          message: safeMetaMessage(error.message),
+        });
         const message = error.authError
           ? 'Il collegamento Instagram deve essere rinnovato.'
-          : 'Instagram non ha completato la pubblicazione. Riprova tra poco.';
-        return responseJson(error.status || 502, code, message);
+          : `Instagram ha rifiutato la ${metaStage} (${diagnostic}): ${safeMetaMessage(error.message)}`;
+        return responseJson(error.status || 502, code, message, { diagnostic, stage: metaStage });
       }
       console.error('Instagram story publication failed', { requestId: context.awsRequestId, message: error?.message || String(error) });
       return responseJson(500, 'PUBLISHING_FAILED', 'Impossibile pubblicare la Storia. Riprova tra poco.');

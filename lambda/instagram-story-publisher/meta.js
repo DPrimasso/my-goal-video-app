@@ -1,10 +1,13 @@
 class MetaApiError extends Error {
-  constructor(code, message, status, authError = false) {
+  constructor(code, message, status, authError = false, details = {}) {
     super(message);
     this.name = 'MetaApiError';
     this.code = code;
     this.status = status;
     this.authError = authError;
+    this.metaCode = details.metaCode;
+    this.metaSubcode = details.metaSubcode;
+    this.metaType = details.metaType;
   }
 }
 
@@ -32,6 +35,11 @@ function createMetaClient({ accessToken, instagramAccountId, apiVersion, graphBa
         body.error?.message || `Richiesta Meta non riuscita (HTTP ${response.status}).`,
         response.status,
         authError,
+        {
+          metaCode,
+          metaSubcode: body.error?.error_subcode,
+          metaType: body.error?.type,
+        },
       );
     }
     return body;
@@ -53,7 +61,11 @@ function createMetaClient({ accessToken, instagramAccountId, apiVersion, graphBa
       const result = await request(`${encodeURIComponent(containerId)}?${query}`);
       if (result.status_code === 'FINISHED') return;
       if (['ERROR', 'EXPIRED'].includes(result.status_code)) {
-        throw new MetaApiError('META_PROCESSING_FAILED', 'Instagram non è riuscito a elaborare la grafica.', 502);
+        throw new MetaApiError(
+          'META_PROCESSING_FAILED',
+          result.status || 'Instagram non è riuscito a elaborare la grafica.',
+          502,
+        );
       }
       await pause(2_000);
     }

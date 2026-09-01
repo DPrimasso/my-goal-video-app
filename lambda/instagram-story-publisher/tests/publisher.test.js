@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const { createHandler } = require('../index');
+const { MetaApiError } = require('../meta');
 const { createPinHash, verifyPin } = require('../security');
 
 const pin = '12345678';
@@ -100,6 +101,32 @@ test('dopo un errore precedente incerto blocca il retry', async () => {
   const response = await createHandler(deps)(event());
   assert.equal(response.statusCode, 409);
   assert.equal(JSON.parse(response.body).code, 'PUBLISH_STATUS_UNKNOWN');
+});
+
+test('restituisce una diagnostica Meta senza esporre token', async () => {
+  const deps = dependencies({}, {
+    createContainer: async () => {
+      throw new MetaApiError(
+        'META_REQUEST_FAILED',
+        'Invalid parameter access_token=secret-value',
+        400,
+        false,
+        { metaCode: 100, metaSubcode: 33 },
+      );
+    },
+  });
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const response = await createHandler(deps)(event());
+    const body = JSON.parse(response.body);
+    assert.equal(response.statusCode, 400);
+    assert.equal(body.diagnostic, '100/33');
+    assert.equal(body.stage, 'creazione del contenitore');
+    assert.equal(body.message.includes('secret-value'), false);
+  } finally {
+    console.error = originalError;
+  }
 });
 
 test('OPTIONS restituisce 204 e un file non PNG viene rifiutato', async () => {
