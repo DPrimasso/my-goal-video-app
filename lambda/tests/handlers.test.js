@@ -106,6 +106,8 @@ test('finalResult: riusa titolo, watermark, logo e sponsor della formazione', as
   assert.equal(response.statusCode, 200);
   assert.equal(renderedHtml.includes('>FINAL<'), true);
   assert.equal(renderedHtml.includes('class="score-word">SCORE<'), true);
+  assert.equal(renderedHtml.includes('class="header-line"'), true);
+  assert.equal(renderedHtml.includes('class="score-stage-surface"'), true);
   assert.equal(renderedHtml.includes('>MARCATORI<'), false);
   assert.equal(renderedHtml.includes('/lineup/group.png'), true);
   assert.equal(renderedHtml.includes('/lineup/logo.png'), true);
