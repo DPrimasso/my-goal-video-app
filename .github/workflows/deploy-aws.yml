@@ -61,6 +61,7 @@ jobs:
       - name: Build SAM application
         run: sam build --template-file infra/template.yaml
       - name: Deploy versioned Lambda aliases and Function URLs
+        # Reuse the application bucket: the restricted OIDC role does not manage SAM bootstrap stacks.
         run: >-
           sam deploy
           --stack-name casalpoglio-image-generators
