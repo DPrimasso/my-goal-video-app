@@ -6,7 +6,7 @@ Applicazione interna, accessibile tramite URL senza login, per generare tre graf
 - goal;
 - risultato finale.
 
-Le grafiche generate possono essere pubblicate direttamente come Storie sull'account Instagram Business del Casalpoglio oppure condivise nell'app Instagram per aggiungere manualmente musica, tag e sticker. La pubblicazione diretta richiede ogni volta PIN e conferma esplicita.
+Le grafiche generate possono essere condivise nell'app Instagram per aggiungere manualmente musica, tag e sticker. La pubblicazione diretta tramite API resta disponibile nel codice ma nascosta per configurazione; quando attiva richiede ogni volta PIN e conferma esplicita.
 
 La sorgente applicativa ufficiale è il branch `main`. Render costruisce direttamente il Dockerfile del repository dopo il superamento della CI; le tre funzioni AWS sono definite in `infra/template.yaml`.
 
@@ -21,7 +21,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Le tre variabili `VITE_*_IMAGE_URL` dei generatori sono obbligatorie. `VITE_INSTAGRAM_PUBLISH_URL` è opzionale: se manca, il relativo comando non viene mostrato. Non esistono endpoint hardcoded o server di generazione locale.
+Le tre variabili `VITE_*_IMAGE_URL` dei generatori sono obbligatorie. `VITE_INSTAGRAM_PUBLISH_URL` conserva l'endpoint del publisher diretto; il relativo comando viene mostrato soltanto impostando anche `VITE_INSTAGRAM_DIRECT_PUBLISH_ENABLED=true`. Non esistono endpoint hardcoded o server di generazione locale.
 
 ## Verifiche
 

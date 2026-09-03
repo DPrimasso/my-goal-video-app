@@ -7,6 +7,9 @@ export const APP_CONFIG: Readonly<Record<ImageEndpointName, string>> = Object.fr
 });
 
 export const INSTAGRAM_PUBLISH_URL = (import.meta.env.VITE_INSTAGRAM_PUBLISH_URL || '').trim();
+export const INSTAGRAM_DIRECT_PUBLISH_ENABLED = (import.meta.env.VITE_INSTAGRAM_DIRECT_PUBLISH_ENABLED || '')
+  .trim()
+  .toLowerCase() === 'true';
 
 const endpointLabels: Record<ImageEndpointName, string> = {
   lineup: 'Formazione',

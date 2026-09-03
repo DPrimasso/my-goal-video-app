@@ -4,7 +4,9 @@
 
 Il frontend invia il PNG generato alla Function URL `instagram-story-publisher`. La Lambda verifica un PIN, converte il file in JPEG 1080×1920, lo deposita temporaneamente nel bucket privato e chiede a Meta di pubblicarlo come Storia.
 
-In alternativa, **Aggiungi musica e tag** usa il menu Condividi nativo del telefono per passare il PNG all'app Instagram. Questo percorso non usa Lambda, PIN o token: musica, menzioni e sticker vengono aggiunti manualmente nell'editor di Instagram prima della pubblicazione. Se il browser non supporta la condivisione di file, l'app scarica il PNG come fallback.
+Il comando visibile **Pubblica su Instagram** usa il menu Condividi nativo del telefono per passare il PNG all'app Instagram. Questo percorso non usa Lambda, PIN o token: musica, menzioni e sticker vengono aggiunti manualmente nell'editor di Instagram prima della pubblicazione. Se il browser non supporta la condivisione di file, l'app scarica il PNG come fallback.
+
+La pubblicazione diretta tramite Lambda resta implementata ma nascosta per default. Per riattivarla è sufficiente impostare `VITE_INSTAGRAM_DIRECT_PUBLISH_ENABLED=true` su Render e ridistribuire il frontend; endpoint, PIN e stato idempotente restano invariati.
 
 Prima della pubblicazione la Lambda verifica che ID e username restituiti da Meta corrispondano a `@polisportiva.casalpoglio`. L’elaborazione resta sincrona e può attendere Meta fino a cinque minuti, senza introdurre code o altri servizi AWS.
 
@@ -61,4 +63,4 @@ L'app Meta può restare in modalità sviluppo finché pubblica soltanto per l'ac
 
 Controllare la scadenza indicata da Meta quando si genera il token. Prima della scadenza, generare un nuovo token e sostituire esclusivamente `accessToken` nel parametro SSM; la Lambda rilegge la configurazione entro cinque minuti.
 
-Per una disattivazione immediata impostare `INSTAGRAM_PUBLISHING_ENABLED=false` e rilanciare il workflow dedicato. Per nascondere anche il comando nell'app, rimuovere `VITE_INSTAGRAM_PUBLISH_URL` da Render e ridistribuire.
+Per una disattivazione backend immediata impostare `INSTAGRAM_PUBLISHING_ENABLED=false` e rilanciare il workflow dedicato. Il comando diretto nel frontend resta nascosto finché `VITE_INSTAGRAM_DIRECT_PUBLISH_ENABLED` è assente o diverso da `true`.

@@ -10,13 +10,23 @@ afterEach(() => {
 });
 
 describe('InstagramPublishDialog', () => {
+  it('nasconde la pubblicazione diretta anche quando l’endpoint è configurato', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }),
+    ));
+    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+
+    expect(screen.queryByRole('button', { name: /pubblica come storia/i })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^pubblica su instagram$/i })).toBeEnabled());
+  });
+
   it('mantiene disponibile la condivisione manuale senza endpoint configurato', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
       new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }),
     ));
     render(<InstagramPublishDialog imageUrl="blob:image" endpoint="" />);
     expect(screen.queryByRole('button', { name: /pubblica come storia/i })).not.toBeInTheDocument();
-    await waitFor(() => expect(screen.getByRole('button', { name: /aggiungi musica e tag/i })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /^pubblica su instagram$/i })).toBeEnabled());
   });
 
   it('condivide il PNG per completare la Storia in Instagram senza chiedere il PIN', async () => {
@@ -27,7 +37,7 @@ describe('InstagramPublishDialog', () => {
     vi.stubGlobal('navigator', { ...navigator, share, canShare: vi.fn(() => true) });
     render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
 
-    fireEvent.click(await screen.findByRole('button', { name: /aggiungi musica e tag/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /^pubblica su instagram$/i }));
 
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     const sharedFile = (share.mock.calls[0][0] as ShareData).files?.[0];
@@ -44,7 +54,7 @@ describe('InstagramPublishDialog', () => {
         status: 200, headers: { 'Content-Type': 'application/json' },
       }));
     vi.stubGlobal('fetch', fetchMock);
-    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" directPublishingEnabled />);
 
     fireEvent.click(await screen.findByRole('button', { name: /pubblica come storia/i }));
     const publishButton = screen.getByRole('button', { name: /pubblica ora/i });
@@ -66,7 +76,7 @@ describe('InstagramPublishDialog', () => {
       .mockResolvedValueOnce(new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }))
       .mockImplementation(async () => publishedResponse());
     vi.stubGlobal('fetch', fetchMock);
-    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" directPublishingEnabled />);
 
     fireEvent.click(await screen.findByRole('button', { name: /pubblica come storia/i }));
     fireEvent.change(screen.getByLabelText(/pin di pubblicazione/i), { target: { value: '12345678' } });
@@ -94,7 +104,7 @@ describe('InstagramPublishDialog', () => {
       }))
       .mockResolvedValueOnce(new Response('png', { status: 200, headers: { 'Content-Type': 'image/png' } }));
     vi.stubGlobal('fetch', fetchMock);
-    const firstRender = render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+    const firstRender = render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" directPublishingEnabled />);
     fireEvent.click(await screen.findByRole('button', { name: /pubblica come storia/i }));
     fireEvent.change(screen.getByLabelText(/pin di pubblicazione/i), { target: { value: '12345678' } });
     fireEvent.click(screen.getByRole('checkbox'));
@@ -102,7 +112,7 @@ describe('InstagramPublishDialog', () => {
     await screen.findByRole('button', { name: /pubblicata su instagram/i });
 
     firstRender.unmount();
-    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" directPublishingEnabled />);
     await screen.findByRole('button', { name: /pubblicata su instagram/i });
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
@@ -114,7 +124,7 @@ describe('InstagramPublishDialog', () => {
         code: 'PUBLISH_STATUS_UNKNOWN', message: 'Controlla Instagram prima di riprovare.',
       }), { status: 409, headers: { 'Content-Type': 'application/json' } }));
     vi.stubGlobal('fetch', fetchMock);
-    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" />);
+    render(<InstagramPublishDialog imageUrl="blob:image" endpoint="https://publisher.test" directPublishingEnabled />);
 
     fireEvent.click(await screen.findByRole('button', { name: /pubblica come storia/i }));
     fireEvent.change(screen.getByLabelText(/pin di pubblicazione/i), { target: { value: '12345678' } });

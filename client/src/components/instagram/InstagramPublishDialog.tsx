@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { INSTAGRAM_PUBLISH_URL } from '../../config/environment';
+import { INSTAGRAM_DIRECT_PUBLISH_ENABLED, INSTAGRAM_PUBLISH_URL } from '../../config/environment';
 import {
   fingerprintInstagramImage,
   InstagramApiError,
@@ -19,9 +19,15 @@ import './InstagramPublishDialog.css';
 interface InstagramPublishDialogProps {
   imageUrl: string;
   endpoint?: string;
+  directPublishingEnabled?: boolean;
 }
 
-export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_URL }: InstagramPublishDialogProps) {
+export function InstagramPublishDialog({
+  imageUrl,
+  endpoint = INSTAGRAM_PUBLISH_URL,
+  directPublishingEnabled = INSTAGRAM_DIRECT_PUBLISH_ENABLED,
+}: InstagramPublishDialogProps) {
+  const showDirectPublishing = directPublishingEnabled && Boolean(endpoint);
   const [open, setOpen] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmed, setConfirmed] = useState(false);
@@ -44,10 +50,12 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
     void (async () => {
       try {
         const image = await prepareInstagramImage(imageUrl);
+        if (cancelled) return;
+        setPreparedImage(image);
+        if (!showDirectPublishing) return;
         const imageFingerprint = await fingerprintInstagramImage(image);
         const storedAttempt = getOrCreateInstagramAttempt(imageFingerprint);
         if (cancelled) return;
-        setPreparedImage(image);
         setFingerprint(imageFingerprint);
         setAttempt(storedAttempt);
         setPublished(storedAttempt.status === 'PUBLISHED');
@@ -59,7 +67,7 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
       }
     })();
     return () => { cancelled = true; };
-  }, [imageUrl]);
+  }, [imageUrl, showDirectPublishing]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -161,7 +169,7 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
   return (
     <>
       <div className="instagram-publish-controls">
-        {endpoint && (
+        {showDirectPublishing && (
           <button
             ref={triggerRef}
             type="button"
@@ -180,18 +188,18 @@ export function InstagramPublishDialog({ imageUrl, endpoint = INSTAGRAM_PUBLISH_
           disabled={preparing || sharing || !preparedImage}
         >
           <span aria-hidden="true">♫</span>
-          {sharing ? 'Apertura condivisione...' : 'Aggiungi musica e tag'}
+          Pubblica su Instagram
         </button>
         <p className="instagram-share-help">Sul telefono scegli Instagram e poi Storia: la grafica sarà già pronta da completare.</p>
         {shareMessage && <p className="instagram-share-message" role="status">{shareMessage}</p>}
-        {endpoint && published && (
+        {showDirectPublishing && published && (
           <button type="button" className="instagram-republish-trigger" onClick={startNewAttempt}>
             Pubblica di nuovo
           </button>
         )}
       </div>
 
-      {open && (
+      {showDirectPublishing && open && (
         <div className="instagram-dialog-backdrop" onMouseDown={(event) => {
           if (event.target === event.currentTarget) close();
         }}>

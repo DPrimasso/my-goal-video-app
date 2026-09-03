@@ -4,7 +4,7 @@
 
 1. Collegare il servizio Render al repository GitHub e al branch `main`.
 2. Importare o ricreare il servizio tramite `render.yaml`, verificando che il nome corrisponda al servizio esistente.
-3. Configurare su Render le tre variabili `VITE_*_IMAGE_URL` dei generatori. Configurare `VITE_INSTAGRAM_PUBLISH_URL` soltanto dopo la prima attivazione descritta in `instagram-publishing.md`.
+3. Configurare su Render le tre variabili `VITE_*_IMAGE_URL` dei generatori. Configurare `VITE_INSTAGRAM_PUBLISH_URL` soltanto dopo la prima attivazione descritta in `instagram-publishing.md`; lasciare `VITE_INSTAGRAM_DIRECT_PUBLISH_ENABLED` assente o su `false` finché il comando diretto deve restare nascosto.
 4. Creare un ruolo IAM assumibile da GitHub Actions tramite OIDC e salvarne l’ARN nel secret `AWS_DEPLOY_ROLE_ARN`.
 5. Configurare le repository variables `ASSETS_BUCKET_NAME` e `RENDER_ORIGIN`.
 6. Per Instagram, configurare anche `INSTAGRAM_PUBLISHING_ENABLED` e `INSTAGRAM_EXPECTED_USERNAME`; la prima deve restare `false` fino al completamento dello smoke test backend, la seconda deve valere `polisportiva.casalpoglio`.
@@ -36,6 +36,6 @@ AWS SAM crea le policy pubbliche necessarie a `AuthType: NONE`. CORS ammette sol
 - Lambda: spostare l’alias `live` alla versione precedente oppure effettuare il rollback dello stack CloudFormation.
 - Endpoint: ripristinare temporaneamente su Render i precedenti URL e avviare una nuova build.
 - Asset: gli upload non eliminano file remoti; ripubblicare la versione Git precedente dell'asset interessato.
-- Instagram: impostare `INSTAGRAM_PUBLISHING_ENABLED=false` e rilanciare il workflow dedicato; il pulsante può essere nascosto rimuovendo `VITE_INSTAGRAM_PUBLISH_URL` da Render.
+- Instagram: impostare `INSTAGRAM_PUBLISHING_ENABLED=false` e rilanciare il workflow dedicato; il pulsante diretto è controllato separatamente da `VITE_INSTAGRAM_DIRECT_PUBLISH_ENABLED`.
 
 Le vecchie funzioni e i vecchi endpoint vanno eliminati solo dopo uno smoke test completo e un periodo di osservazione.
