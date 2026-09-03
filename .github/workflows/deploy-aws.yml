@@ -65,7 +65,8 @@ jobs:
           sam deploy
           --stack-name casalpoglio-image-generators
           --region eu-west-1
-          --resolve-s3
+          --s3-bucket ${{ vars.ASSETS_BUCKET_NAME }}
+          --s3-prefix sam-artifacts/image-generators
           --capabilities CAPABILITY_IAM
           --no-confirm-changeset
           --no-fail-on-empty-changeset
