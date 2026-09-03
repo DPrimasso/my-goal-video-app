@@ -14,6 +14,7 @@ on:
       - 'assets/**'
       - 'infra/template.yaml'
       - 'scripts/validate-assets.mjs'
+      - '.github/workflows/deploy-aws.yml'
 
 permissions:
   contents: read
@@ -28,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v6
         with:
           node-version: '22.17'
@@ -41,7 +44,19 @@ jobs:
         run: npm ci && npm test
       - name: Validate assets
         run: node scripts/validate-assets.mjs
+      - name: Detect asset changes
+        id: asset-changes
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet HEAD^ HEAD -- assets; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Synchronize versioned assets
+        if: steps.asset-changes.outputs.changed == 'true'
         run: aws s3 sync assets/s3 "s3://${{ vars.ASSETS_BUCKET_NAME }}" --cache-control "public,max-age=86400"
       - name: Build SAM application
         run: sam build --template-file infra/template.yaml
