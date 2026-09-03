@@ -55,10 +55,10 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .team-column{position:relative;z-index:2;min-width:0;height:100%;display:flex;flex-direction:column;align-items:stretch;gap:12px}
   .team-card{position:relative;min-width:0;height:620px;flex:none;text-transform:uppercase;overflow:visible}
   .team-card.winner::before{content:'';position:absolute;z-index:-1;inset:-38px -30px 0;background:radial-gradient(ellipse at 18% 38%,rgba(142,0,22,.3),rgba(142,0,22,0) 70%)}
-  .score{position:absolute;top:172px;left:20px;right:20px;height:380px;font-size:340px;line-height:1.05;letter-spacing:-3px;display:flex;align-items:center;justify-content:center;text-align:center;text-shadow:0 14px 34px rgba(0,0,0,.38)}
-  .team{position:absolute;left:14px;right:14px;top:48px;height:140px;font-size:82px;line-height:1.12;letter-spacing:1px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;overflow:visible}
-  .team-medium{font-size:70px}
-  .team-small{font-size:60px}
+  .score{position:absolute;top:196px;left:20px;right:20px;height:370px;font-size:340px;line-height:1.05;letter-spacing:-3px;display:flex;align-items:center;justify-content:center;text-align:center;text-shadow:0 14px 34px rgba(0,0,0,.38)}
+  .team{position:absolute;left:12px;right:12px;top:44px;height:146px;font-size:88px;line-height:1.1;letter-spacing:1px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;overflow:visible}
+  .team-medium{font-size:76px}
+  .team-small{font-size:65px}
   .match-center{position:relative;z-index:4;height:100%;display:flex;align-items:flex-start;justify-content:center;padding-top:276px}
   .match-center::before{content:'';position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:3px;transform:translateX(-50%);background:linear-gradient(to bottom,rgba(237,16,16,.78),rgba(237,16,16,.32) 48%,rgba(207,0,255,.5));box-shadow:0 0 16px rgba(221,0,0,.25)}
   .ft{position:relative;z-index:2;width:132px;height:132px;border:8px solid #260719;background:linear-gradient(135deg,#a40020,#ed1010 58%,#d90074);display:flex;align-items:center;justify-content:center;transform:rotate(45deg);box-shadow:0 16px 38px rgba(0,0,0,.45),0 0 0 3px rgba(207,0,255,.55)}
@@ -66,7 +66,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .scorers-list{width:max-content;min-width:330px;max-width:92%;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding-top:12px}
   .team-column:first-child .scorers-list{align-self:flex-start;margin-left:54px}
   .team-column:last-child .scorers-list{align-self:flex-end;margin-right:54px}
-  .scorer{min-height:76px;padding:7px 24px 9px;border-left:6px solid #ed1010;font-size:60px;line-height:1.05;display:flex;align-items:center;justify-content:flex-start;text-align:left;text-transform:uppercase;text-shadow:0 8px 22px rgba(0,0,0,.4)}
+  .scorer{min-height:80px;padding:7px 24px 9px;border-left:6px solid #ed1010;font-size:66px;line-height:1.05;display:flex;align-items:center;justify-content:flex-start;text-align:left;text-transform:uppercase;text-shadow:0 8px 22px rgba(0,0,0,.4)}
   .sponsors-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(8,1fr);gap:10px;flex-shrink:0;margin-top:auto}
   .sponsor{grid-column:span 2;aspect-ratio:2.25/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
   .sponsor:nth-last-child(3):nth-child(4n+1){grid-column:2/span 2}
