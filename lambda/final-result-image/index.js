@@ -55,7 +55,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .team-column{position:relative;z-index:2;min-width:0;height:100%;display:flex;flex-direction:column;align-items:stretch;gap:12px}
   .team-card{position:relative;min-width:0;height:620px;flex:none;text-transform:uppercase;overflow:visible}
   .team-card.winner::before{content:'';position:absolute;z-index:-1;inset:-38px -30px 0;background:radial-gradient(ellipse at 18% 38%,rgba(142,0,22,.3),rgba(142,0,22,0) 70%)}
-  .score{position:absolute;top:196px;left:20px;right:20px;height:370px;font-size:340px;line-height:1.05;letter-spacing:-3px;display:flex;align-items:center;justify-content:center;text-align:center;text-shadow:0 14px 34px rgba(0,0,0,.38)}
+  .score{position:absolute;top:206px;left:20px;right:20px;height:370px;font-size:340px;line-height:1.05;letter-spacing:-3px;display:flex;align-items:center;justify-content:center;text-align:center;text-shadow:0 14px 34px rgba(0,0,0,.38)}
   .team{position:absolute;left:12px;right:12px;top:44px;height:146px;font-size:88px;line-height:1.1;letter-spacing:1px;display:flex;align-items:center;justify-content:center;text-align:center;white-space:normal;overflow:visible}
   .team-medium{font-size:76px}
   .team-small{font-size:65px}
