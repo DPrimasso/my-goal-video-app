@@ -6,3 +6,4 @@ dist
 .idea/
 *.zip
 .codex-worktrees/
+.aws-sam/

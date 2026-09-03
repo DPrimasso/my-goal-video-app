@@ -60,29 +60,29 @@ jobs:
         run: aws s3 sync assets/s3 "s3://${{ vars.ASSETS_BUCKET_NAME }}" --cache-control "public,max-age=86400"
       - name: Build SAM application
         run: sam build --template-file infra/template.yaml
-      - name: Deploy versioned Lambda aliases and Function URLs
-        # Reuse the application bucket and a dedicated prefix: the restricted OIDC role does not manage SAM bootstrap stacks.
+      - name: Package Lambda bundle
         shell: bash
         run: |
-          if sam deploy \
-            --stack-name casalpoglio-image-generators \
-            --region eu-west-1 \
-            --s3-bucket "${{ vars.ASSETS_BUCKET_NAME }}" \
-            --s3-prefix sam-artifacts/image-generators \
-            --capabilities CAPABILITY_IAM \
-            --no-confirm-changeset \
-            --no-fail-on-empty-changeset \
-            --parameter-overrides \
-              AssetsBucketName="${{ vars.ASSETS_BUCKET_NAME }}" \
-              AllowedOrigin="${{ vars.RENDER_ORIGIN }}"; then
-            exit 0
-          else
-            deploy_status=$?
-            echo "::group::CloudFormation deployment validation events"
-            aws cloudformation describe-events \
-              --stack-name casalpoglio-image-generators \
-              --region eu-west-1 \
-              --max-items 30 || true
-            echo "::endgroup::"
-            exit "$deploy_status"
-          fi
+          (cd .aws-sam/build/GoalImageFunction && zip -qr "$RUNNER_TEMP/goal-image.zip" .)
+          (cd .aws-sam/build/LineupImageFunction && zip -qr "$RUNNER_TEMP/lineup-image.zip" .)
+          (cd .aws-sam/build/FinalResultImageFunction && zip -qr "$RUNNER_TEMP/final-result-image.zip" .)
+      - name: Upload Lambda bundles
+        shell: bash
+        run: |
+          for function_name in goal-image lineup-image final-result-image; do
+            aws s3 cp \
+              "$RUNNER_TEMP/$function_name.zip" \
+              "s3://${{ vars.ASSETS_BUCKET_NAME }}/sam-artifacts/image-generators/$function_name/current.zip"
+          done
+      - name: Update existing image generator Lambdas
+        shell: bash
+        run: |
+          for function_name in goal-image lineup-image final-result-image; do
+            aws lambda update-function-code \
+              --function-name "$function_name" \
+              --s3-bucket "${{ vars.ASSETS_BUCKET_NAME }}" \
+              --s3-key "sam-artifacts/image-generators/$function_name/current.zip" \
+              --publish >/dev/null
+            aws lambda wait function-updated-v2 \
+              --function-name "$function_name"
+          done
