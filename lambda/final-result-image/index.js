@@ -15,8 +15,9 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     const stageLayoutClass = scorerCount <= 2
       ? ''
       : scorerCount === 3 ? 'stage-expanded-one' : 'stage-expanded-two';
-    const scorersLayoutClass = scorerCount <= 4
-      ? 'scorers-single'
+    const scorersLayoutClass = scorerCount <= 2
+      ? 'scorers-single scorers-few'
+      : scorerCount <= 4 ? 'scorers-single'
       : scorerCount <= 8 ? 'scorers-grid-2'
         : scorerCount <= 12 ? 'scorers-grid-3 scorers-wide'
           : scorerCount <= 16 ? 'scorers-grid-4 scorers-wide'
@@ -91,20 +92,21 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .scorer-medium{font-size:calc(var(--scorer-size) * .84)}
   .scorer-long{font-size:calc(var(--scorer-size) * .68)}
   .scorers-single{position:absolute;top:620px;height:calc(100% - 620px);justify-content:center;padding-top:0}
+  .scorers-few{--scorer-size:58px;--scorer-row:72px}
   .team-column:first-child .scorers-single{left:54px;margin-left:0}
   .team-column:last-child .scorers-single{right:54px;margin-right:0}
-  .scorers-grid-2{--scorer-size:48px;--scorer-row:60px;position:absolute;top:620px;height:calc(100% - 620px);width:calc(100% - 24px);min-width:0;max-width:none;display:grid;align-content:center;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px;padding-top:0}
+  .scorers-grid-2{--scorer-size:52px;--scorer-row:64px;position:absolute;top:620px;height:calc(100% - 620px);width:calc(100% - 24px);min-width:0;max-width:none;display:grid;align-content:center;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px;padding-top:0}
   .team-column:first-child .scorers-grid-2{left:12px;margin-left:0}
   .team-column:last-child .scorers-grid-2{right:12px;margin-right:0}
   .scorers-wide{position:absolute;top:620px;height:calc(100% - 620px);width:1124px;min-width:0;max-width:none;display:grid;align-content:center;gap:7px 12px;padding-top:0}
   .team-column:first-child .scorers-wide{left:54px;margin-left:0}
   .team-column:last-child .scorers-wide{right:54px;margin-right:0}
-  .scorers-grid-3{--scorer-size:46px;--scorer-row:58px;grid-template-columns:repeat(3,minmax(0,1fr))}
-  .scorers-grid-4{--scorer-size:42px;--scorer-row:53px;grid-template-columns:repeat(4,minmax(0,1fr))}
-  .scorers-grid-5{--scorer-size:31px;--scorer-row:40px;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px 9px}
-  .scorers-tight{--scorer-size:36px;--scorer-row:46px;gap:5px 10px}
-  .scorers-compact{--scorer-size:30px;--scorer-row:39px}
-  .scorers-ultra-compact{--scorer-size:26px;--scorer-row:35px;gap:4px 8px}
+  .scorers-grid-3{--scorer-size:52px;--scorer-row:64px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .scorers-grid-4{--scorer-size:46px;--scorer-row:57px;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .scorers-grid-5{--scorer-size:34px;--scorer-row:43px;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px 9px}
+  .scorers-tight{--scorer-size:39px;--scorer-row:49px;gap:5px 10px}
+  .scorers-compact{--scorer-size:33px;--scorer-row:42px}
+  .scorers-ultra-compact{--scorer-size:28px;--scorer-row:37px;gap:4px 8px}
   .scorers-wide .scorer{padding-left:14px;padding-right:10px;border-left-width:5px}
   .sponsors-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(8,1fr);gap:10px;flex-shrink:0;margin-top:auto}
   .sponsor{grid-column:span 2;aspect-ratio:2.25/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}

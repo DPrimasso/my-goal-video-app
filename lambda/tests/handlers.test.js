@@ -158,6 +158,7 @@ test('finalResult: posiziona i marcatori sotto la squadra indicata, uno per riga
   const awayColumn = renderedHtml.slice(renderedHtml.indexOf('data-side="away"'));
   assert.equal(homeColumn.includes('scorers-list'), false);
   assert.equal(awayColumn.includes('scorers-list'), true);
+  assert.equal(awayColumn.includes('scorers-single scorers-few'), true);
   assert.equal((awayColumn.match(/class="scorer"/g) || []).length, 2);
 });
 
