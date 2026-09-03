@@ -62,15 +62,27 @@ jobs:
         run: sam build --template-file infra/template.yaml
       - name: Deploy versioned Lambda aliases and Function URLs
         # Reuse the application bucket and a dedicated prefix: the restricted OIDC role does not manage SAM bootstrap stacks.
-        run: >-
-          sam deploy
-          --stack-name casalpoglio-image-generators
-          --region eu-west-1
-          --s3-bucket ${{ vars.ASSETS_BUCKET_NAME }}
-          --s3-prefix sam-artifacts/image-generators
-          --capabilities CAPABILITY_IAM
-          --no-confirm-changeset
-          --no-fail-on-empty-changeset
-          --parameter-overrides
-          AssetsBucketName=${{ vars.ASSETS_BUCKET_NAME }}
-          AllowedOrigin=${{ vars.RENDER_ORIGIN }}
+        shell: bash
+        run: |
+          if sam deploy \
+            --stack-name casalpoglio-image-generators \
+            --region eu-west-1 \
+            --s3-bucket "${{ vars.ASSETS_BUCKET_NAME }}" \
+            --s3-prefix sam-artifacts/image-generators \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              AssetsBucketName="${{ vars.ASSETS_BUCKET_NAME }}" \
+              AllowedOrigin="${{ vars.RENDER_ORIGIN }}"; then
+            exit 0
+          else
+            deploy_status=$?
+            echo "::group::CloudFormation deployment validation events"
+            aws cloudformation describe-events \
+              --stack-name casalpoglio-image-generators \
+              --region eu-west-1 \
+              --max-items 30 || true
+            echo "::endgroup::"
+            exit "$deploy_status"
+          fi
