@@ -71,7 +71,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .score-stage-surface::before{left:-40px;top:42px}.score-stage-surface::after{right:-38px;bottom:-28px;transform:rotate(180deg)}
   .logoimg{position:absolute;z-index:0;bottom:-190px;left:180px;right:0;opacity:.055;pointer-events:none}
   .logoimg img{width:165%;max-width:none;transform:rotate(-10deg);transform-origin:left center}
-  .duel-wrap{position:relative;z-index:2;width:100%;height:100%}
+  .duel-wrap{position:relative;z-index:2;width:100%;height:100%;transform:translateY(-20px)}
   .duel{position:relative;width:100%;height:100%;display:grid;grid-template-columns:minmax(0,1fr) 154px minmax(0,1fr);align-items:start}
   .duel::after{content:'';position:absolute;z-index:1;left:0;right:0;top:620px;height:3px;background:linear-gradient(90deg,rgba(237,16,16,.72),rgba(237,16,16,.28) 42%,rgba(207,0,255,.3) 68%,rgba(207,0,255,.68))}
   .team-column{position:relative;z-index:2;min-width:0;height:100%;display:flex;flex-direction:column;align-items:stretch;gap:12px}
