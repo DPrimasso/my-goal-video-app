@@ -11,10 +11,29 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     const assets = getAssetContext();
     const lineupUrl = (key) => assetUrl(assets, `lineup/${key}`);
 
+    const scorerCount = scorerLines.length;
+    const stageLayoutClass = scorerCount <= 2
+      ? ''
+      : scorerCount === 3 ? 'stage-expanded-one' : 'stage-expanded-two';
+    const scorersLayoutClass = scorerCount <= 4
+      ? 'scorers-single'
+      : scorerCount <= 8 ? 'scorers-grid-2'
+        : scorerCount <= 12 ? 'scorers-grid-3 scorers-wide'
+          : scorerCount <= 16 ? 'scorers-grid-4 scorers-wide'
+            : scorerCount <= 24 ? 'scorers-grid-4 scorers-wide scorers-tight'
+              : scorerCount <= 32 ? 'scorers-grid-5 scorers-wide scorers-compact'
+                : 'scorers-grid-5 scorers-wide scorers-ultra-compact';
+    const scorerTextClass = (line) => {
+      if (line.length > 24) return 'scorer scorer-long';
+      if (line.length > 18) return 'scorer scorer-medium';
+      return 'scorer';
+    };
     const scorersItems = scorerLines
-      .map((line) => `<div class="scorer">${escapeHtml(line)}</div>`)
+      .map((line) => `<div class="${scorerTextClass(line)}">${escapeHtml(line)}</div>`)
       .join('');
-    const scorersBlock = scorerLines.length > 0 ? `<div class="scorers-list">${scorersItems}</div>` : '';
+    const scorersBlock = scorerCount > 0
+      ? `<div class="scorers-list ${scorersLayoutClass}">${scorersItems}</div>`
+      : '';
     const homeScorersBlock = scorersUnder === 'home' ? scorersBlock : '';
     const awayScorersBlock = scorersUnder === 'away' ? scorersBlock : '';
     const homeResultClass = homeScore > awayScore ? 'winner' : '';
@@ -44,6 +63,8 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .header-line::before,.header-line::after{-webkit-mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.9) 42%,transparent 100%);mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.9) 42%,transparent 100%)}
   .header-line::before{left:-10px}.header-line::after{right:-10px;transform:scaleX(-1);filter:hue-rotate(295deg)}
   .score-stage{position:relative;z-index:2;height:910px;flex:none;padding:6px;border-radius:68px 68px 44px 44px;background:linear-gradient(105deg,#ed1010 0%,#ed1010 34%,#b80061 68%,#d000ff 100%);box-shadow:0 34px 74px rgba(0,0,0,.42),0 0 42px rgba(196,0,102,.16)}
+  .score-stage.stage-expanded-one{height:998px}
+  .score-stage.stage-expanded-two{height:1086px}
   .score-stage-surface{position:relative;width:100%;height:100%;padding:38px 44px 32px;border-radius:62px 62px 39px 39px;background:linear-gradient(112deg,rgba(40,0,10,.965) 0%,rgba(10,0,11,.97) 45%,rgba(5,0,10,.96) 100%);overflow:hidden}
   .score-stage-surface::before,.score-stage-surface::after{content:'';position:absolute;z-index:1;width:230px;height:380px;opacity:.94;background:repeating-linear-gradient(135deg,transparent 0 22px,rgba(237,16,16,.98) 23px 29px,rgba(188,0,74,.7) 30px 33px,transparent 34px 50px);-webkit-mask-image:radial-gradient(ellipse at top left,#000 0%,#000 25%,rgba(0,0,0,.9) 42%,rgba(0,0,0,.46) 62%,transparent 84%);mask-image:radial-gradient(ellipse at top left,#000 0%,#000 25%,rgba(0,0,0,.9) 42%,rgba(0,0,0,.46) 62%,transparent 84%)}
   .score-stage-surface::before{left:-40px;top:42px}.score-stage-surface::after{right:-38px;bottom:-28px;transform:rotate(180deg)}
@@ -63,10 +84,25 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .match-center::before{content:'';position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:3px;transform:translateX(-50%);background:linear-gradient(to bottom,rgba(237,16,16,.78),rgba(237,16,16,.32) 48%,rgba(207,0,255,.5));box-shadow:0 0 16px rgba(221,0,0,.25)}
   .ft{position:relative;z-index:2;width:132px;height:132px;border:8px solid #260719;background:linear-gradient(135deg,#a40020,#ed1010 58%,#d90074);display:flex;align-items:center;justify-content:center;transform:rotate(45deg);box-shadow:0 16px 38px rgba(0,0,0,.45),0 0 0 3px rgba(207,0,255,.55)}
   .ft span{position:absolute;inset:-12px;display:flex;align-items:center;justify-content:center;font-size:56px;line-height:1.2;letter-spacing:2px;transform:rotate(-45deg)}
-  .scorers-list{width:max-content;min-width:330px;max-width:92%;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding-top:12px}
+  .scorers-list{--scorer-size:66px;--scorer-row:80px;width:max-content;min-width:330px;max-width:92%;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding-top:12px}
   .team-column:first-child .scorers-list{align-self:flex-start;margin-left:54px}
   .team-column:last-child .scorers-list{align-self:flex-end;margin-right:54px}
-  .scorer{min-height:80px;padding:7px 24px 9px;border-left:6px solid #ed1010;font-size:66px;line-height:1.05;display:flex;align-items:center;justify-content:flex-start;text-align:left;text-transform:uppercase;text-shadow:0 8px 22px rgba(0,0,0,.4)}
+  .scorer{min-width:0;min-height:var(--scorer-row);padding:7px 18px 9px;border-left:6px solid #ed1010;font-size:var(--scorer-size);line-height:1.05;display:flex;align-items:center;justify-content:flex-start;text-align:left;text-transform:uppercase;white-space:nowrap;text-shadow:0 8px 22px rgba(0,0,0,.4)}
+  .scorer-medium{font-size:calc(var(--scorer-size) * .84)}
+  .scorer-long{font-size:calc(var(--scorer-size) * .68)}
+  .scorers-grid-2{--scorer-size:52px;--scorer-row:64px;width:calc(100% - 24px);min-width:0;max-width:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px}
+  .team-column:first-child .scorers-grid-2{margin-left:12px}
+  .team-column:last-child .scorers-grid-2{margin-right:12px}
+  .scorers-wide{position:absolute;top:632px;width:1124px;min-width:0;max-width:none;display:grid;gap:7px 12px}
+  .team-column:first-child .scorers-wide{left:54px;margin-left:0}
+  .team-column:last-child .scorers-wide{right:54px;margin-right:0}
+  .scorers-grid-3{--scorer-size:52px;--scorer-row:64px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .scorers-grid-4{--scorer-size:46px;--scorer-row:57px;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .scorers-grid-5{--scorer-size:34px;--scorer-row:43px;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px 9px}
+  .scorers-tight{--scorer-size:39px;--scorer-row:49px;gap:5px 10px}
+  .scorers-compact{--scorer-size:33px;--scorer-row:42px}
+  .scorers-ultra-compact{--scorer-size:28px;--scorer-row:37px;gap:4px 8px}
+  .scorers-wide .scorer{padding-left:14px;padding-right:10px;border-left-width:5px}
   .sponsors-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(8,1fr);gap:10px;flex-shrink:0;margin-top:auto}
   .sponsor{grid-column:span 2;aspect-ratio:2.25/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
   .sponsor:nth-last-child(3):nth-child(4n+1){grid-column:2/span 2}
@@ -74,7 +110,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
 </style></head><body><div class="card">
   <div class="bgimg"><img src="${lineupUrl('group.png')}" alt="" /></div>
   <header class="header"><h1><span>FINAL</span><span class="score-word">SCORE</span></h1><div class="header-line" aria-hidden="true"></div></header>
-  <main class="score-stage">
+  <main class="score-stage ${stageLayoutClass}">
     <div class="score-stage-surface">
       <div class="logoimg"><img src="${lineupUrl('logo.png')}" alt="" /></div>
       <div class="duel-wrap">

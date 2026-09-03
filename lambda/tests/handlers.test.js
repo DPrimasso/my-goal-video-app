@@ -161,6 +161,41 @@ test('finalResult: posiziona i marcatori sotto la squadra indicata, uno per riga
   assert.equal((awayColumn.match(/class="scorer"/g) || []).length, 2);
 });
 
+test('finalResult: adatta altezza, colonne e carattere al numero di marcatori', async () => {
+  const layouts = [
+    { count: 3, stage: 'stage-expanded-one', list: 'scorers-single' },
+    { count: 4, stage: 'stage-expanded-two', list: 'scorers-single' },
+    { count: 6, stage: 'stage-expanded-two', list: 'scorers-grid-2' },
+    { count: 10, stage: 'stage-expanded-two', list: 'scorers-grid-3 scorers-wide' },
+    { count: 14, stage: 'stage-expanded-two', list: 'scorers-grid-4 scorers-wide' },
+    { count: 20, stage: 'stage-expanded-two', list: 'scorers-grid-4 scorers-wide scorers-tight' },
+    { count: 28, stage: 'stage-expanded-two', list: 'scorers-grid-5 scorers-wide scorers-compact' },
+    { count: 36, stage: 'stage-expanded-two', list: 'scorers-grid-5 scorers-wide scorers-ultra-compact' },
+  ];
+
+  for (const { count, stage, list } of layouts) {
+    let renderedHtml = '';
+    const handler = finalResult.createHandler(async (html) => {
+      renderedHtml = html;
+      return png;
+    });
+    const response = await handler({
+      requestContext: { http: { method: 'POST' } },
+      body: JSON.stringify({
+        homeTeam: 'Casalpoglio', awayTeam: 'Amatori Club',
+        homeScore: count, awayScore: 0,
+        scorerLines: Array.from({ length: count }, (_, index) => `GIOCATORE ${index + 1} ${index + 1}'`),
+        scorersUnder: 'home',
+      }),
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(renderedHtml.includes(`class="score-stage ${stage}"`), true);
+    assert.equal(renderedHtml.includes(`class="scorers-list ${list}"`), true);
+    assert.equal((renderedHtml.match(/class="scorer(?: |")/g) || []).length, count);
+  }
+});
+
 test('le tre grafiche omettono la stagione e mantengono gli accenti colore richiesti', async () => {
   const templates = {};
   for (const [name, createHandler, payload] of validCases) {
