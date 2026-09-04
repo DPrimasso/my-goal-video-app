@@ -40,7 +40,10 @@ jobs:
         run: npm test
       - name: Install and test Instagram publisher
         working-directory: lambda/instagram-story-publisher
-        run: npm ci && npm test && npm run check && npm audit --omit=dev --audit-level=high
+        run: npm ci && npm test && npm run check
+      - name: Audit Instagram publisher dependencies
+        working-directory: lambda/instagram-story-publisher
+        run: node ../../scripts/npm-audit-retry.mjs --omit=dev --audit-level=high
       - name: Build frontend
         working-directory: client
         env:

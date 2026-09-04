@@ -35,7 +35,10 @@ jobs:
           aws-region: eu-west-1
       - name: Verify publisher
         working-directory: lambda/instagram-story-publisher
-        run: npm ci && npm test && npm run check && npm audit --omit=dev --audit-level=high
+        run: npm ci && npm test && npm run check
+      - name: Audit publisher dependencies
+        working-directory: lambda/instagram-story-publisher
+        run: node ../../scripts/npm-audit-retry.mjs --omit=dev --audit-level=high
       - name: Build publisher
         run: sam build --template-file infra/instagram-publisher-template.yaml
       - name: Deploy publisher
