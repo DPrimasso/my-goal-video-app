@@ -17,7 +17,7 @@ function renderMilestone(goalCount) {
           <path d="M20 90 L34 27 L73 67 L104 18 L126 69 L163 44 L151 97 Z" />
           <path d="M24 103 C65 109 111 110 153 103" />
         </svg>` : '';
-  const label = goalCount === 2 ? 'DOPPIETTA' : 'HAT TRICK';
+  const label = goalCount === 2 ? 'DOPPIETTA' : 'HATTRICK';
 
   return `
       <div class="milestone milestone-${goalCount}" aria-hidden="true">
@@ -172,13 +172,14 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     }
     .milestone-number{
       position:absolute;
-      z-index:22;
-      left:18px;
-      top:760px;
-      width:690px;
-      height:900px;
+      z-index:30;
+      left:-70px;
+      top:1020px;
+      width:650px;
+      height:850px;
       overflow:visible;
       transform:rotate(-7deg);
+      filter:drop-shadow(0 10px 2px rgba(42,0,47,.58));
     }
     .number-brush{
       fill:none;

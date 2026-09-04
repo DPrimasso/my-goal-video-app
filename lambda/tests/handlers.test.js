@@ -89,7 +89,7 @@ test('goal: il template esegue escaping dei valori malevoli', async () => {
 });
 
 test('goal: aggiunge le grafiche dedicate a doppietta e tripletta', async () => {
-  for (const [goalCount, expectedLabel] of [[2, 'DOPPIETTA'], [3, 'HAT TRICK']]) {
+  for (const [goalCount, expectedLabel] of [[2, 'DOPPIETTA'], [3, 'HATTRICK']]) {
     let renderedHtml = '';
     const handler = goal.createHandler(async (html) => {
       renderedHtml = html;
@@ -107,6 +107,7 @@ test('goal: aggiunge le grafiche dedicate a doppietta e tripletta', async () => 
     assert.equal(response.statusCode, 200);
     assert.equal(renderedHtml.includes(`class="milestone milestone-${goalCount}"`), true);
     assert.equal(renderedHtml.includes(expectedLabel), true);
+    assert.equal(renderedHtml.includes('HAT TRICK'), false);
     assert.equal(renderedHtml.includes('HAT<br />TRICK'), false);
     assert.equal((renderedHtml.match(/class="goal-ball"/g) || []).length, goalCount);
     assert.equal(renderedHtml.includes('<svg class="milestone-crown"'), goalCount === 3);
