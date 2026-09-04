@@ -49,4 +49,8 @@ test('i tre generatori restano utilizzabili con una sola navigazione', async ({ 
   await expect(page.getByRole('img', { name: 'Grafica del risultato finale' })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Pubblica su Instagram$/ })).toBeVisible();
   await expect(page.locator('video')).toHaveCount(0);
+
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Risultato Finale' })).toBeVisible();
+  await expect(page.getByLabel('Squadra casa')).toHaveValue('Casalpoglio');
 });

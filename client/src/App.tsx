@@ -4,12 +4,34 @@ import { pages } from './pages';
 import { getConfigurationErrors } from './config/environment';
 import './App.css';
 
+const DEFAULT_PAGE = 'formazione';
+const CURRENT_PAGE_STORAGE_KEY = 'casalpoglio.currentPage';
+
+const isKnownPage = (pageId: string | null): pageId is string =>
+  pageId !== null && pages.some((page) => page.id === pageId);
+
+const getInitialPage = () => {
+  try {
+    const savedPage = window.sessionStorage.getItem(CURRENT_PAGE_STORAGE_KEY);
+    return isKnownPage(savedPage) ? savedPage : DEFAULT_PAGE;
+  } catch {
+    return DEFAULT_PAGE;
+  }
+};
+
 function App() {
-  const [currentPage, setCurrentPage] = useState('formazione');
+  const [currentPage, setCurrentPage] = useState(getInitialPage);
   const configurationErrors = getConfigurationErrors();
 
   const handlePageChange = (pageId: string) => {
+    if (!isKnownPage(pageId)) return;
+
     setCurrentPage(pageId);
+    try {
+      window.sessionStorage.setItem(CURRENT_PAGE_STORAGE_KEY, pageId);
+    } catch {
+      // La navigazione continua a funzionare anche se lo storage è disabilitato.
+    }
   };
 
   const renderCurrentPage = () => {
