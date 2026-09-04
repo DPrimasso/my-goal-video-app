@@ -4,11 +4,6 @@ const { getMethod, handleError, parseJsonBody, responseOptions, responsePng } = 
 const { renderHtmlToPng } = require('../shared/render');
 const { escapeHtml, validateGoal } = require('../shared/validation');
 
-const milestoneNumberPaths = {
-  2: 'M75 170 C135 55 400 55 420 175 C440 305 180 345 85 530 L430 530',
-  3: 'M70 130 C160 55 390 40 430 155 C465 255 360 320 250 315 C360 305 465 375 425 500 C382 640 140 640 55 545',
-};
-
 function renderMilestone(goalCount) {
   if (goalCount === 1) return '';
 
@@ -21,16 +16,6 @@ function renderMilestone(goalCount) {
 
   return `
       <div class="milestone milestone-${goalCount}" aria-hidden="true">
-        <svg class="milestone-number" viewBox="0 0 520 680">
-          <defs>
-            <filter id="rough-number-${goalCount}" x="-12%" y="-12%" width="124%" height="124%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="${goalCount + 7}" result="noise" />
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="13" />
-            </filter>
-          </defs>
-          <path class="number-brush" filter="url(#rough-number-${goalCount})" d="${milestoneNumberPaths[goalCount]}" />
-          <path class="number-brush-highlight" d="${milestoneNumberPaths[goalCount]}" />
-        </svg>
         <div class="milestone-copy">
           ${crown}
           <div class="milestone-label">${label}</div>
@@ -170,51 +155,25 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       z-index:auto;
       pointer-events:none;
     }
-    .milestone-number{
-      position:absolute;
-      z-index:30;
-      left:-70px;
-      top:1020px;
-      width:650px;
-      height:850px;
-      overflow:visible;
-      transform:rotate(-7deg);
-      filter:drop-shadow(0 10px 2px rgba(42,0,47,.58));
-    }
-    .number-brush{
-      fill:none;
-      stroke:#ee111d;
-      stroke-width:112px;
-      stroke-linecap:round;
-      stroke-linejoin:round;
-    }
-    .number-brush-highlight{
-      fill:none;
-      stroke:rgba(255,54,54,.42);
-      stroke-width:18px;
-      stroke-linecap:round;
-      stroke-linejoin:round;
-      stroke-dasharray:110 28 54 24;
-    }
     .milestone-copy{
       position:absolute;
       z-index:35;
-      right:56px;
-      top:920px;
-      width:430px;
+      right:38px;
+      top:875px;
+      width:500px;
       color:#fff;
       text-align:center;
       transform:rotate(-7deg);
       filter:drop-shadow(0 5px 2px rgba(34,0,42,.72));
     }
     .milestone-3 .milestone-copy{
-      right:44px;
-      top:790px;
-      width:500px;
+      right:24px;
+      top:720px;
+      width:550px;
     }
     .milestone-label{
       font-family:'Tusker', sans-serif;
-      font-size:104px;
+      font-size:118px;
       font-style:italic;
       line-height:.82;
       letter-spacing:3px;
@@ -223,21 +182,21 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       -webkit-text-stroke:2px rgba(255,255,255,.55);
     }
     .milestone-3 .milestone-label{
-      font-size:88px;
+      font-size:106px;
     }
     .milestone-underline{
       display:block;
       width:95%;
-      height:22px;
-      margin:18px auto 0;
+      height:26px;
+      margin:20px auto 0;
       background:#ed1420;
       clip-path:polygon(0 43%, 100% 0, 86% 58%, 100% 52%, 12% 100%);
       transform:rotate(-4deg);
     }
     .milestone-crown{
-      width:165px;
-      height:105px;
-      margin:0 auto 10px;
+      width:195px;
+      height:125px;
+      margin:0 auto 12px;
       overflow:visible;
     }
     .milestone-crown path{

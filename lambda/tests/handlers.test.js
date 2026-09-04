@@ -106,6 +106,8 @@ test('goal: aggiunge le grafiche dedicate a doppietta e tripletta', async () => 
 
     assert.equal(response.statusCode, 200);
     assert.equal(renderedHtml.includes(`class="milestone milestone-${goalCount}"`), true);
+    assert.equal(renderedHtml.includes('milestone-number'), false);
+    assert.equal(renderedHtml.includes('number-brush'), false);
     assert.equal(renderedHtml.includes(expectedLabel), true);
     assert.equal(renderedHtml.includes('HAT TRICK'), false);
     assert.equal(renderedHtml.includes('HAT<br />TRICK'), false);
