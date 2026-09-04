@@ -56,6 +56,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   html,body{width:1440px;height:2560px;background:#000;color:#fff;overflow:hidden;font-family:Tusker,sans-serif}
   .card{position:relative;width:1440px;height:2560px;padding:54px 54px 130px;display:flex;flex-direction:column;gap:14px;background:url('${lineupUrl('bg.jpg')}') center/cover no-repeat;overflow:hidden}
   .bgimg{position:absolute;inset:0;opacity:.17}.bgimg img{width:100%;height:100%;object-fit:cover}
+  .header,.score-stage,.sponsors-grid{transform:translateY(-60px)}
   .header{position:relative;z-index:3;height:612px;flex:none;display:flex;align-items:flex-end;justify-content:center;padding:0 42px 132px;background:radial-gradient(ellipse at center,rgba(3,0,10,.74) 0%,rgba(3,0,10,.46) 48%,rgba(3,0,10,0) 78%)}
   .header h1{position:relative;z-index:2;font-family:Tusker,sans-serif;font-weight:500;font-size:285px;line-height:.92;letter-spacing:1px;white-space:nowrap;text-align:center;display:flex;align-items:baseline;justify-content:center;gap:36px;text-shadow:0 16px 40px rgba(0,0,0,.5)}
   .header .score-word{display:inline-block;color:#ed1010;text-shadow:0 10px 34px rgba(221,0,0,.32)}
