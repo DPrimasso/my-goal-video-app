@@ -17,7 +17,7 @@ function renderMilestone(goalCount) {
           <path d="M20 90 L34 27 L73 67 L104 18 L126 69 L163 44 L151 97 Z" />
           <path d="M24 103 C65 109 111 110 153 103" />
         </svg>` : '';
-  const label = goalCount === 2 ? 'DOPPIETTA' : 'HAT<br />TRICK';
+  const label = goalCount === 2 ? 'DOPPIETTA' : 'HAT TRICK';
 
   return `
       <div class="milestone milestone-${goalCount}" aria-hidden="true">
@@ -167,11 +167,12 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     .milestone{
       position:absolute;
       inset:0;
-      z-index:22;
+      z-index:auto;
       pointer-events:none;
     }
     .milestone-number{
       position:absolute;
+      z-index:22;
       left:18px;
       top:760px;
       width:690px;
@@ -196,17 +197,19 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     }
     .milestone-copy{
       position:absolute;
-      right:76px;
-      top:990px;
-      width:410px;
+      z-index:35;
+      right:56px;
+      top:920px;
+      width:430px;
       color:#fff;
       text-align:center;
       transform:rotate(-7deg);
-      filter:drop-shadow(0 4px 1px rgba(0,0,0,.2));
+      filter:drop-shadow(0 5px 2px rgba(34,0,42,.72));
     }
     .milestone-3 .milestone-copy{
-      top:770px;
-      width:330px;
+      right:44px;
+      top:790px;
+      width:500px;
     }
     .milestone-label{
       font-family:'Tusker', sans-serif;
@@ -214,11 +217,12 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       font-style:italic;
       line-height:.82;
       letter-spacing:3px;
+      white-space:nowrap;
       text-transform:uppercase;
       -webkit-text-stroke:2px rgba(255,255,255,.55);
     }
     .milestone-3 .milestone-label{
-      font-size:116px;
+      font-size:88px;
     }
     .milestone-underline{
       display:block;
@@ -232,7 +236,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     .milestone-crown{
       width:165px;
       height:105px;
-      margin:0 0 10px 95px;
+      margin:0 auto 10px;
       overflow:visible;
     }
     .milestone-crown path{
