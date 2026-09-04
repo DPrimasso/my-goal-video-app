@@ -13,6 +13,7 @@ test('il catalogo contiene ID univoci e cinque fallback fotografici', () => {
 test('il goal accetta playerId e non usa URL forniti dal client', () => {
   const value = validateGoal({
     playerId: 'daniele_primasso',
+    goalCount: 2,
     playerImageUrl: 'http://169.254.169.254/latest/meta-data',
     minuteGoal: 78,
     homeTeam: 'Casalpoglio',
@@ -21,7 +22,18 @@ test('il goal accetta playerId e non usa URL forniti dal client', () => {
     awayScore: 1,
   });
   assert.equal(value.player.id, 'daniele_primasso');
+  assert.equal(value.goalCount, 2);
   assert.equal('playerImageUrl' in value, false);
+});
+
+test('il goal accetta solo goal, doppietta o tripletta e mantiene compatibilità con i vecchi payload', () => {
+  const basePayload = {
+    playerId: 'daniele_primasso', minuteGoal: 78,
+    homeTeam: 'Casalpoglio', awayTeam: 'Amatori Club', homeScore: 3, awayScore: 0,
+  };
+  assert.equal(validateGoal(basePayload).goalCount, 1);
+  assert.equal(validateGoal({ ...basePayload, goalCount: 3 }).goalCount, 3);
+  assert.throws(() => validateGoal({ ...basePayload, goalCount: 4 }), HttpError);
 });
 
 test('il goal rifiuta minuto zero e squadre uguali', () => {

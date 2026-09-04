@@ -4,15 +4,61 @@ const { getMethod, handleError, parseJsonBody, responseOptions, responsePng } = 
 const { renderHtmlToPng } = require('../shared/render');
 const { escapeHtml, validateGoal } = require('../shared/validation');
 
+const milestoneNumberPaths = {
+  2: 'M75 170 C135 55 400 55 420 175 C440 305 180 345 85 530 L430 530',
+  3: 'M70 130 C160 55 390 40 430 155 C465 255 360 320 250 315 C360 305 465 375 425 500 C382 640 140 640 55 545',
+};
+
+function renderMilestone(goalCount) {
+  if (goalCount === 1) return '';
+
+  const crown = goalCount === 3 ? `
+        <svg class="milestone-crown" viewBox="0 0 180 120" aria-hidden="true">
+          <path d="M20 90 L34 27 L73 67 L104 18 L126 69 L163 44 L151 97 Z" />
+          <path d="M24 103 C65 109 111 110 153 103" />
+        </svg>` : '';
+  const label = goalCount === 2 ? 'DOPPIETTA' : 'HAT<br />TRICK';
+
+  return `
+      <div class="milestone milestone-${goalCount}" aria-hidden="true">
+        <svg class="milestone-number" viewBox="0 0 520 680">
+          <defs>
+            <filter id="rough-number-${goalCount}" x="-12%" y="-12%" width="124%" height="124%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="${goalCount + 7}" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="13" />
+            </filter>
+          </defs>
+          <path class="number-brush" filter="url(#rough-number-${goalCount})" d="${milestoneNumberPaths[goalCount]}" />
+          <path class="number-brush-highlight" d="${milestoneNumberPaths[goalCount]}" />
+        </svg>
+        <div class="milestone-copy">
+          ${crown}
+          <div class="milestone-label">${label}</div>
+          <span class="milestone-underline"></span>
+        </div>
+      </div>`;
+}
+
+function renderGoalBalls(goalCount) {
+  if (goalCount === 1) return '';
+  const ball = `<svg class="goal-ball" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="28" />
+          <path d="M32 19 L42 26 L38 38 L26 38 L22 26 Z M32 19 L32 8 M42 26 L54 22 M38 38 L46 51 M26 38 L18 51 M22 26 L10 22 M17 10 L32 8 L47 10 M54 22 L58 38 L46 51 M18 51 L6 38 L10 22" />
+        </svg>`;
+  return `<span class="goal-balls">${Array.from({ length: goalCount }, () => ball).join('')}</span>`;
+}
+
 const createHandler = (renderer = renderHtmlToPng) => async (event, context) => {
   if (getMethod(event) === 'OPTIONS') return responseOptions();
 
   try {
-    const { player, minuteGoal, homeTeam, homeScore, awayTeam, awayScore } = validateGoal(parseJsonBody(event));
+    const { player, goalCount, minuteGoal, homeTeam, homeScore, awayTeam, awayScore } = validateGoal(parseJsonBody(event));
     const assets = getAssetContext();
     const golBaseUrl = assetUrl(assets, 'gol/gol');
     const absolutePlayerImageUrl = assetUrl(assets, player.assetKey || catalog.fallbackPlayerAssetKey);
     const playerName = player.shortName;
+    const milestoneMarkup = renderMilestone(goalCount);
+    const goalBallsMarkup = renderGoalBalls(goalCount);
 
     const htmlTemplate = `<!doctype html>
 <html lang="it">
@@ -99,7 +145,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     }
     .player{
       position:absolute;
-      z-index:20;
+      z-index:25;
       bottom:335px;
       left:0;
       width:100%;
@@ -117,6 +163,84 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       object-fit:contain;
       object-position:center bottom;
       display:block;
+    }
+    .milestone{
+      position:absolute;
+      inset:0;
+      z-index:22;
+      pointer-events:none;
+    }
+    .milestone-number{
+      position:absolute;
+      left:18px;
+      top:760px;
+      width:690px;
+      height:900px;
+      overflow:visible;
+      transform:rotate(-7deg);
+    }
+    .number-brush{
+      fill:none;
+      stroke:#ee111d;
+      stroke-width:112px;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .number-brush-highlight{
+      fill:none;
+      stroke:rgba(255,54,54,.42);
+      stroke-width:18px;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      stroke-dasharray:110 28 54 24;
+    }
+    .milestone-copy{
+      position:absolute;
+      right:76px;
+      top:990px;
+      width:410px;
+      color:#fff;
+      text-align:center;
+      transform:rotate(-7deg);
+      filter:drop-shadow(0 4px 1px rgba(0,0,0,.2));
+    }
+    .milestone-3 .milestone-copy{
+      top:770px;
+      width:330px;
+    }
+    .milestone-label{
+      font-family:'Tusker', sans-serif;
+      font-size:104px;
+      font-style:italic;
+      line-height:.82;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      -webkit-text-stroke:2px rgba(255,255,255,.55);
+    }
+    .milestone-3 .milestone-label{
+      font-size:116px;
+    }
+    .milestone-underline{
+      display:block;
+      width:95%;
+      height:22px;
+      margin:18px auto 0;
+      background:#ed1420;
+      clip-path:polygon(0 43%, 100% 0, 86% 58%, 100% 52%, 12% 100%);
+      transform:rotate(-4deg);
+    }
+    .milestone-crown{
+      width:165px;
+      height:105px;
+      margin:0 0 10px 95px;
+      overflow:visible;
+    }
+    .milestone-crown path{
+      fill:none;
+      stroke:#fff;
+      stroke-width:9px;
+      stroke-linecap:square;
+      stroke-linejoin:miter;
     }
     .card .grid{
       display: grid;
@@ -165,8 +289,8 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       flex-direction:row;
       align-items:center;
       justify-content:center;
-      gap:12px;
-      font-size:86px;
+      gap:22px;
+      font-size:82px;
       text-transform:uppercase;
       line-height:1;
       -webkit-font-smoothing:antialiased;
@@ -175,6 +299,26 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     .card .grid .gol span{
       letter-spacing: 2px !important;
       font-kerning: none !important;
+    }
+    .goal-balls{
+      display:inline-flex;
+      align-items:center;
+      gap:15px;
+      margin-left:18px;
+      flex:0 0 auto;
+    }
+    .goal-ball{
+      width:78px;
+      height:78px;
+      overflow:visible;
+    }
+    .goal-ball circle,
+    .goal-ball path{
+      fill:none;
+      stroke:#fff;
+      stroke-width:4px;
+      stroke-linecap:round;
+      stroke-linejoin:round;
     }
   </style>
 </head>
@@ -204,6 +348,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     <div class="player">
       <img src="${absolutePlayerImageUrl}" alt="${escapeHtml(playerName)}" />
     </div>
+    ${milestoneMarkup}
     
     <div class="grid">
       <div class="result">
@@ -217,6 +362,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       <div class="gol">
         <span style="letter-spacing: 2px !important; font-kerning: none !important;">${minuteGoal}'</span>
         <span style="letter-spacing: 2px !important; font-kerning: none !important;">${escapeHtml(playerName.toUpperCase())}</span>
+        ${goalBallsMarkup}
       </div>
     </div>
     

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { GoalCount } from '../types';
 
 interface TeamScore {
   home: number;
@@ -7,6 +8,7 @@ interface TeamScore {
 
 export interface SavedGoal {
   playerId: string;
+  goalCount: GoalCount;
   minuteGoal: string;
   homeTeam: string;
   awayTeam: string;
@@ -35,6 +37,7 @@ function getCookie(name: string): string | null {
 
 const initialState: SavedGoal = {
   playerId: '',
+  goalCount: 1,
   minuteGoal: '',
   homeTeam: '',
   awayTeam: '',
@@ -49,6 +52,7 @@ function readSavedGoal(): SavedGoal {
     const parsed = JSON.parse(decodeURIComponent(saved)) as Partial<SavedGoal>;
     return {
       playerId: typeof parsed.playerId === 'string' ? parsed.playerId : '',
+      goalCount: parsed.goalCount === 2 || parsed.goalCount === 3 ? parsed.goalCount : 1,
       minuteGoal: typeof parsed.minuteGoal === 'string' ? parsed.minuteGoal : '',
       homeTeam: typeof parsed.homeTeam === 'string' ? parsed.homeTeam : '',
       awayTeam: typeof parsed.awayTeam === 'string' ? parsed.awayTeam : '',

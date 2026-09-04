@@ -3,7 +3,7 @@
 Applicazione interna, accessibile tramite URL senza login, per generare tre grafiche PNG:
 
 - formazione titolare;
-- goal;
+- goal, doppietta e tripletta;
 - risultato finale.
 
 Le grafiche generate possono essere condivise nell'app Instagram per aggiungere manualmente musica, tag e sticker. La pubblicazione diretta tramite API resta disponibile nel codice ma nascosta per configurazione; quando attiva richiede ogni volta PIN e conferma esplicita.

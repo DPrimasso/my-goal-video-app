@@ -3,6 +3,8 @@ export interface Scorer {
   minute: number;
 }
 
+export type GoalCount = 1 | 2 | 3;
+
 export interface LineupPlayer {
   playerId: string;
   number: number;
@@ -16,6 +18,7 @@ export interface LineupImagePayload {
 
 export interface GoalImagePayload {
   playerId: string;
+  goalCount: GoalCount;
   minuteGoal: number;
   homeTeam: string;
   homeScore: number;

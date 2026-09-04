@@ -6,14 +6,14 @@ import { players } from '../catalog';
 import { getEndpoint } from '../config/environment';
 import { useGeneratedImage, useGoalFormState } from '../hooks';
 import { requestGeneratedImage } from '../services/imageApi';
-import type { GoalImagePayload } from '../types';
+import type { GoalCount, GoalImagePayload } from '../types';
 import './Goal.css';
 
 type GoalErrors = Partial<Record<'playerId' | 'minuteGoal' | 'homeTeam' | 'awayTeam' | 'score', string>>;
 
 export default function Goal() {
   const { state, setState } = useGoalFormState();
-  const { playerId, minuteGoal, homeTeam, awayTeam, score } = state;
+  const { playerId, goalCount, minuteGoal, homeTeam, awayTeam, score } = state;
   const [errors, setErrors] = useState<GoalErrors>({});
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
@@ -67,6 +67,7 @@ export default function Goal() {
     try {
       const payload: GoalImagePayload = {
         playerId,
+        goalCount,
         minuteGoal: Number(minuteGoal),
         homeTeam: homeTeam.trim(),
         homeScore: score.home,
@@ -82,11 +83,35 @@ export default function Goal() {
   };
 
   return (
-    <PageTemplate title="Goal" description="Giocatore, risultato parziale e minuto del gol." icon="⚽">
+    <PageTemplate title="Goal" description="Goal, doppietta o tripletta con risultato parziale e minuto." icon="⚽">
       <div className="goal-container">
         <section className="card goal-form-container" aria-label="Dati del goal">
           <div className="form-section">
             <Select id="goal-player" label="Giocatore" value={playerId} onChange={(value) => setState((current) => ({ ...current, playerId: value }))} options={playerOptions} required error={errors.playerId} />
+
+            <fieldset className="goal-count-section">
+              <legend>Tipo di realizzazione</legend>
+              <div className="goal-count-options">
+                {([
+                  { value: 1, label: 'Goal', detail: 'Grafica classica' },
+                  { value: 2, label: 'Doppietta', detail: 'Numero 2 + due palloni' },
+                  { value: 3, label: 'Tripletta', detail: 'Numero 3 + hat trick' },
+                ] as const).map((option) => (
+                  <label key={option.value} className={`goal-count-option ${goalCount === option.value ? 'goal-count-option--selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="goal-count"
+                      value={option.value}
+                      checked={goalCount === option.value}
+                      onChange={() => setState((current) => ({ ...current, goalCount: option.value as GoalCount }))}
+                    />
+                    <span className="goal-count-number" aria-hidden="true">{option.value}</span>
+                    <span className="goal-count-copy"><strong>{option.label}</strong><small>{option.detail}</small></span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             <Input id="goal-home-team" label="Squadra casa" value={homeTeam} onChange={(value) => setState((current) => ({ ...current, homeTeam: value.slice(0, 80) }))} placeholder="es. Casalpoglio" maxLength={80} required error={errors.homeTeam} />
             <Input id="goal-away-team" label="Squadra ospite" value={awayTeam} onChange={(value) => setState((current) => ({ ...current, awayTeam: value.slice(0, 80) }))} placeholder="es. Amatori Club" maxLength={80} required error={errors.awayTeam} />
 
@@ -104,7 +129,9 @@ export default function Goal() {
 
             {requestError && <div ref={errorRef} tabIndex={-1} className="error-message" role="alert">⚠️ {requestError}</div>}
             <div className="form-actions">
-              <Button onClick={generate} disabled={loading} loading={loading} size="large">{loading ? 'Generazione...' : '✨ Genera goal'}</Button>
+              <Button onClick={generate} disabled={loading} loading={loading} size="large">
+                {loading ? 'Generazione...' : `✨ Genera ${goalCount === 2 ? 'doppietta' : goalCount === 3 ? 'tripletta' : 'goal'}`}
+              </Button>
               {generatedImageUrl && <Button onClick={resetImage} variant="outline" size="large">Nuovo goal</Button>}
             </div>
           </div>

@@ -26,13 +26,14 @@ function validateGoal(payload) {
   const playerId = text(payload.playerId, 'playerId', 64);
   const player = getPlayer(playerId);
   if (!player) throw new HttpError(400, 'UNKNOWN_PLAYER', 'Il giocatore selezionato non esiste nel catalogo.');
+  const goalCount = payload.goalCount === undefined ? 1 : integer(payload.goalCount, 'goalCount', 1, 3);
   const homeTeam = text(payload.homeTeam, 'homeTeam');
   const awayTeam = text(payload.awayTeam, 'awayTeam');
   differentTeams(homeTeam, awayTeam);
   const homeScore = integer(payload.homeScore, 'homeScore', 0, 99);
   const awayScore = integer(payload.awayScore, 'awayScore', 0, 99);
   if (homeScore === 0 && awayScore === 0) throw new HttpError(400, 'INVALID_SCORE', 'Il parziale deve contenere almeno un gol.');
-  return { player, minuteGoal: integer(payload.minuteGoal, 'minuteGoal', 1, 150), homeTeam, homeScore, awayTeam, awayScore };
+  return { player, goalCount, minuteGoal: integer(payload.minuteGoal, 'minuteGoal', 1, 150), homeTeam, homeScore, awayTeam, awayScore };
 }
 
 function validateLineup(payload) {

@@ -6,7 +6,11 @@ const tinyPng = Buffer.from(
 );
 
 test('i tre generatori restano utilizzabili con una sola navigazione', async ({ page }, testInfo) => {
+  let generatedGoalCount: number | undefined;
   await page.route('https://e2e.invalid/**', async (route) => {
+    if (route.request().url().endsWith('/goal')) {
+      generatedGoalCount = (route.request().postDataJSON() as { goalCount?: number }).goalCount;
+    }
     await route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng });
   });
   await page.goto('/');
@@ -37,8 +41,10 @@ test('i tre generatori restano utilizzabili con una sola navigazione', async ({ 
   await page.getByLabel('Squadra ospite').fill('Amatori Club');
   await page.getByLabel('Parziale casa').fill('1');
   await page.getByLabel('Minuto del gol').fill('21');
-  await page.getByRole('button', { name: /Genera goal/ }).click();
+  await page.getByRole('radio', { name: /Tripletta/ }).check();
+  await page.getByRole('button', { name: /Genera tripletta/ }).click();
   await expect(page.getByRole('img', { name: 'Grafica goal generata' })).toBeVisible();
+  expect(generatedGoalCount).toBe(3);
   await expect(page.getByRole('button', { name: /^Pubblica su Instagram$/ })).toBeVisible();
 
   await visibleNavigation.getByRole('button', { name: /Risultato/ }).click();

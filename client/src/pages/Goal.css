@@ -23,6 +23,99 @@
   gap: 1.5rem;
 }
 
+.goal-count-section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.goal-count-section legend {
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.goal-count-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.goal-count-option {
+  min-width: 0;
+  padding: 0.85rem 0.75rem;
+  border: 2px solid rgba(30, 58, 138, 0.45);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.goal-count-option:hover {
+  border-color: rgba(221, 0, 0, 0.7);
+  transform: translateY(-1px);
+}
+
+.goal-count-option--selected {
+  border-color: var(--color-secondary);
+  background: linear-gradient(145deg, rgba(221, 0, 0, 0.24), rgba(15, 23, 42, 0.9));
+  box-shadow: 0 0 0 2px rgba(221, 0, 0, 0.12);
+  color: var(--color-text);
+}
+
+.goal-count-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.goal-count-option:has(input:focus-visible) {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.goal-count-number {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+}
+
+.goal-count-option--selected .goal-count-number {
+  background: var(--color-secondary);
+}
+
+.goal-count-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.goal-count-copy strong {
+  font-size: 0.9rem;
+}
+
+.goal-count-copy small {
+  margin-top: 0.25rem;
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+}
+
 /* Sezione Risultato Parziale */
 .score-section {
   display: flex;
@@ -252,6 +345,10 @@ fieldset.score-section legend {
   .score-inputs {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+
+  .goal-count-options {
+    grid-template-columns: 1fr;
   }
   
   .score-separator {

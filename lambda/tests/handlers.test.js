@@ -28,7 +28,7 @@ for (const [name, handler] of [['goal', goal.handler], ['lineup', lineup.handler
 const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const validCases = [
   ['goal', goal.createHandler, {
-    playerId: 'davide_fava', minuteGoal: 21,
+    playerId: 'davide_fava', goalCount: 1, minuteGoal: 21,
     homeTeam: 'Casalpoglio', homeScore: 1,
     awayTeam: 'Amatori Club', awayScore: 0,
   }],
@@ -77,7 +77,7 @@ test('goal: il template esegue escaping dei valori malevoli', async () => {
   const response = await handler({
     requestContext: { http: { method: 'POST' } },
     body: JSON.stringify({
-      playerId: 'davide_fava', minuteGoal: 21,
+      playerId: 'davide_fava', goalCount: 1, minuteGoal: 21,
       homeTeam: maliciousTeam, homeScore: 1,
       awayTeam: 'Amatori Club', awayScore: 0,
     }),
@@ -86,6 +86,50 @@ test('goal: il template esegue escaping dei valori malevoli', async () => {
   assert.equal(response.statusCode, 200);
   assert.equal(renderedHtml.includes(maliciousTeam), false);
   assert.equal(renderedHtml.includes('&lt;IMG SRC=X ONERROR=ALERT(1)&gt;'), true);
+});
+
+test('goal: aggiunge le grafiche dedicate a doppietta e tripletta', async () => {
+  for (const [goalCount, expectedLabel] of [[2, 'DOPPIETTA'], [3, 'HAT<br />TRICK']]) {
+    let renderedHtml = '';
+    const handler = goal.createHandler(async (html) => {
+      renderedHtml = html;
+      return png;
+    });
+    const response = await handler({
+      requestContext: { http: { method: 'POST' } },
+      body: JSON.stringify({
+        playerId: 'davide_fava', goalCount, minuteGoal: 57,
+        homeTeam: 'Casalpoglio', homeScore: goalCount,
+        awayTeam: 'NAC', awayScore: 0,
+      }),
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(renderedHtml.includes(`class="milestone milestone-${goalCount}"`), true);
+    assert.equal(renderedHtml.includes(expectedLabel), true);
+    assert.equal((renderedHtml.match(/class="goal-ball"/g) || []).length, goalCount);
+    assert.equal(renderedHtml.includes('<svg class="milestone-crown"'), goalCount === 3);
+  }
+});
+
+test('goal: la grafica classica non mostra elementi da doppietta o tripletta', async () => {
+  let renderedHtml = '';
+  const handler = goal.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  const response = await handler({
+    requestContext: { http: { method: 'POST' } },
+    body: JSON.stringify({
+      playerId: 'davide_fava', goalCount: 1, minuteGoal: 21,
+      homeTeam: 'Casalpoglio', homeScore: 1,
+      awayTeam: 'NAC', awayScore: 0,
+    }),
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(renderedHtml.includes('class="milestone milestone-'), false);
+  assert.equal(renderedHtml.includes('class="goal-ball"'), false);
 });
 
 test('finalResult: riusa titolo, watermark, logo e sponsor della formazione', async () => {

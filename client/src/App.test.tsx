@@ -20,6 +20,8 @@ describe('navigazione e accessibilità', () => {
     await user.click(screen.getAllByRole('button', { name: /goal/i })[0]);
     expect(screen.getByRole('heading', { name: 'Goal' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Giocatore' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Doppietta/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Tripletta/ })).toBeInTheDocument();
   });
 
   it('mantiene la pagina corrente dopo un refresh', async () => {
