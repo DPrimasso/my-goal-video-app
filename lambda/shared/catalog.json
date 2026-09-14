@@ -26,14 +26,6 @@
       "assetKey2027": "players/davide_scalmana_2027.webp"
     },
     {
-      "id": "saif_ardhaoui",
-      "displayName": "Saif Ardhaoui",
-      "shortName": "Ardhaoui",
-      "assetKey": null,
-      "assetKey2026": null,
-      "assetKey2027": null
-    },
-    {
       "id": "nicolo_castellini",
       "displayName": "Nicolò Castellini",
       "shortName": "Castellini",
@@ -208,14 +200,6 @@
       "assetKey": "players/daniele_rossetto_2027.webp",
       "assetKey2026": "players/daniele_rossetto_2026.webp",
       "assetKey2027": "players/daniele_rossetto_2027.webp"
-    },
-    {
-      "id": "andrea_serpellini",
-      "displayName": "Andrea Serpellini",
-      "shortName": "Serpellini",
-      "assetKey": null,
-      "assetKey2026": null,
-      "assetKey2027": null
     },
     {
       "id": "davide_sipolo",

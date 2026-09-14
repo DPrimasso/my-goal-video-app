@@ -6,11 +6,9 @@ describe('catalogo condiviso', () => {
     expect(new Set(players.map((player) => player.id)).size).toBe(players.length);
   });
 
-  it('usa il fallback soltanto per le quattro fotografie mancanti', () => {
+  it('usa il fallback soltanto per le due fotografie mancanti', () => {
     expect(players.filter((player) => !player.assetKey).map((player) => player.id)).toEqual([
-      'saif_ardhaoui',
       'vincenzo_marino',
-      'andrea_serpellini',
       'davide_sipolo',
     ]);
     expect(fallbackPlayerAssetKey).toBe('players/player-fallback.svg');

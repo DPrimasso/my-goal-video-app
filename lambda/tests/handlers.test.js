@@ -35,7 +35,7 @@ const validCases = [
   ['lineup', lineup.createHandler, {
     opponentTeam: 'Amatori Club',
     players: [
-      'davide_fava', 'lorenzo_campagnari', 'davide_scalmana', 'saif_ardhaoui',
+      'davide_fava', 'lorenzo_campagnari', 'davide_scalmana', 'daniele_primasso',
       'nicolo_castellini', 'andrea_contesini', 'davide_di_roberto',
       'francesco_gabusi', 'massimiliano_gandellini', 'lorenzo_gobbi', 'antonio_inglese',
     ].map((playerId, index) => ({ playerId, number: index + 1, isCaptain: index === 0 })),
