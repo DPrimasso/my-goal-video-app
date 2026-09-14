@@ -4,7 +4,7 @@ const LINEUP_SPONSOR_KEYS = Object.freeze([
   'vega.png', 'loooma.png', 'mm.png', 'onlight.png',
   'sens.png', 'neotec.png', 'rubes-w.png', 'eurotir.png',
   'transfilm.png', 'calzificio_leonardo.png', 'delta_antinfortunistica.png', 'lavanderia_moderna.png',
-  'brunetti.png', 'elman.png', 'maraldo.png',
+  'brunetti.png', 'elman.png', 'maraldo.png', 'eden.png',
 ]);
 
 function getAssetContext() {
