@@ -9,7 +9,11 @@ const assetRoot = path.join(repositoryRoot, manifest.sourceDirectory);
 const expected = new Set([
   ...manifest.requiredAssets,
   manifest.fallbackPlayerAsset,
-  ...catalog.players.flatMap((player) => player.assetKey ? [player.assetKey] : []),
+  ...catalog.players.flatMap((player) => [
+    player.assetKey,
+    player.assetKey2026,
+    player.assetKey2027,
+  ].filter(Boolean)),
 ]);
 
 const missing = [];

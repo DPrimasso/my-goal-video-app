@@ -21,4 +21,9 @@ describe('catalogo condiviso', () => {
     expect(getPlayer('daniele_primasso')?.shortName).toBe('Primasso');
     expect(teams.some((team) => team.id === 'casalpoglio')).toBe(true);
   });
+  it('include riferimenti annuali 2026 e 2027 nel catalogo', () => {
+    const fava = getPlayer('davide_fava');
+    expect(fava?.assetKey2026).toBe('players/davide_fava_2026.webp');
+    expect(fava?.assetKey2027).toBe('players/davide_fava_2027.webp');
+  });
 });

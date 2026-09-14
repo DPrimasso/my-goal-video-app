@@ -33,6 +33,14 @@ function renderGoalBalls(goalCount) {
   return `<span class="goal-balls">${Array.from({ length: goalCount }, () => ball).join('')}</span>`;
 }
 
+function resolveGoalPlayerAssetKey(player, goalCount = 1) {
+  if (!player) return catalog.fallbackPlayerAssetKey;
+  if (goalCount === 2) {
+    return player.assetKey2026 || player.assetKey2027 || player.assetKey || catalog.fallbackPlayerAssetKey;
+  }
+  return player.assetKey2027 || player.assetKey2026 || player.assetKey || catalog.fallbackPlayerAssetKey;
+}
+
 const createHandler = (renderer = renderHtmlToPng) => async (event, context) => {
   if (getMethod(event) === 'OPTIONS') return responseOptions();
 
@@ -40,7 +48,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     const { player, goalCount, minuteGoal, homeTeam, homeScore, awayTeam, awayScore } = validateGoal(parseJsonBody(event));
     const assets = getAssetContext();
     const golBaseUrl = assetUrl(assets, 'gol/gol');
-    const absolutePlayerImageUrl = assetUrl(assets, player.assetKey || catalog.fallbackPlayerAssetKey);
+    const absolutePlayerImageUrl = assetUrl(assets, resolveGoalPlayerAssetKey(player, goalCount));
     const playerName = player.shortName;
     const milestoneMarkup = renderMilestone(goalCount);
     const goalBallsMarkup = renderGoalBalls(goalCount);
@@ -341,5 +349,6 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
 };
 
 exports.createHandler = createHandler;
+exports.resolveGoalPlayerAssetKey = resolveGoalPlayerAssetKey;
 exports.handler = createHandler();
 

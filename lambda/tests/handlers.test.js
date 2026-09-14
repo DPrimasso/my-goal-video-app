@@ -265,3 +265,45 @@ test('le tre grafiche omettono la stagione e mantengono gli accenti colore richi
   assert.equal(templates.goal.includes('offset="50%" stop-color="#e12121"'), true);
   assert.equal(templates.finalResult.includes('class="score-word">SCORE<'), true);
 });
+test('goal: usa foto 2027 per goal e tripletta, foto 2026 per doppietta', async () => {
+  for (const [goalCount, expectedKey] of [
+    [1, 'players/davide_fava_2027.webp'],
+    [2, 'players/davide_fava_2026.webp'],
+    [3, 'players/davide_fava_2027.webp'],
+  ]) {
+    let renderedHtml = '';
+    const handler = goal.createHandler(async (html) => {
+      renderedHtml = html;
+      return png;
+    });
+    const response = await handler({
+      requestContext: { http: { method: 'POST' } },
+      body: JSON.stringify({
+        playerId: 'davide_fava', goalCount, minuteGoal: 30,
+        homeTeam: 'Casalpoglio', homeScore: goalCount,
+        awayTeam: 'NAC', awayScore: 0,
+      }),
+    });
+    assert.equal(response.statusCode, 200);
+    assert.equal(renderedHtml.includes(expectedKey), true);
+  }
+});
+
+test('goal: fallback corretto se annualita mancante', async () => {
+  let renderedHtml = '';
+  const handler = goal.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  // nicolo_castellini only has 2026
+  const response = await handler({
+    requestContext: { http: { method: 'POST' } },
+    body: JSON.stringify({
+      playerId: 'nicolo_castellini', goalCount: 1, minuteGoal: 15,
+      homeTeam: 'Casalpoglio', homeScore: 1,
+      awayTeam: 'NAC', awayScore: 0,
+    }),
+  });
+  assert.equal(response.statusCode, 200);
+  assert.equal(renderedHtml.includes('nicol%C3%B2_castellini_2026.webp'), true);
+});

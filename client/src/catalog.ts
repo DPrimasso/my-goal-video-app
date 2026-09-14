@@ -5,6 +5,8 @@ export interface Player {
   displayName: string;
   shortName: string;
   assetKey: string | null;
+  assetKey2026?: string | null;
+  assetKey2027?: string | null;
   defaultNumber?: number;
 }
 

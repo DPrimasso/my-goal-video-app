@@ -8,6 +8,9 @@ test('il catalogo contiene ID univoci e cinque fallback fotografici', () => {
   const ids = catalog.players.map((player) => player.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(catalog.players.filter((player) => !player.assetKey).length, 5);
+  // verifica presenza assetKey2026 o assetKey2027 per i giocatori con foto
+  const playersWithPhoto = catalog.players.filter((player) => player.assetKey);
+  assert.ok(playersWithPhoto.every((player) => player.assetKey2026 || player.assetKey2027));
 });
 
 test('il goal accetta playerId e non usa URL forniti dal client', () => {
