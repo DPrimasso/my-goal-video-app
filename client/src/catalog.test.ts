@@ -6,9 +6,8 @@ describe('catalogo condiviso', () => {
     expect(new Set(players.map((player) => player.id)).size).toBe(players.length);
   });
 
-  it('usa il fallback soltanto per le cinque fotografie mancanti', () => {
+  it('usa il fallback soltanto per le quattro fotografie mancanti', () => {
     expect(players.filter((player) => !player.assetKey).map((player) => player.id)).toEqual([
-      'lorenzo_campagnari',
       'saif_ardhaoui',
       'vincenzo_marino',
       'andrea_serpellini',

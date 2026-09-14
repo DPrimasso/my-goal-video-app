@@ -13,9 +13,9 @@
       "id": "lorenzo_campagnari",
       "displayName": "Lorenzo Campagnari",
       "shortName": "Campagnari",
-      "assetKey": null,
+      "assetKey": "players/lorenzo_campagnari_2027.webp",
       "assetKey2026": null,
-      "assetKey2027": null
+      "assetKey2027": "players/lorenzo_campagnari_2027.webp"
     },
     {
       "id": "davide_scalmana",
@@ -269,44 +269,12 @@
       "assetKey2027": null
     },
     {
-      "id": "alessio_salvetti",
-      "displayName": "Alessio Salvetti",
-      "shortName": "Salvetti",
-      "assetKey": "players/alessio_salvetti_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/alessio_salvetti_2027.webp"
-    },
-    {
       "id": "andrea_colombo",
       "displayName": "Andrea Colombo",
       "shortName": "Colombo A.",
       "assetKey": "players/andrea_colombo_2027.webp",
       "assetKey2026": null,
       "assetKey2027": "players/andrea_colombo_2027.webp"
-    },
-    {
-      "id": "andrea_mercadante",
-      "displayName": "Andrea Mercadante",
-      "shortName": "Mercadante",
-      "assetKey": "players/andrea_mercadante_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/andrea_mercadante_2027.webp"
-    },
-    {
-      "id": "claudio_gallo",
-      "displayName": "Claudio Gallo",
-      "shortName": "Gallo",
-      "assetKey": "players/claudio_gallo_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/claudio_gallo_2027.webp"
-    },
-    {
-      "id": "davide_campagnari",
-      "displayName": "Davide Campagnari",
-      "shortName": "Campagnari D.",
-      "assetKey": "players/davide_campagnari_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/davide_campagnari_2027.webp"
     },
     {
       "id": "edoardo_fava",
@@ -323,38 +291,6 @@
       "assetKey": "players/emanuel_petrillo_2027.webp",
       "assetKey2026": null,
       "assetKey2027": "players/emanuel_petrillo_2027.webp"
-    },
-    {
-      "id": "enzo_marzocchi",
-      "displayName": "Enzo Marzocchi",
-      "shortName": "Marzocchi",
-      "assetKey": "players/enzo_marzocchi_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/enzo_marzocchi_2027.webp"
-    },
-    {
-      "id": "gabriele_raghi",
-      "displayName": "Gabriele Raghi",
-      "shortName": "Raghi",
-      "assetKey": "players/gabriele_raghi_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/gabriele_raghi_2027.webp"
-    },
-    {
-      "id": "massimo_colombo",
-      "displayName": "Massimo Colombo",
-      "shortName": "Colombo M.",
-      "assetKey": "players/massimo_colombo_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/massimo_colombo_2027.webp"
-    },
-    {
-      "id": "matteo_viola",
-      "displayName": "Matteo Viola",
-      "shortName": "Viola M.",
-      "assetKey": "players/matteo_viola_2027.webp",
-      "assetKey2026": null,
-      "assetKey2027": "players/matteo_viola_2027.webp"
     },
     {
       "id": "simone_adorni",
