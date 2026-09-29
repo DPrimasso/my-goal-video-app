@@ -44,6 +44,19 @@ describe('navigazione e accessibilità', () => {
     expect(screen.getByRole('heading', { name: /risultato finale/i })).toBeInTheDocument();
   });
 
+  it('mantiene la scelta rigore parato dopo un refresh', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<App />);
+
+    await user.click(screen.getAllByRole('button', { name: /goal/i })[0]);
+    await user.click(screen.getByRole('radio', { name: /Rigore parato/ }));
+    unmount();
+    render(<App />);
+
+    expect(screen.getByRole('radio', { name: /Rigore parato/ })).toBeChecked();
+    expect(screen.getByRole('combobox', { name: 'Portiere' })).toBeInTheDocument();
+  });
+
   it('ignora una pagina salvata non valida', () => {
     sessionStorage.setItem('casalpoglio.currentPage', 'pagina-inesistente');
     render(<App />);
