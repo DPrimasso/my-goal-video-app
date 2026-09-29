@@ -85,12 +85,17 @@ jobs:
               --publish --query Version --output text)
             aws lambda wait function-updated-v2 \
               --function-name "$function_name"
-            aws lambda update-alias \
-              --function-name "$function_name" \
-              --name live \
-              --function-version "$version" >/dev/null
-            actual_version=$(aws lambda get-alias \
-              --function-name "$function_name" \
-              --name live --query FunctionVersion --output text)
-            test "$actual_version" = "$version"
+            if actual_version=$(aws lambda update-alias \
+                --function-name "$function_name" \
+                --name live \
+                --function-version "$version" \
+                --query FunctionVersion --output text \
+                2>"$RUNNER_TEMP/alias-error"); then
+              test "$actual_version" = "$version"
+            elif grep -q ResourceNotFoundException "$RUNNER_TEMP/alias-error"; then
+              echo "$function_name has no live alias; the unqualified function code was updated."
+            else
+              cat "$RUNNER_TEMP/alias-error" >&2
+              exit 1
+            fi
           done

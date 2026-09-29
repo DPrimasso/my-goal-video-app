@@ -14,7 +14,7 @@ Non applicare il Blueprint finché il commit mostrato nel pannello Render non co
 ## Flusso ordinario
 
 1. La pull request esegue lint, type-check, test frontend, test browser sulle due viewport, test Lambda, build, budget dimensionale e validazione SAM.
-2. Dopo il merge, il workflow AWS sincronizza `assets/s3`, pubblica nuove versioni Lambda e aggiorna gli alias `live`.
+2. Dopo il merge, il workflow AWS sincronizza `assets/s3`, pubblica nuove versioni Lambda e aggiorna gli alias `live` quando esistono. Le funzioni senza alias ricevono il nuovo codice non qualificato.
 3. Render attende il completamento della CI e costruisce il Dockerfile direttamente dal commit di `main`.
 4. Verificare `/health` e generare una formazione, un goal e un risultato finale.
 
