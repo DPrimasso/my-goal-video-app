@@ -14,6 +14,6 @@ export interface PageConfig {
 
 export const pages: PageConfig[] = [
   { id: 'formazione', label: 'Formazione', component: Formazione },
-  { id: 'goal', label: 'Goal', component: Goal },
+  { id: 'goal', label: 'Goal e rigori parati', component: Goal },
   { id: 'risultato-finale', label: 'Risultato Finale', component: RisultatoFinale },
 ];

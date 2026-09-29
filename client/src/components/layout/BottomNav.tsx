@@ -8,7 +8,7 @@ interface BottomNavProps {
 
 const navigationItems = [
   { id: 'formazione', label: 'Formazione', icon: '🏟️' },
-  { id: 'goal', label: 'Goal', icon: '⚽' },
+  { id: 'goal', label: 'Goal/Parate', icon: '⚽' },
   { id: 'risultato-finale', label: 'Risultato', icon: '🏆' },
 ];
 

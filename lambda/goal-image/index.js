@@ -33,6 +33,27 @@ function renderGoalBalls(goalCount) {
   return `<span class="goal-balls">${Array.from({ length: goalCount }, () => ball).join('')}</span>`;
 }
 
+const penaltyTitleGlyphs = {
+  A: 'M18 660 L34 20 H62 L78 660 M25 365 H72',
+  E: 'M75 20 H20 V660 H75 M20 335 H66',
+  G: 'M75 160 V80 C75 42 65 20 47 20 C30 20 20 42 20 80 V600 C20 638 30 660 47 660 C65 660 75 638 75 600 V390 H48',
+  I: 'M47 20 V660',
+  O: 'M47 20 C30 20 20 42 20 80 V600 C20 638 30 660 47 660 C65 660 75 638 75 600 V80 C75 42 65 20 47 20 Z',
+  P: 'M20 660 V20 H51 C69 20 75 42 75 80 V280 C75 315 69 335 51 335 H20',
+  R: 'M20 660 V20 H51 C69 20 75 42 75 80 V280 C75 315 69 335 51 335 H20 M50 335 L80 660',
+  T: 'M10 20 H85 M47 20 V660',
+};
+
+function renderPenaltyTitle() {
+  const title = 'RIGOREPARATO';
+  const letters = [...title].map((letter, index) => {
+    const x = index * 105 + (index >= 6 ? 30 : 0);
+    const color = index < 6 ? '#ffffff' : '#e12121';
+    return `<path d="${penaltyTitleGlyphs[letter]}" transform="translate(${x} 0) scale(1 1.32)" vector-effect="non-scaling-stroke" stroke="${color}" />`;
+  }).join('');
+  return `<svg class="save-title" viewBox="0 0 1290 900" role="img" aria-label="Rigore parato" xmlns="http://www.w3.org/2000/svg">${letters}</svg>`;
+}
+
 function resolveGoalPlayerAssetKey(player, goalCount = 1) {
   if (!player) return catalog.fallbackPlayerAssetKey;
   if (goalCount === 2) {
@@ -45,7 +66,8 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   if (getMethod(event) === 'OPTIONS') return responseOptions();
 
   try {
-    const { player, goalCount, minuteGoal, homeTeam, homeScore, awayTeam, awayScore } = validateGoal(parseJsonBody(event));
+    const { player, eventType, goalCount, minuteGoal, homeTeam, homeScore, awayTeam, awayScore } = validateGoal(parseJsonBody(event));
+    const isPenaltySave = eventType === 'penaltySave';
     const assets = getAssetContext();
     const golBaseUrl = assetUrl(assets, 'gol/gol');
     const absolutePlayerImageUrl = assetUrl(assets, resolveGoalPlayerAssetKey(player, goalCount));
@@ -58,7 +80,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Goal — 9:16</title>
+  <title>${isPenaltySave ? 'Rigore parato' : 'Goal'} — 9:16</title>
   <style>
     :root{
       --bg1:#1b0b3a;
@@ -123,6 +145,17 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
     }
     .main-text svg path{
       fill:url(#goal-title-gradient);
+    }
+    .main-text .save-title{
+      width:90%;
+      height:auto;
+      overflow:visible;
+    }
+    .main-text .save-title path{
+      fill:none;
+      stroke-width:32px;
+      stroke-linecap:square;
+      stroke-linejoin:miter;
     }
     .logoback{
       position:absolute;
@@ -300,7 +333,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       <img src="${golBaseUrl}/logo.png" alt="" />
     </div>
     <div class="main-text">
-      <svg viewBox="0 0 980 678" fill="none" xmlns="http://www.w3.org/2000/svg">
+      ${isPenaltySave ? renderPenaltyTitle() : `<svg viewBox="0 0 980 678" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="goal-title-gradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="980" y2="0">
             <stop offset="0%" stop-color="#ffffff" />
@@ -315,7 +348,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
         <path d="M524.223 72.4906C524.223 24.1635 548.192 0 596.13 0C644.067 0 668.036 24.1635 668.036 72.4906V604.088C668.036 627.778 661.866 646.019 649.525 658.811C637.185 671.604 619.386 678 596.13 678C572.873 678 555.074 671.604 542.734 658.811C530.393 646.019 524.223 627.778 524.223 604.088V72.4906ZM613.928 609.063V68.2264C613.928 54.0126 607.995 46.9057 596.13 46.9057C584.264 46.9057 578.331 54.0126 578.331 68.2264V609.063C578.331 623.75 584.264 631.094 596.13 631.094C601.35 631.094 605.622 629.199 608.944 625.409C612.267 621.145 613.928 615.696 613.928 609.063Z" fill="white"/>
         <path d="M699.428 72.4906C699.428 24.1635 723.397 0 771.334 0C819.272 0 843.24 24.1635 843.24 72.4906V604.088C843.24 627.778 837.07 646.019 824.73 658.811C812.39 671.604 794.591 678 771.334 678C748.077 678 730.279 671.604 717.938 658.811C705.598 646.019 699.428 627.778 699.428 604.088V72.4906ZM789.133 609.063V68.2264C789.133 54.0126 783.2 46.9057 771.334 46.9057C759.468 46.9057 753.536 54.0126 753.536 68.2264V609.063C753.536 623.75 759.468 631.094 771.334 631.094C776.555 631.094 780.827 629.199 784.149 625.409C787.471 621.145 789.133 615.696 789.133 609.063Z" fill="white"/>
         <path d="M929.452 626.83H980V674.447H876.768V2.84277H929.452V626.83Z" fill="white"/>
-      </svg>
+      </svg>`}
     </div>
     <div class="player">
       <img src="${absolutePlayerImageUrl}" alt="${escapeHtml(playerName)}" />

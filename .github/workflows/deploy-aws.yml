@@ -78,11 +78,19 @@ jobs:
         shell: bash
         run: |
           for function_name in goal-image lineup-image final-result-image; do
-            aws lambda update-function-code \
+            version=$(aws lambda update-function-code \
               --function-name "$function_name" \
               --s3-bucket "${{ vars.ASSETS_BUCKET_NAME }}" \
               --s3-key "sam-artifacts/image-generators/$function_name/current.zip" \
-              --publish >/dev/null
+              --publish --query Version --output text)
             aws lambda wait function-updated-v2 \
               --function-name "$function_name"
+            aws lambda update-alias \
+              --function-name "$function_name" \
+              --name live \
+              --function-version "$version" >/dev/null
+            actual_version=$(aws lambda get-alias \
+              --function-name "$function_name" \
+              --name live --query FunctionVersion --output text)
+            test "$actual_version" = "$version"
           done

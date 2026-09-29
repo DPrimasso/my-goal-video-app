@@ -4,6 +4,7 @@ export interface Scorer {
 }
 
 export type GoalCount = 1 | 2 | 3;
+export type GoalEventType = 'goal' | 'penaltySave';
 
 export interface LineupPlayer {
   playerId: string;
@@ -18,6 +19,7 @@ export interface LineupImagePayload {
 
 export interface GoalImagePayload {
   playerId: string;
+  eventType: GoalEventType;
   goalCount: GoalCount;
   minuteGoal: number;
   homeTeam: string;

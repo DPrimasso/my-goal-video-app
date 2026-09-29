@@ -13,7 +13,9 @@ type GoalErrors = Partial<Record<'playerId' | 'minuteGoal' | 'homeTeam' | 'awayT
 
 export default function Goal() {
   const { state, setState } = useGoalFormState();
-  const { playerId, goalCount, minuteGoal, homeTeam, awayTeam, score } = state;
+  const { playerId, eventType, goalCount, minuteGoal, homeTeam, awayTeam, score } = state;
+  const isPenaltySave = eventType === 'penaltySave';
+  const graphicName = isPenaltySave ? 'rigore parato' : goalCount === 2 ? 'doppietta' : goalCount === 3 ? 'tripletta' : 'goal';
   const [errors, setErrors] = useState<GoalErrors>({});
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export default function Goal() {
       nextErrors.awayTeam = 'Le due squadre devono essere differenti.';
     }
     if (score.home < 0 || score.away < 0 || score.home > 99 || score.away > 99) nextErrors.score = 'Il punteggio deve essere compreso tra 0 e 99.';
-    if (score.home === 0 && score.away === 0) nextErrors.score = 'Il parziale deve contenere almeno un gol.';
+    if (!isPenaltySave && score.home === 0 && score.away === 0) nextErrors.score = 'Il parziale deve contenere almeno un gol.';
     setErrors(nextErrors);
 
     const firstInvalidField = [
@@ -67,6 +69,7 @@ export default function Goal() {
     try {
       const payload: GoalImagePayload = {
         playerId,
+        eventType,
         goalCount,
         minuteGoal: Number(minuteGoal),
         homeTeam: homeTeam.trim(),
@@ -76,36 +79,42 @@ export default function Goal() {
       };
       replaceImage(await requestGeneratedImage(getEndpoint('goal'), payload));
     } catch (reason) {
-      setRequestError(reason instanceof Error ? reason.message : 'Errore durante la generazione del goal.');
+      setRequestError(reason instanceof Error ? reason.message : 'Errore durante la generazione della grafica.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <PageTemplate title="Goal" description="Goal, doppietta o tripletta con risultato parziale e minuto." icon="⚽">
+    <PageTemplate title="Goal e rigori parati" description="Goal, doppietta, tripletta o rigore parato con risultato parziale e minuto." icon="⚽">
       <div className="goal-container">
-        <section className="card goal-form-container" aria-label="Dati del goal">
+        <section className="card goal-form-container" aria-label="Dati dell'evento">
           <div className="form-section">
-            <Select id="goal-player" label="Giocatore" value={playerId} onChange={(value) => setState((current) => ({ ...current, playerId: value }))} options={playerOptions} required error={errors.playerId} />
+            <Select id="goal-player" label={isPenaltySave ? 'Portiere' : 'Giocatore'} value={playerId} onChange={(value) => setState((current) => ({ ...current, playerId: value }))} options={playerOptions} required error={errors.playerId} />
 
             <fieldset className="goal-count-section">
-              <legend>Tipo di realizzazione</legend>
+              <legend>Tipo di grafica</legend>
               <div className="goal-count-options">
                 {([
                   { value: 1, label: 'Goal', detail: 'Grafica classica' },
                   { value: 2, label: 'Doppietta', detail: 'Numero 2 + due palloni' },
                   { value: 3, label: 'Tripletta', detail: 'Numero 3 + hat trick' },
+                  { value: 'penaltySave', label: 'Rigore parato', detail: 'Titolo dedicato', icon: '🧤' },
                 ] as const).map((option) => (
-                  <label key={option.value} className={`goal-count-option ${goalCount === option.value ? 'goal-count-option--selected' : ''}`}>
+                  <label key={option.value} className={`goal-count-option ${(option.value === 'penaltySave' ? isPenaltySave : !isPenaltySave && goalCount === option.value) ? 'goal-count-option--selected' : ''}`}>
                     <input
                       type="radio"
                       name="goal-count"
                       value={option.value}
-                      checked={goalCount === option.value}
-                      onChange={() => setState((current) => ({ ...current, goalCount: option.value as GoalCount }))}
+                      checked={option.value === 'penaltySave' ? isPenaltySave : !isPenaltySave && goalCount === option.value}
+                      onChange={() => {
+                        resetImage();
+                        setState((current) => option.value === 'penaltySave'
+                          ? { ...current, eventType: 'penaltySave', goalCount: 1 }
+                          : { ...current, eventType: 'goal', goalCount: option.value as GoalCount });
+                      }}
                     />
-                    <span className="goal-count-number" aria-hidden="true">{option.value}</span>
+                    <span className="goal-count-number" aria-hidden="true">{'icon' in option ? option.icon : option.value}</span>
                     <span className="goal-count-copy"><strong>{option.label}</strong><small>{option.detail}</small></span>
                   </label>
                 ))}
@@ -125,14 +134,14 @@ export default function Goal() {
               {errors.score && <div className="error-text" role="alert">{errors.score}</div>}
             </fieldset>
 
-            <Input id="goal-minute" label="Minuto del gol" value={minuteGoal} onChange={(value) => setState((current) => ({ ...current, minuteGoal: value }))} type="number" min={1} max={150} placeholder="es. 78" required error={errors.minuteGoal} />
+            <Input id="goal-minute" label={isPenaltySave ? 'Minuto della parata' : 'Minuto del gol'} value={minuteGoal} onChange={(value) => setState((current) => ({ ...current, minuteGoal: value }))} type="number" min={1} max={150} placeholder="es. 78" required error={errors.minuteGoal} />
 
             {requestError && <div ref={errorRef} tabIndex={-1} className="error-message" role="alert">⚠️ {requestError}</div>}
             <div className="form-actions">
               <Button onClick={generate} disabled={loading} loading={loading} size="large">
-                {loading ? 'Generazione...' : `✨ Genera ${goalCount === 2 ? 'doppietta' : goalCount === 3 ? 'tripletta' : 'goal'}`}
+                {loading ? 'Generazione...' : `✨ Genera ${graphicName}`}
               </Button>
-              {generatedImageUrl && <Button onClick={resetImage} variant="outline" size="large">Nuovo goal</Button>}
+              {generatedImageUrl && <Button onClick={resetImage} variant="outline" size="large">Nuova grafica</Button>}
             </div>
           </div>
         </section>
@@ -140,16 +149,16 @@ export default function Goal() {
         <section className="preview-section" aria-live="polite">
           {generatedImageUrl ? (
             <div className="image-preview">
-              <div className="phone-frame"><div className="phone-frame-inner"><img src={generatedImageUrl} alt="Grafica goal generata" className="goal-image" /></div></div>
+              <div className="phone-frame"><div className="phone-frame-inner"><img src={generatedImageUrl} alt={`Grafica ${graphicName} generata`} className="goal-image" /></div></div>
               <p className="preview-meta">Formato 9:16 · pronto per Stories e Reels</p>
               <div className="image-actions">
                 <Button onClick={() => window.open(generatedImageUrl, '_blank', 'noopener,noreferrer')}>Apri PNG</Button>
-                <a className="download-btn" href={generatedImageUrl} download="goal.png">Scarica PNG</a>
+                <a className="download-btn" href={generatedImageUrl} download={isPenaltySave ? 'rigore-parato.png' : 'goal.png'}>Scarica PNG</a>
                 <InstagramPublishDialog key={generatedImageUrl} imageUrl={generatedImageUrl} />
               </div>
             </div>
           ) : (
-            <div className="preview-placeholder"><div className="placeholder-icon">⚽</div><h3>Anteprima goal</h3><p>Compila il modulo per generare la grafica.</p></div>
+            <div className="preview-placeholder"><div className="placeholder-icon">{isPenaltySave ? '🧤' : '⚽'}</div><h3>Anteprima {graphicName}</h3><p>Compila il modulo per generare la grafica.</p></div>
           )}
         </section>
       </div>

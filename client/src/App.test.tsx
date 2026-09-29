@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import App from './App';
 
 describe('navigazione e accessibilità', () => {
-  beforeEach(() => sessionStorage.clear());
+  beforeEach(() => {
+    sessionStorage.clear();
+    document.cookie = 'savedGoal=; Max-Age=0; path=/';
+  });
   afterEach(cleanup);
 
   it('espone nomi accessibili per tutti gli undici selettori della formazione', () => {
@@ -18,10 +21,14 @@ describe('navigazione e accessibilità', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getAllByRole('button', { name: /goal/i })[0]);
-    expect(screen.getByRole('heading', { name: 'Goal' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Goal e rigori parati' })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: 'Giocatore' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Doppietta/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Tripletta/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: /Rigore parato/ }));
+    expect(screen.getByRole('combobox', { name: 'Portiere' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'Minuto della parata' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Genera rigore parato/ })).toBeInTheDocument();
   });
 
   it('mantiene la pagina corrente dopo un refresh', async () => {

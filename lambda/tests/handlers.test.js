@@ -136,6 +136,30 @@ test('goal: la grafica classica non mostra elementi da doppietta o tripletta', a
   assert.equal(renderedHtml.includes('class="goal-ball"'), false);
 });
 
+test('rigore parato: usa il layout del goal con titolo dedicato', async () => {
+  let renderedHtml = '';
+  const handler = goal.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  const response = await handler({
+    body: JSON.stringify({
+      playerId: 'davide_fava', eventType: 'penaltySave', minuteGoal: 58,
+      homeTeam: 'Casalpoglio', homeScore: 0,
+      awayTeam: 'Amatori Club', awayScore: 0,
+    }),
+  });
+  assert.equal(response.statusCode, 200);
+  assert.match(renderedHtml, /<svg class="save-title"[^>]*aria-label="Rigore parato"/);
+  assert.equal((renderedHtml.match(/stroke="#ffffff"/g) || []).length, 6);
+  assert.equal((renderedHtml.match(/stroke="#e12121"/g) || []).length, 6);
+  assert.doesNotMatch(renderedHtml, /class="save-symbol"/);
+  assert.doesNotMatch(renderedHtml, /class="save-detail"/);
+  assert.match(renderedHtml, /<span style="letter-spacing: 2px !important; font-kerning: none !important;">58'<\/span>/);
+  assert.doesNotMatch(renderedHtml, /class="goal-ball"/);
+  assert.doesNotMatch(renderedHtml, /<svg viewBox="0 0 980 678"/);
+});
+
 test('finalResult: riusa titolo, watermark, logo e sponsor della formazione', async () => {
   let renderedHtml = '';
   const handler = finalResult.createHandler(async (html) => {

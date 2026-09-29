@@ -5,11 +5,14 @@ const tinyPng = Buffer.from(
   'base64',
 );
 
-test('i tre generatori restano utilizzabili con una sola navigazione', async ({ page }, testInfo) => {
+test('i generatori restano utilizzabili con una sola navigazione', async ({ page }, testInfo) => {
   let generatedGoalCount: number | undefined;
+  let generatedEventType: string | undefined;
   await page.route('https://e2e.invalid/**', async (route) => {
     if (route.request().url().endsWith('/goal')) {
-      generatedGoalCount = (route.request().postDataJSON() as { goalCount?: number }).goalCount;
+      const payload = route.request().postDataJSON() as { goalCount?: number; eventType?: string };
+      generatedGoalCount = payload.goalCount;
+      generatedEventType = payload.eventType;
     }
     await route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng });
   });
@@ -43,9 +46,17 @@ test('i tre generatori restano utilizzabili con una sola navigazione', async ({ 
   await page.getByLabel('Minuto del gol').fill('21');
   await page.getByRole('radio', { name: /Tripletta/ }).check();
   await page.getByRole('button', { name: /Genera tripletta/ }).click();
-  await expect(page.getByRole('img', { name: 'Grafica goal generata' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Grafica tripletta generata' })).toBeVisible();
   expect(generatedGoalCount).toBe(3);
+  expect(generatedEventType).toBe('goal');
   await expect(page.getByRole('button', { name: /^Pubblica su Instagram$/ })).toBeVisible();
+
+  await page.getByRole('radio', { name: /Rigore parato/ }).check();
+  await page.getByLabel('Parziale casa').fill('0');
+  await page.getByRole('button', { name: /Genera rigore parato/ }).click();
+  await expect(page.getByRole('img', { name: 'Grafica rigore parato generata' })).toBeVisible();
+  expect(generatedEventType).toBe('penaltySave');
+  expect(generatedGoalCount).toBe(1);
 
   await visibleNavigation.getByRole('button', { name: /Risultato/ }).click();
   await page.getByLabel('Squadra casa').fill('Casalpoglio');

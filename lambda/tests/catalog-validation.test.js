@@ -39,6 +39,16 @@ test('il goal accetta solo goal, doppietta o tripletta e mantiene compatibilità
   assert.throws(() => validateGoal({ ...basePayload, goalCount: 4 }), HttpError);
 });
 
+test('il rigore parato accetta 0-0 e rifiuta moltiplicatori o eventi sconosciuti', () => {
+  const payload = {
+    playerId: 'davide_fava', eventType: 'penaltySave', minuteGoal: 58,
+    homeTeam: 'Casalpoglio', awayTeam: 'Amatori Club', homeScore: 0, awayScore: 0,
+  };
+  assert.equal(validateGoal(payload).eventType, 'penaltySave');
+  assert.throws(() => validateGoal({ ...payload, goalCount: 2 }), HttpError);
+  assert.throws(() => validateGoal({ ...payload, eventType: 'unknown' }), HttpError);
+});
+
 test('il goal rifiuta minuto zero e squadre uguali', () => {
   assert.throws(() => validateGoal({
     playerId: 'daniele_primasso', minuteGoal: 0, homeTeam: 'A', awayTeam: 'B', homeScore: 1, awayScore: 0,
