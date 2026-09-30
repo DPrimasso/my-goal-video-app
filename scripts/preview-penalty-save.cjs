@@ -5,6 +5,8 @@ const { createHandler } = require('../lambda/goal-image');
 
 const root = path.resolve(__dirname, '..');
 const assets = path.join(root, 'assets', 's3');
+const playerId = process.env.PREVIEW_PLAYER_ID || 'davide_fava';
+const fileSuffix = playerId === 'davide_fava' ? '' : `-${playerId.replace(/_/g, '-')}`;
 const previews = [
   { file: 'goal.png', eventType: 'goal', homeScore: 1, awayScore: 0 },
   { file: 'rigore-parato.png', eventType: 'penaltySave', homeScore: 0, awayScore: 0 },
@@ -39,7 +41,7 @@ async function main() {
         return Buffer.from('preview');
       });
       const response = await handler({ body: JSON.stringify({
-        playerId: 'davide_fava',
+        playerId,
         eventType: preview.eventType,
         minuteGoal: 58,
         homeTeam: 'Casalpoglio',
@@ -50,7 +52,7 @@ async function main() {
       if (response.statusCode !== 200) throw new Error(response.body);
       await page.setContent(html, { waitUntil: 'networkidle' });
       await page.evaluate(() => document.fonts.ready);
-      const output = path.join(root, 'previews', preview.file);
+      const output = path.join(root, 'previews', preview.file.replace(/\.png$/, `${fileSuffix}.png`));
       await page.screenshot({ path: output });
       console.log(output);
     }

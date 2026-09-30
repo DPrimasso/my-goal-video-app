@@ -336,7 +336,7 @@ test('goal: fallback corretto se annualita mancante', async () => {
   assert.equal(renderedHtml.includes('nicol%C3%B2_castellini_2026.webp'), true);
 });
 
-test('goal: Sipolo usa la fotografia recuperata anche senza versione 2027', async () => {
+test('goal: Sipolo usa la nuova foto per il rigore parato', async () => {
   let renderedHtml = '';
   const handler = goal.createHandler(async (html) => {
     renderedHtml = html;
@@ -350,6 +350,6 @@ test('goal: Sipolo usa la fotografia recuperata anche senza versione 2027', asyn
     }),
   });
   assert.equal(response.statusCode, 200);
-  assert.match(renderedHtml, /players\/davide_sipolo_2026\.webp/);
+  assert.match(renderedHtml, /players\/davide_sipolo_2027\.png/);
   assert.doesNotMatch(renderedHtml, /players\/player-fallback\.svg/);
 });

@@ -11,6 +11,7 @@ describe('catalogo condiviso', () => {
       'vincenzo_marino',
     ]);
     expect(getPlayer('davide_sipolo')?.assetKey2026).toBe('players/davide_sipolo_2026.webp');
+    expect(getPlayer('davide_sipolo')?.assetKey2027).toBe('players/davide_sipolo_2027.png');
     expect(fallbackPlayerAssetKey).toBe('players/player-fallback.svg');
   });
 
