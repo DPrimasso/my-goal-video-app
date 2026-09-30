@@ -4,10 +4,11 @@ const { catalog } = require('../shared/catalog');
 const { HttpError, parseJsonBody } = require('../shared/http');
 const { escapeHtml, validateFinalResult, validateGoal, validateLineup } = require('../shared/validation');
 
-test('il catalogo contiene ID univoci e due fallback fotografici', () => {
+test('il catalogo contiene ID univoci e usa il fallback solo senza fotografia', () => {
   const ids = catalog.players.map((player) => player.id);
   assert.equal(new Set(ids).size, ids.length);
-  assert.equal(catalog.players.filter((player) => !player.assetKey).length, 2);
+  assert.deepEqual(catalog.players.filter((player) => !player.assetKey).map((player) => player.id), ['vincenzo_marino']);
+  assert.equal(catalog.players.find((player) => player.id === 'davide_sipolo').assetKey2026, 'players/davide_sipolo_2026.webp');
   // verifica presenza assetKey2026 o assetKey2027 per i giocatori con foto
   const playersWithPhoto = catalog.players.filter((player) => player.assetKey);
   assert.ok(playersWithPhoto.every((player) => player.assetKey2026 || player.assetKey2027));

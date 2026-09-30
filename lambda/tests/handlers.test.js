@@ -335,3 +335,21 @@ test('goal: fallback corretto se annualita mancante', async () => {
   assert.equal(response.statusCode, 200);
   assert.equal(renderedHtml.includes('nicol%C3%B2_castellini_2026.webp'), true);
 });
+
+test('goal: Sipolo usa la fotografia recuperata anche senza versione 2027', async () => {
+  let renderedHtml = '';
+  const handler = goal.createHandler(async (html) => {
+    renderedHtml = html;
+    return png;
+  });
+  const response = await handler({
+    body: JSON.stringify({
+      playerId: 'davide_sipolo', eventType: 'penaltySave', minuteGoal: 58,
+      homeTeam: 'Casalpoglio', homeScore: 0,
+      awayTeam: 'NAC', awayScore: 0,
+    }),
+  });
+  assert.equal(response.statusCode, 200);
+  assert.match(renderedHtml, /players\/davide_sipolo_2026\.webp/);
+  assert.doesNotMatch(renderedHtml, /players\/player-fallback\.svg/);
+});
