@@ -134,6 +134,8 @@ test('goal: la grafica classica non mostra elementi da doppietta o tripletta', a
   assert.equal(response.statusCode, 200);
   assert.equal(renderedHtml.includes('class="milestone milestone-'), false);
   assert.equal(renderedHtml.includes('class="goal-ball"'), false);
+  assert.equal(renderedHtml.includes('class="save-gloves"'), false);
+  assert.equal(renderedHtml.includes('class="save-label"'), false);
 });
 
 test('rigore parato: usa il layout del goal con titolo dedicato', async () => {
@@ -153,6 +155,8 @@ test('rigore parato: usa il layout del goal con titolo dedicato', async () => {
   assert.match(renderedHtml, /<svg class="save-title"[^>]*aria-label="Rigore parato"/);
   assert.equal((renderedHtml.match(/stroke="#ffffff"/g) || []).length, 6);
   assert.equal((renderedHtml.match(/stroke="#e12121"/g) || []).length, 6);
+  assert.match(renderedHtml, /<svg class="save-gloves"/);
+  assert.match(renderedHtml, /<span class="save-label">RIGORE PARATO<\/span>/);
   assert.doesNotMatch(renderedHtml, /class="save-symbol"/);
   assert.doesNotMatch(renderedHtml, /class="save-detail"/);
   assert.match(renderedHtml, /<span style="letter-spacing: 2px !important; font-kerning: none !important;">58'<\/span>/);

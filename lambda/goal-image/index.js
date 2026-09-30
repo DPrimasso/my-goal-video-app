@@ -54,6 +54,27 @@ function renderPenaltyTitle() {
   return `<svg class="save-title" viewBox="0 0 1290 900" role="img" aria-label="Rigore parato" xmlns="http://www.w3.org/2000/svg">${letters}</svg>`;
 }
 
+function renderSaveGloves() {
+  return `<svg class="save-gloves" viewBox="0 0 320 250" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <path id="keeper-glove" d="M40 202 L35 165 C33 151 27 139 17 124 L7 108 C2 99 5 91 12 87 C20 82 27 87 32 95 L46 117 L46 40 C46 29 52 23 60 23 C68 23 74 29 74 40 L74 91 L78 25 C79 15 85 10 93 10 C102 11 107 18 106 28 L103 91 L111 32 C113 22 120 17 128 19 C136 21 140 28 138 38 L129 101 L139 56 C142 46 149 42 157 45 C165 48 168 56 165 66 L151 129 C145 157 131 171 125 202 Z" />
+    </defs>
+    <g class="glove-left" transform="translate(18 13) rotate(-17 85 115)">
+      <use href="#keeper-glove" />
+      <path class="glove-seam" d="M47 117 L53 150 M74 91 L75 128 M103 91 L100 129 M129 101 L121 139" />
+      <path class="glove-cuff" d="M38 187 L127 187 L129 221 L41 221 Z" />
+      <path class="glove-cuff-line" d="M57 203 L111 203" />
+    </g>
+    <g class="glove-right" transform="translate(302 13) scale(-1 1) rotate(-17 85 115)">
+      <use href="#keeper-glove" />
+      <path class="glove-seam" d="M47 117 L53 150 M74 91 L75 128 M103 91 L100 129 M129 101 L121 139" />
+      <path class="glove-cuff" d="M38 187 L127 187 L129 221 L41 221 Z" />
+      <path class="glove-cuff-line" d="M57 203 L111 203" />
+    </g>
+    <path class="glove-spark" d="M160 0 L165 17 L182 22 L165 27 L160 44 L155 27 L138 22 L155 17 Z M8 32 L12 44 L24 48 L12 52 L8 64 L4 52 L-8 48 L4 44 Z M308 43 L312 55 L324 59 L312 63 L308 75 L304 63 L292 59 L304 55 Z" />
+  </svg>`;
+}
+
 function resolveGoalPlayerAssetKey(player, goalCount = 1) {
   if (!player) return catalog.fallbackPlayerAssetKey;
   if (goalCount === 2) {
@@ -325,6 +346,60 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       stroke-linecap:round;
       stroke-linejoin:round;
     }
+    .save-gloves{
+      position:absolute;
+      z-index:35;
+      top:885px;
+      right:55px;
+      width:310px;
+      height:auto;
+      overflow:visible;
+      transform:rotate(8deg);
+      filter:drop-shadow(0 10px 3px rgba(20,0,35,.75));
+      pointer-events:none;
+    }
+    .save-gloves use{
+      fill:#fff;
+      stroke:#17082f;
+      stroke-width:8;
+      stroke-linejoin:round;
+    }
+    .save-gloves .glove-seam{
+      fill:none;
+      stroke:#e12121;
+      stroke-width:8;
+      stroke-linecap:round;
+    }
+    .save-gloves .glove-cuff{
+      fill:#e12121;
+      stroke:#17082f;
+      stroke-width:8;
+      stroke-linejoin:round;
+    }
+    .save-gloves .glove-cuff-line{
+      fill:none;
+      stroke:#fff;
+      stroke-width:8;
+      stroke-linecap:round;
+    }
+    .save-gloves .glove-spark{
+      fill:#fff;
+    }
+    .card .grid .gol--save{
+      gap:24px;
+      padding-left:32px;
+      padding-right:32px;
+    }
+    .save-label{
+      color:#e12121;
+      font-family:'Tusker',sans-serif;
+      font-size:66px;
+      font-weight:500;
+      letter-spacing:2px;
+      white-space:nowrap;
+      border-left:4px solid #e12121;
+      padding-left:24px;
+    }
   </style>
 </head>
 <body>
@@ -354,6 +429,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
       <img src="${absolutePlayerImageUrl}" alt="${escapeHtml(playerName)}" />
     </div>
     ${milestoneMarkup}
+    ${isPenaltySave ? renderSaveGloves() : ''}
     
     <div class="grid">
       <div class="result">
@@ -364,9 +440,10 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
         <span>${awayScore}</span>
         <span class="squ">${escapeHtml(awayTeam.toUpperCase())}</span>
       </div>
-      <div class="gol">
+      <div class="gol${isPenaltySave ? ' gol--save' : ''}">
         <span style="letter-spacing: 2px !important; font-kerning: none !important;">${minuteGoal}'</span>
         <span style="letter-spacing: 2px !important; font-kerning: none !important;">${escapeHtml(playerName.toUpperCase())}</span>
+        ${isPenaltySave ? '<span class="save-label">RIGORE PARATO</span>' : ''}
         ${goalBallsMarkup}
       </div>
     </div>
