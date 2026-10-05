@@ -6,9 +6,14 @@ const tinyPng = Buffer.from(
 );
 
 test('i generatori restano utilizzabili con una sola navigazione', async ({ page }, testInfo) => {
+  let generatedLineupNumber: number | undefined;
   let generatedGoalCount: number | undefined;
   let generatedEventType: string | undefined;
   await page.route('https://e2e.invalid/**', async (route) => {
+    if (route.request().url().endsWith('/lineup')) {
+      const payload = route.request().postDataJSON() as { players: Array<{ number: number }> };
+      generatedLineupNumber = payload.players[0].number;
+    }
     if (route.request().url().endsWith('/goal')) {
       const payload = route.request().postDataJSON() as { goalCount?: number; eventType?: string };
       generatedGoalCount = payload.goalCount;
@@ -34,8 +39,20 @@ test('i generatori restano utilizzabili con una sola navigazione', async ({ page
     await lineupPlayers.nth(index).selectOption({ index: index + 1 });
   }
   await page.getByLabel('⚽ Squadra avversaria').fill('Amatori Club');
+  const lineupNumber = page.locator('#lineup-number-0');
+  await lineupNumber.focus();
+  await lineupNumber.press('Backspace');
+  await expect(lineupNumber).toHaveValue('');
+  await page.reload();
+  await expect(lineupNumber).toHaveValue('');
+  await page.getByRole('button', { name: /Genera formazione/ }).click();
+  await expect(page.getByRole('alert')).toContainText('Inserisci un numero maglia intero da 1 a 99 per il giocatore 1.');
+  expect(generatedLineupNumber).toBeUndefined();
+  await lineupNumber.pressSequentially('27');
+  await expect(lineupNumber).toHaveValue('27');
   await page.getByRole('button', { name: /Genera formazione/ }).click();
   await expect(page.getByRole('img', { name: 'Formazione titolare generata' })).toBeVisible();
+  expect(generatedLineupNumber).toBe(27);
   await expect(page.getByRole('button', { name: /^Pubblica su Instagram$/ })).toBeVisible();
 
   await visibleNavigation.getByRole('button', { name: /Goal/ }).click();

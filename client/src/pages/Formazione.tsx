@@ -10,30 +10,36 @@ import type { LineupImagePayload, LineupPlayer } from '../types';
 import './Formazione.css';
 
 const COOKIE_NAME = 'savedFormation';
-const emptyLineup = (): LineupPlayer[] => Array.from({ length: 11 }, (_, index) => ({
+type LineupFormPlayer = Omit<LineupPlayer, 'number'> & { number: string };
+type SavedLineupPlayer = Omit<LineupPlayer, 'number'> & { number: number | string };
+
+const emptyLineup = (): LineupFormPlayer[] => Array.from({ length: 11 }, (_, index) => ({
   playerId: '',
-  number: index + 1,
+  number: String(index + 1),
   isCaptain: false,
 }));
 
-function readSavedLineup(): { players: LineupPlayer[]; opponentTeam: string } | null {
+function readSavedLineup(): { players: LineupFormPlayer[]; opponentTeam: string } | null {
   const entry = document.cookie.split(';').map((value) => value.trim()).find((value) => value.startsWith(`${COOKIE_NAME}=`));
   if (!entry) return null;
   try {
     const parsed = JSON.parse(decodeURIComponent(entry.slice(COOKIE_NAME.length + 1))) as {
-      players?: LineupPlayer[];
-      lineupPlayers?: Array<LineupPlayer & { playerName?: string }>;
+      players?: SavedLineupPlayer[];
+      lineupPlayers?: Array<SavedLineupPlayer & { playerName?: string }>;
       opponentTeam?: string;
     };
     const savedPlayers = parsed.players || parsed.lineupPlayers;
     if (!Array.isArray(savedPlayers) || savedPlayers.length !== 11) return null;
     const knownIds = new Set(players.map((player) => player.id));
     return {
-      players: savedPlayers.map((player, index) => ({
-        playerId: knownIds.has(player.playerId) ? player.playerId : '',
-        number: Number.isInteger(player.number) && player.number >= 1 && player.number <= 99 ? player.number : index + 1,
-        isCaptain: Boolean(player.isCaptain),
-      })),
+      players: savedPlayers.map((player, index) => {
+        const number = Number(player.number);
+        return {
+          playerId: knownIds.has(player.playerId) ? player.playerId : '',
+          number: player.number === '' ? '' : String(Number.isInteger(number) && number >= 1 && number <= 99 ? number : index + 1),
+          isCaptain: Boolean(player.isCaptain),
+        };
+      }),
       opponentTeam: typeof parsed.opponentTeam === 'string' ? parsed.opponentTeam.slice(0, 80) : '',
     };
   } catch {
@@ -43,7 +49,7 @@ function readSavedLineup(): { players: LineupPlayer[]; opponentTeam: string } | 
 
 export default function Formazione() {
   const [saved] = useState(() => readSavedLineup());
-  const [lineup, setLineup] = useState<LineupPlayer[]>(saved?.players || emptyLineup());
+  const [lineup, setLineup] = useState<LineupFormPlayer[]>(saved?.players || emptyLineup());
   const [opponentTeam, setOpponentTeam] = useState(saved?.opponentTeam || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,15 +79,14 @@ export default function Formazione() {
       const player = players.find((candidate) => candidate.id === playerId);
       return {
         playerId,
-        number: player?.defaultNumber || entry.number || index + 1,
+        number: player?.defaultNumber?.toString() ?? entry.number,
         isCaptain: playerId ? entry.isCaptain : false,
       };
     }));
   };
 
   const updateNumber = (index: number, value: string) => {
-    const number = Math.min(99, Math.max(1, Number.parseInt(value, 10) || 1));
-    setLineup((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, number } : entry));
+    setLineup((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, number: value } : entry));
   };
 
   const toggleCaptain = (index: number) => {
@@ -101,6 +106,12 @@ export default function Formazione() {
       setError('Ogni giocatore può comparire una sola volta.');
       return;
     }
+    const playersWithNumbers: LineupPlayer[] = lineup.map((player) => ({ ...player, number: Number(player.number) }));
+    const invalidNumberIndex = playersWithNumbers.findIndex((player) => !Number.isInteger(player.number) || player.number < 1 || player.number > 99);
+    if (invalidNumberIndex !== -1) {
+      setError(`Inserisci un numero maglia intero da 1 a 99 per il giocatore ${invalidNumberIndex + 1}.`);
+      return;
+    }
     if (!opponentTeam.trim()) {
       setError('Inserisci il nome della squadra avversaria.');
       return;
@@ -109,7 +120,7 @@ export default function Formazione() {
     setLoading(true);
     setError(null);
     try {
-      const payload: LineupImagePayload = { players: lineup, opponentTeam: opponentTeam.trim() };
+      const payload: LineupImagePayload = { players: playersWithNumbers, opponentTeam: opponentTeam.trim() };
       replaceImage(await requestGeneratedImage(getEndpoint('lineup'), payload));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Errore durante la generazione della formazione.');
@@ -159,6 +170,7 @@ export default function Formazione() {
                   id={`lineup-number-${index}`}
                   className="number-input-compact"
                   type="number"
+                  inputMode="numeric"
                   min={1}
                   max={99}
                   value={entry.number}
