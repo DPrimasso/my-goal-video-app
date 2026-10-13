@@ -7,6 +7,7 @@ import { getEndpoint } from '../config/environment';
 import { useGeneratedImage } from '../hooks';
 import { requestGeneratedImage } from '../services/imageApi';
 import type { FinalResultImagePayload, Scorer } from '../types';
+import { getCasalpoglioSide } from '../utils/casalpoglioTeam';
 import './RisultatoFinale.css';
 
 interface TeamScore {
@@ -23,7 +24,6 @@ interface SavedFinalResult {
 
 const COOKIE_NAME = 'savedFinalResult';
 const EMPTY_SCORE: TeamScore = { home: 0, away: 0 };
-const isCasalpoglio = (teamName: string) => teamName.trim().toLocaleLowerCase('it-IT') === 'casalpoglio';
 
 const sanitizeScore = (value: unknown): number => (
   typeof value === 'number' && Number.isFinite(value)
@@ -47,7 +47,8 @@ function readSavedFinalResult(): SavedFinalResult {
       home: sanitizeScore(parsed.score?.home),
       away: sanitizeScore(parsed.score?.away),
     };
-    const casalpoglioGoals = isCasalpoglio(homeTeam) ? score.home : isCasalpoglio(awayTeam) ? score.away : 0;
+    const casalpoglioSide = getCasalpoglioSide(homeTeam, awayTeam);
+    const casalpoglioGoals = casalpoglioSide ? score[casalpoglioSide] : 0;
     const savedScorers = Array.isArray(parsed.scorers) ? parsed.scorers : [];
     const scorers = Array.from({ length: casalpoglioGoals }, (_, index) => {
       const scorer = savedScorers[index];
@@ -77,9 +78,8 @@ export default function RisultatoFinale() {
   const errorRef = useRef<HTMLDivElement>(null);
 
   const playerOptions = useMemo(() => players.map((player) => ({ value: player.id, label: player.shortName })) , []);
-  const homeIsCasalpoglio = isCasalpoglio(homeTeam);
-  const awayIsCasalpoglio = isCasalpoglio(awayTeam);
-  const casalpoglioGoals = homeIsCasalpoglio ? score.home : awayIsCasalpoglio ? score.away : 0;
+  const casalpoglioSide = getCasalpoglioSide(homeTeam, awayTeam);
+  const casalpoglioGoals = casalpoglioSide ? score[casalpoglioSide] : 0;
 
   useEffect(() => {
     const value = encodeURIComponent(JSON.stringify({ homeTeam, awayTeam, score, scorers }));
@@ -101,9 +101,8 @@ export default function RisultatoFinale() {
     const nextTeamName = teamName.slice(0, 80);
     const nextHomeTeam = side === 'home' ? nextTeamName : homeTeam;
     const nextAwayTeam = side === 'away' ? nextTeamName : awayTeam;
-    const nextGoals = isCasalpoglio(nextHomeTeam)
-      ? score.home
-      : isCasalpoglio(nextAwayTeam) ? score.away : 0;
+    const nextSide = getCasalpoglioSide(nextHomeTeam, nextAwayTeam);
+    const nextGoals = nextSide ? score[nextSide] : 0;
     if (side === 'home') setHomeTeam(nextTeamName);
     else setAwayTeam(nextTeamName);
     resizeScorers(nextGoals);
@@ -113,7 +112,7 @@ export default function RisultatoFinale() {
     const numericValue = Math.min(99, Math.max(0, Number.parseInt(value, 10) || 0));
     const nextScore = { ...score, [side]: numericValue };
     setScore(nextScore);
-    resizeScorers(homeIsCasalpoglio ? nextScore.home : awayIsCasalpoglio ? nextScore.away : 0);
+    resizeScorers(casalpoglioSide ? nextScore[casalpoglioSide] : 0);
   };
 
   const updateScorer = (index: number, field: keyof Scorer, value: string) => {
@@ -159,7 +158,7 @@ export default function RisultatoFinale() {
         homeScore: score.home,
         awayScore: score.away,
         scorerLines: buildScorerLines(),
-        scorersUnder: homeIsCasalpoglio ? 'home' : awayIsCasalpoglio ? 'away' : 'home',
+        scorersUnder: casalpoglioSide || 'home',
       };
       replaceImage(await requestGeneratedImage(getEndpoint('finalResult'), payload));
     } catch (reason) {

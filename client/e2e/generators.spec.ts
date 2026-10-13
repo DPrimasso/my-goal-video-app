@@ -5,6 +5,36 @@ const tinyPng = Buffer.from(
   'base64',
 );
 
+for (const side of ['home', 'away'] as const) {
+  test(`i marcatori riconoscono Casalpoglio con nome esteso o refusi (${side})`, async ({ page }) => {
+    let generatedPayload: unknown;
+    await page.route('https://e2e.invalid/final-result', async (route) => {
+      generatedPayload = route.request().postDataJSON();
+      await route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng });
+    });
+    await page.goto('/');
+    await page.locator('nav:visible').getByRole('button', { name: /Risultato/ }).click();
+    const clubName = side === 'home' ? 'Polisportiva Casalpoglio' : 'ASD Casalpolgio';
+    await page.getByLabel('Squadra casa').fill(side === 'home' ? clubName : 'Castelletto');
+    await page.getByLabel('Squadra ospite').fill(side === 'away' ? clubName : 'Castelletto');
+    await page.getByRole('spinbutton', { name: /^Casa/ }).fill(side === 'home' ? '1' : '3');
+    await page.getByRole('spinbutton', { name: /^Ospite/ }).fill(side === 'away' ? '1' : '3');
+    await expect(page.getByRole('combobox')).toHaveCount(1);
+    await page.getByRole('combobox', { name: 'Marcatore del gol 1' }).selectOption('davide_fava');
+    await page.getByRole('spinbutton', { name: 'Minuto' }).fill('21');
+    await page.reload();
+    await expect(page.getByRole('combobox', { name: 'Marcatore del gol 1' })).toHaveValue('davide_fava');
+    await page.getByRole('button', { name: /Genera immagine/ }).click();
+    await expect(page.getByRole('img', { name: 'Grafica del risultato finale' })).toBeVisible();
+    expect(generatedPayload).toMatchObject({
+      homeTeam: side === 'home' ? clubName : 'Castelletto',
+      awayTeam: side === 'away' ? clubName : 'Castelletto',
+      scorersUnder: side,
+      scorerLines: ["Fava 21'"],
+    });
+  });
+}
+
 test('i generatori restano utilizzabili con una sola navigazione', async ({ page }, testInfo) => {
   let generatedLineupNumber: number | undefined;
   let generatedGoalCount: number | undefined;
