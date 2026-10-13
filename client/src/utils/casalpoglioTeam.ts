@@ -23,6 +23,7 @@ function clubSimilarity(teamName: string): number {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('it-IT')
+    .replace(/\./g, '')
     .match(/[a-z]+/g) || [];
   const meaningfulWords = words.filter((word) => !CLUB_PREFIXES.has(word));
   // Compare both individual words and the joined name (e.g. "Casal Poglio").

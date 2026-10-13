@@ -7,6 +7,7 @@ describe('riconoscimento della squadra Casalpoglio', () => {
     'Polisportiva Casalpoglio',
     ' POL. CASALPOGLIO ',
     'A.S.D. Polisportiva Casalpoglio',
+    'A.S.D. Casal Poglio',
     'Casal Poglio',
     'Casalpóglio',
     'Polisportiva Casalpoglo',
