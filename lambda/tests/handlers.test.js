@@ -343,17 +343,22 @@ test('goal: fallback corretto se annualita mancante', async () => {
     renderedHtml = html;
     return png;
   });
-  // nicolo_castellini only has 2026
-  const response = await handler({
-    requestContext: { http: { method: 'POST' } },
-    body: JSON.stringify({
-      playerId: 'nicolo_castellini', goalCount: 1, minuteGoal: 15,
-      homeTeam: 'Casalpoglio', homeScore: 1,
-      awayTeam: 'NAC', awayScore: 0,
-    }),
-  });
-  assert.equal(response.statusCode, 200);
-  assert.equal(renderedHtml.includes('nicol%C3%B2_castellini_2026.webp'), true);
+  // francesco_gabusi ha solo la foto 2026, vincenzo_marino solo la 2027
+  for (const [playerId, goalCount, expectedAsset] of [
+    ['francesco_gabusi', 1, 'francesco_gabusi_2026.webp'],
+    ['vincenzo_marino', 2, 'vincenzo_marino_2027.webp'],
+  ]) {
+    const response = await handler({
+      requestContext: { http: { method: 'POST' } },
+      body: JSON.stringify({
+        playerId, goalCount, minuteGoal: 15,
+        homeTeam: 'Casalpoglio', homeScore: 1,
+        awayTeam: 'NAC', awayScore: 0,
+      }),
+    });
+    assert.equal(response.statusCode, 200);
+    assert.equal(renderedHtml.includes(expectedAsset), true, playerId);
+  }
 });
 
 test('goal: Sipolo usa la nuova foto per il rigore parato', async () => {

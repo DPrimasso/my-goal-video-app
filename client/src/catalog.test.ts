@@ -6,10 +6,8 @@ describe('catalogo condiviso', () => {
     expect(new Set(players.map((player) => player.id)).size).toBe(players.length);
   });
 
-  it('usa il fallback soltanto per la fotografia mancante', () => {
-    expect(players.filter((player) => !player.assetKey).map((player) => player.id)).toEqual([
-      'vincenzo_marino',
-    ]);
+  it('non usa il fallback per nessun giocatore', () => {
+    expect(players.filter((player) => !player.assetKey).map((player) => player.id)).toEqual([]);
     expect(getPlayer('davide_sipolo')?.assetKey2026).toBe('players/davide_sipolo_2026.webp');
     expect(getPlayer('davide_sipolo')?.assetKey2027).toBe('players/davide_sipolo_2027.png');
     expect(fallbackPlayerAssetKey).toBe('players/player-fallback.svg');

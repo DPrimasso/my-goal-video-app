@@ -29,9 +29,9 @@
       "id": "nicolo_castellini",
       "displayName": "Nicolò Castellini",
       "shortName": "Castellini",
-      "assetKey": "players/nicolò_castellini_2026.webp",
+      "assetKey": "players/nicolo_castellini_2027.webp",
       "assetKey2026": "players/nicolò_castellini_2026.webp",
-      "assetKey2027": null
+      "assetKey2027": "players/nicolo_castellini_2027.webp"
     },
     {
       "id": "andrea_contesini",
@@ -46,9 +46,9 @@
       "id": "davide_di_roberto",
       "displayName": "Davide Di Roberto",
       "shortName": "Di Roberto",
-      "assetKey": "players/davide_di_roberto_2026.webp",
+      "assetKey": "players/davide_di_roberto_2027.webp",
       "assetKey2026": "players/davide_di_roberto_2026.webp",
-      "assetKey2027": null,
+      "assetKey2027": "players/davide_di_roberto_2027.webp",
       "defaultNumber": 10
     },
     {
@@ -113,9 +113,9 @@
       "id": "vincenzo_marino",
       "displayName": "Vincenzo Marino",
       "shortName": "Marino",
-      "assetKey": null,
+      "assetKey": "players/vincenzo_marino_2027.webp",
       "assetKey2026": null,
-      "assetKey2027": null
+      "assetKey2027": "players/vincenzo_marino_2027.webp"
     },
     {
       "id": "rosario_nastasi",
@@ -163,9 +163,9 @@
       "id": "sebastiano_pretto",
       "displayName": "Sebastiano Pretto",
       "shortName": "Pretto",
-      "assetKey": "players/sebastiano_pretto_2026.webp",
+      "assetKey": "players/sebastiano_pretto_2027.webp",
       "assetKey2026": "players/sebastiano_pretto_2026.webp",
-      "assetKey2027": null
+      "assetKey2027": "players/sebastiano_pretto_2027.webp"
     },
     {
       "id": "daniele_primasso",
@@ -180,9 +180,9 @@
       "id": "cristian_ramponi",
       "displayName": "Cristian Ramponi",
       "shortName": "Ramponi",
-      "assetKey": "players/cristian_ramponi_2026.webp",
+      "assetKey": "players/cristian_ramponi_2027.webp",
       "assetKey2026": "players/cristian_ramponi_2026.webp",
-      "assetKey2027": null,
+      "assetKey2027": "players/cristian_ramponi_2027.webp",
       "defaultNumber": 15
     },
     {
@@ -231,9 +231,9 @@
       "id": "nathan_gorgaini",
       "displayName": "Nathan Gorgaini",
       "shortName": "Gorgaini",
-      "assetKey": "players/nathan_gorgaini_2026.webp",
+      "assetKey": "players/nathan_gorgaini_2027.webp",
       "assetKey2026": "players/nathan_gorgaini_2026.webp",
-      "assetKey2027": null
+      "assetKey2027": "players/nathan_gorgaini_2027.webp"
     },
     {
       "id": "alberto_viola",

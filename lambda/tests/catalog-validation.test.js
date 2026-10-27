@@ -7,7 +7,7 @@ const { escapeHtml, validateFinalResult, validateGoal, validateLineup } = requir
 test('il catalogo contiene ID univoci e usa il fallback solo senza fotografia', () => {
   const ids = catalog.players.map((player) => player.id);
   assert.equal(new Set(ids).size, ids.length);
-  assert.deepEqual(catalog.players.filter((player) => !player.assetKey).map((player) => player.id), ['vincenzo_marino']);
+  assert.deepEqual(catalog.players.filter((player) => !player.assetKey).map((player) => player.id), []);
   assert.equal(catalog.players.find((player) => player.id === 'davide_sipolo').assetKey2026, 'players/davide_sipolo_2026.webp');
   assert.equal(catalog.players.find((player) => player.id === 'davide_sipolo').assetKey2027, 'players/davide_sipolo_2027.png');
   // verifica presenza assetKey2026 o assetKey2027 per i giocatori con foto
