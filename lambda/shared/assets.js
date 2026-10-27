@@ -1,10 +1,13 @@
 const { HttpError } = require('./http');
 
+// Formazione e risultato finale dispongono questi 17 loghi su righe sfalsate 3-4-3-4-3:
+// cambiando il numero di sponsor va rivista la regola .sponsor:nth-child nei due template.
 const LINEUP_SPONSOR_KEYS = Object.freeze([
   'vega.png', 'loooma.png', 'mm.png', 'onlight.png',
   'sens.png', 'neotec.png', 'rubes-w.png', 'eurotir.png',
   'transfilm.png', 'calzificio_leonardo.png', 'delta_antinfortunistica.png', 'lavanderia_moderna.png',
   'brunetti.png', 'elman.png', 'maraldo.png', 'eden.png',
+  'idralpex.png',
 ]);
 
 function getAssetContext() {

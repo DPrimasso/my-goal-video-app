@@ -192,6 +192,26 @@ test('finalResult: riusa titolo, watermark, logo e sponsor della formazione', as
   }
 });
 
+test('formazione e risultato: mostrano tutti i 17 sponsor, compreso Idralpex', async () => {
+  assert.equal(LINEUP_SPONSOR_KEYS.length, 17, 'La griglia sponsor 3-4-3-4-3 va rivista se cambia il numero di loghi.');
+  assert.equal(LINEUP_SPONSOR_KEYS.includes('idralpex.png'), true);
+  for (const [name, createHandler, payload] of validCases.filter(([caseName]) => caseName !== 'goal')) {
+    let renderedHtml = '';
+    const handler = createHandler(async (html) => {
+      renderedHtml = html;
+      return png;
+    });
+    const response = await handler({
+      requestContext: { http: { method: 'POST' } },
+      body: JSON.stringify(payload),
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal((renderedHtml.match(/class="sponsor"/g) || []).length, LINEUP_SPONSOR_KEYS.length, name);
+    assert.equal(renderedHtml.includes('/lineup/idralpex.png'), true, name);
+  }
+});
+
 test('finalResult: non mostra un box marcatori vuoto', async () => {
   let renderedHtml = '';
   const handler = finalResult.createHandler(async (html) => {

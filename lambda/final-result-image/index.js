@@ -110,9 +110,9 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .scorers-ultra-compact{--scorer-size:28px;--scorer-row:37px;gap:4px 8px}
   .scorers-wide .scorer{padding-left:14px;padding-right:10px;border-left-width:5px}
   .sponsors-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(8,1fr);gap:10px;flex-shrink:0;margin-top:auto}
-  .sponsor{grid-column:span 2;aspect-ratio:2.25/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
-  .sponsor:nth-last-child(3):nth-child(4n+1){grid-column:2/span 2}
-  .sponsor img{width:60%;max-height:70%;object-fit:contain}
+  .sponsor{grid-column:span 2;aspect-ratio:2.88/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
+  .sponsor:nth-child(7n+1){grid-column:2/span 2}
+  .sponsor img{width:60%;max-height:76%;object-fit:contain}
 </style></head><body><div class="card">
   <div class="bgimg"><img src="${lineupUrl('group.png')}" alt="" /></div>
   <header class="header"><h1><span>FINAL</span><span class="score-word">SCORE</span></h1><div class="header-line" aria-hidden="true"></div></header>

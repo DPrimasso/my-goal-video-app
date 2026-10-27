@@ -30,7 +30,7 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .row{display:grid;grid-template-columns:1fr 9fr;font-size:80px;line-height:1}.num{color:#d00}.name{display:flex;align-items:center;gap:16px}.cap{width:54px;aspect-ratio:1}
   .logoimg{position:absolute;bottom:30px;left:120px;right:0;opacity:.1}.logoimg img{width:160%;max-width:none;transform:rotate(-10deg);transform-origin:left center}
   .grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(8,1fr);gap:10px}
-  .sponsor{grid-column:span 2;aspect-ratio:2.25/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}.sponsor:nth-last-child(3):nth-child(4n+1){grid-column:2/span 2}.sponsor img{width:60%;max-height:70%;object-fit:contain}
+  .sponsor{grid-column:span 2;aspect-ratio:2.88/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}.sponsor:nth-child(7n+1){grid-column:2/span 2}.sponsor img{width:60%;max-height:76%;object-fit:contain}
 </style></head><body><div class="card">
   <div class="bgimg"><img src="${lineupUrl('group.png')}" alt="" /></div>
   <div class="element"><h1>STARTING <span class="xi">XI</span></h1><p>VS ${escapeHtml(opponentTeam.toUpperCase())}</p></div>
