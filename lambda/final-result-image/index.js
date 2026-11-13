@@ -113,6 +113,8 @@ const createHandler = (renderer = renderHtmlToPng) => async (event, context) => 
   .sponsor{grid-column:span 2;aspect-ratio:2.88/1;border-radius:10px;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
   .sponsor:nth-child(7n+1){grid-column:2/span 2}
   .sponsor img{width:60%;max-height:76%;object-fit:contain}
+  /* Compensa lo spazio trasparente attorno al logo Looma. */
+  .sponsor img[src$="/loooma.png"]{transform:scale(2.4)}
 </style></head><body><div class="card">
   <div class="bgimg"><img src="${lineupUrl('group.png')}" alt="" /></div>
   <header class="header"><h1><span>FINAL</span><span class="score-word">SCORE</span></h1><div class="header-line" aria-hidden="true"></div></header>
